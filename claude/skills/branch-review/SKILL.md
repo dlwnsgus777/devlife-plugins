@@ -2,15 +2,11 @@
 
 Analyze all changes on the current branch against `main`, score across 4 dimensions, and save a timestamped review report.
 
-## Step 1 — Gather Branch Changes
+## Step 1 — Delegate to Sub-agent
 
-```bash
-git diff main...HEAD
-git log --no-merges main..HEAD --oneline
-git branch --show-current && date +%Y%m%d
-```
+Spawn a single fresh sub-agent with this prompt:
 
-Delegate all evaluation to a single fresh sub-agent — pass the full diff as context so it reads it only once across all 4 dimensions.
+> Read `~/.claude/commands/branch-review/SKILL.md` for evaluation criteria, then execute Step 2 through Step 4.
 
 ## Step 2 — Evaluation (4 Dimensions)
 
@@ -64,13 +60,7 @@ Before scoring, scan `CLAUDE.md` (and any module-level CLAUDE.md) to locate shar
 - **Shotgun surgery** → one change scattered across many unrelated files
 
 #### Domain-Driven Design (DDD)
-- **Ubiquitous language** — names match the domain terminology a business expert would use
-- **Value objects** — domain concepts identified by value (Money, Email) must be immutable types, not raw primitives; flag primitive obsession
-- **Aggregate boundaries** — external code accesses aggregates only through the root
-- **Rich domain model** — invariants live inside domain objects, not services; flag anemic models where classes are pure data containers
-- **Domain events** — significant state transitions are explicit events, not buried side effects
-- **Repository per aggregate** — not per table; flag arbitrary query repositories
-- **Domain services** — cross-aggregate logic that belongs to no single entity
+If the diff touches domain model classes, services, or repository boundaries, read `references/ddd-checklist.md` and apply those checks. Otherwise skip.
 
 ## Step 3 — Scoring
 
@@ -80,17 +70,14 @@ Grades: A(90+) B(80+) C(70+) D(60+) E(50+) F(<50)
 
 ## Step 4 — Save Report
 
-- Path: `.reviews/review-{YYYYMMDD}-{branch}.md` (create folder if missing)
-- Compare with latest existing review for trend (▲ ▼ —)
-
-Report schema:
+Create the folder if missing. Report schema:
 
 ```
 # 브랜치 리뷰 — {브랜치명}
 > 날짜: {YYYY-MM-DD} | 커밋: {N} | 변경 파일: {N}개
 
 ## 점수 요약
-| 차원 | 점수 | 등급 | 추이 |
+| 차원 | 점수 | 등급 |
 코드 컨벤션 / 테스트 품질 / 도메인 로직 / 설계 품질 / 종합
 
 ## 차원별 상세
