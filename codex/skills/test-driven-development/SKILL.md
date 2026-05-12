@@ -36,6 +36,29 @@ Violating the letter of these rules is violating the spirit of TDD.
 -   Generated code
 -   Pure configuration files
 
+### Do NOT Write Tests For
+
+-   **Simple object creation** — constructors, static factory methods, or builders that only assign fields. These have no behavior to verify.
+-   **Trivial getters/setters** — if the only assertion is `assertThat(obj.getName()).isEqualTo("name")` after setting it, the test adds no value.
+-   **Data classes / DTOs / records** — plain data holders without business logic do not need tests.
+
+    ```java
+    // ❌ Do not test this — no behavior
+    @Test
+    void createOrder() {
+        Order order = new Order("id", "userId");
+        assertThat(order.getId()).isEqualTo("id");
+    }
+
+    // ✅ Test this — business behavior exists
+    @Test
+    void order_is_cancelled_when_payment_fails() {
+        Order order = new Order("id", "userId");
+        order.cancelDueToPaymentFailure();
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+    }
+    ```
+
 Thinking "skip TDD just this once"?\
 That's rationalization. Stop.
 
@@ -123,6 +146,23 @@ Never skip this step.
 
 ------------------------------------------------------------------------
 
+## CHECKPOINT: RED Complete — STOP (Mandatory)
+
+⛔ **STOP. Do not write any production code yet.**
+
+After RED, you MUST:
+
+1.  Show the written test code to the user.
+2.  Request feedback in this exact format:
+
+> "Could you provide feedback on this test?
+> I'd especially appreciate input on [test case coverage / missing scenarios]."
+
+3.  **Wait silently.** Do NOT continue to GREEN under any circumstance until the user sends an explicit approval message (e.g., "proceed", "LGTM", "다음으로", "진행해").
+4.  If the user gives feedback without approving, incorporate it and repeat this checkpoint.
+
+------------------------------------------------------------------------
+
 ## GREEN -- Minimal Production Code
 
 ``` java
@@ -145,9 +185,41 @@ Only implement what the test requires. Nothing more.
 
 ------------------------------------------------------------------------
 
+## CHECKPOINT: GREEN Complete — STOP (Mandatory)
+
+⛔ **STOP. Do not begin refactoring yet.**
+
+After GREEN, you MUST:
+
+1.  Show the written implementation code to the user.
+2.  Request feedback in this exact format:
+
+> "Could you provide feedback on this implementation?
+> I'd especially appreciate input on [design decisions / edge case handling]."
+
+3.  **Wait silently.** Do NOT continue to REFACTOR until the user sends an explicit approval message.
+4.  If the user gives feedback without approving, incorporate it and repeat this checkpoint.
+
+------------------------------------------------------------------------
+
 ## REFACTOR -- Improve Structure
 
-After all tests are green:
+After GREEN is confirmed, evaluate whether REFACTOR is needed using this checklist:
+
+**REFACTOR is required if any of the following apply:**
+
+-   Duplicate logic exists between production code or across tests
+-   Method or variable names are unclear or misleading
+-   A method exceeds ~10 lines without a clear reason
+-   Domain concepts are modeled poorly (e.g., primitive obsession, missing abstraction)
+
+**REFACTOR may be skipped only if:**
+
+-   The GREEN implementation is already clean and minimal
+-   You explicitly state: `"REFACTOR skipped — [specific reason why the current implementation is already clean]"`
+-   Saying "no refactoring needed" without a stated reason is not acceptable.
+
+When refactoring:
 
 -   Remove duplication
 -   Improve naming
@@ -155,7 +227,72 @@ After all tests are green:
 -   Improve domain modeling
 -   Simplify structure
 
-Behavior must not change.
+Behavior must not change. Run the full test suite after each refactoring step to confirm.
+
+------------------------------------------------------------------------
+
+## CHECKPOINT: REFACTOR Complete — STOP (Mandatory)
+
+⛔ **STOP. Do not begin the next RED cycle yet.**
+
+After REFACTOR (or after explicitly skipping it with a stated reason), you MUST:
+
+1.  Show either the before/after diff of the refactoring, or the skip reason.
+2.  Request feedback in this exact format:
+
+> "Could you provide feedback on this refactoring?
+> I'd especially appreciate input on [structural changes / naming]."
+
+3.  **Wait silently.** Do NOT start the next RED until the user sends an explicit approval message.
+4.  If the user gives feedback without approving, incorporate it and repeat this checkpoint.
+
+------------------------------------------------------------------------
+
+## When to End the Cycle
+
+The RED → GREEN → REFACTOR cycle ends when **all of the following are true**:
+
+-   All planned test scenarios for the current feature are GREEN.
+-   No new failing behavior can be identified within the agreed scope.
+-   The user explicitly confirms the feature is complete.
+
+When ending, state explicitly:
+
+> "All scenarios are covered and GREEN. TDD cycle for [feature name] is complete."
+
+Do NOT add speculative tests or behaviors beyond the agreed scope to extend the cycle.
+
+------------------------------------------------------------------------
+
+## Test Data Setup
+
+**Always use Fixture builders to create entities in tests.**
+
+Do not construct entities directly via `new` or raw `.builder()` — use the project-defined Fixture factory methods instead.
+
+``` java
+// ❌ Do not do this — raw builder, fragile and verbose
+FittingContract contract = FittingContract.builder()
+    .outletNumber("9999991")
+    .consultantName("홍길동")
+    .contractStatus(ContractStatus.ACTIVE)
+    // ... many fields ...
+    .build();
+
+// ✅ Do this — Fixture provides safe defaults, tests state only what matters
+FittingContract contract = fittingContractRepository.save(
+    aFittingContract()
+        .outletNumber("9999991")
+        .contractStatus(ContractStatus.TERMINATED)
+        .build()
+);
+```
+
+**Rules:**
+- Fixture methods (e.g., `aFittingContract()`, `aContact()`) supply all required defaults.
+- Override only the fields relevant to the test scenario.
+- Wrap `repository.save(fixture.build())` in a private helper method (e.g., `createTerminatedContract(...)`) to keep test bodies readable.
+- Never duplicate fixture logic across tests — extract shared setup into a helper.
 
 ------------------------------------------------------------------------
 

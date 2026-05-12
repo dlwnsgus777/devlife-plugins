@@ -11,7 +11,9 @@
       "Bash(git commit *)",
       "Bash(python3 -m json.tool)",
       "Bash(mkdir -p /Users/finn/Desktop/private_study/ai-rule/.claude/commands)",
-      "Bash(cp ~/.claude/commands/branch-review.md /Users/finn/Desktop/private_study/ai-rule/.claude/commands/branch-review.md)"
+      "Bash(cp ~/.claude/commands/branch-review.md /Users/finn/Desktop/private_study/ai-rule/.claude/commands/branch-review.md)",
+      "Bash(cp /Users/finn/.claude/skills/test-driven-development/SKILL.md /Users/finn/Desktop/private_study/ai-rule/claude/skills/test-driven-development/SKILL.md)",
+      "Bash(cp /Users/finn/.claude/skills/test-driven-development/SKILL.md /Users/finn/Desktop/private_study/ai-rule/codex/skills/test-driven-development/SKILL.md)"
     ]
   }
 }
