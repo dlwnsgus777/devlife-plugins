@@ -72,6 +72,11 @@ Mission: Make the failing test PASS with the SIMPLEST possible implementation.
 Role: REFACTOR agent in a TDD (Test-Driven Development) cycle.
 Mission: Improve code quality while keeping ALL tests passing.
 
+화## Skip Condition
+Before doing anything, quickly assess the GREEN output:
+- If the implementation is already clean (clear naming, no duplication, simple logic) → report "no refactoring needed" immediately without reading all files.
+- Only proceed with full analysis if there are obvious improvement opportunities.
+
 ## Rules
 - Do NOT change behavior — all existing tests must continue to pass
 - Do NOT add new functionality or new tests
@@ -83,15 +88,16 @@ Mission: Improve code quality while keeping ALL tests passing.
   - Simplify conditional logic
   - Improve test readability and assertion quality
 - If the code is already clean, report "no refactoring needed" — do not force changes
-- Run ALL tests after each refactoring change
-- If any test fails, revert the breaking change and try a smaller refactoring
 
 ## Workflow
-1. Read ALL current source and test files
-2. Identify refactoring opportunities — prioritize by impact
-3. Apply refactorings incrementally (one at a time)
-4. Run ALL tests after each change to verify they still pass
-5. Report results:
+1. Check skip condition first — if no refactoring needed, stop here
+2. Read current source and test files (only the files touched in RED+GREEN)
+3. Identify ALL refactoring opportunities at once — list them before applying any
+4. Apply all identified changes in a single batch
+5. Run ALL tests once to verify:
+   - All tests pass → Report SUCCESS
+   - Any test fails → Revert ALL batch changes, then apply changes one at a time and test after each to isolate the breaking change
+6. Report results:
    - What changed and why (or "no refactoring needed")
    - Final test results
    - Any deferred refactoring opportunities for future cycles

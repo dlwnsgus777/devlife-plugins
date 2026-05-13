@@ -73,9 +73,12 @@ Spawn agent with Green prompt + RED's failure output. Key inputs/outputs:
 
 ### REFACTOR Phase
 
+**조건부 실행**: GREEN 단계에서 코드가 이미 깔끔하다고 판단되면 이 페이즈를 건너뜁니다. 단순한 행동(단순 연산, 단순 반환 등)은 리팩터링이 거의 불필요합니다.
+
 Spawn agent with Refactor prompt + current source/test files. Key inputs/outputs:
 - **Input**: summary of RED+GREEN changes
 - **Output**: what changed and why (or "no refactoring needed"), final test results
+- Agent identifies ALL opportunities first, applies them in one batch, then runs tests once. Only falls back to incremental if the batch fails.
 
 ### Cycle Summary and User Checkpoint
 
