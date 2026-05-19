@@ -11,26 +11,17 @@ Apply to ALL backend tasks: planning, coding, testing. Read BEFORE starting.
 ## Core Principles
 
 **SOLID**
-- **SRP**: 1 class = 1 responsibility
-- **OCP**: Extend via interface, not modification
-- **LSP**: Subtypes must be substitutable
-- **ISP**: Small, specific interfaces — not fat ones
-- **DIP**: Depend on abstractions; interfaces live in Domain, impls in Infrastructure
+- SRP: 1 class = 1 responsibility
+- OCP: Interface for extension
+- LSP: Subtypes replaceable
+- ISP: Small, specific interfaces
+- DIP: Depend on abstractions
 
-**Clean Architecture** (dependency: outside → inside, never reversed)
-
-```
-Domain          (core — zero external deps)
-Application     (uses Domain only)
-Infrastructure  (implements Domain interfaces)
-Presentation    (uses Application)
-```
-
-**Layer responsibilities**
-- **Domain**: Entities, value objects, domain interfaces, business rules
-- **Application**: Use cases, DTOs, orchestration (no framework deps)
-- **Infrastructure**: DB, external APIs, messaging — implements Domain interfaces
-- **Presentation**: Controllers, endpoints, serialization
+**Clean Architecture** (dependency: outside → inside)
+1. Domain (core, no external deps)
+2. Application (uses Domain only)
+3. Infrastructure (implements Domain interfaces)
+4. Presentation (uses Application)
 
 **TDD Flow**
 RED → GREEN → REFACTOR
@@ -50,12 +41,12 @@ RED → GREEN → REFACTOR
 - What problem RIGHT NOW? [state clearly]
 - What's NOT included? [list out-of-scope]
 
-**Layer mapping**
+**Layer Design**
 ```
-Domain:         entities, interfaces
-Application:    usecases, DTOs
+Domain: entities, interfaces
+Application: usecases, DTOs
 Infrastructure: implementations
-Presentation:   controllers, endpoints
+Presentation: controllers, endpoints
 ```
 
 **TDD Implementation Order**
@@ -64,46 +55,41 @@ Per layer: Test → Code → Refactor
 Order: Domain → Application → Infrastructure → Presentation
 ```
 
-## Test Strategy Per Layer
-
-| Layer          | Approach                        | Tool              |
-|----------------|---------------------------------|-------------------|
-| Domain         | Pure unit — no mocks            | JUnit 5 + AssertJ |
-| Application    | Mock repositories               | Mockito           |
-| Infrastructure | Integration tests               | Testcontainers    |
-| Presentation   | API tests                       | MockMvc           |
-
-**Test naming:** `methodName_scenario_expected`
+**Validation**
+- [ ] Solves actual requirement (not future "what if")?
+- [ ] Tests written first?
+- [ ] Single responsibility per class?
+- [ ] Dependencies point inward?
+- [ ] No unnecessary abstraction?
 
 ## Anti-Patterns
 
 **Architecture**
 ❌ Controller accesses DB directly
-❌ Entity used as API response
+❌ Entity as API response
 ❌ Business logic in Controller
 ❌ Domain depends on Infrastructure
-❌ Interface defined in Infrastructure (belongs in Domain)
 
 **Over-engineering**
-❌ Abstract classes "for future flexibility" when only 1 impl exists
-❌ Caching added without a measured performance problem
-❌ Patterns added "just in case"
-❌ Features not in current requirements
+❌ Abstract classes "for future flexibility" (1 impl exists)
+❌ Caching "for performance" (no measured issue)
+❌ Patterns "just in case"
+❌ Features not requested
 
 **TDD**
 ❌ Code before test
 ❌ Multiple behaviors in 1 test
 ❌ Mocking domain objects
 
-## Validation Checklist
+## Test Strategy
 
-- [ ] Solves actual requirement (not a future "what if")?
-- [ ] Tests written first?
-- [ ] Single responsibility per class?
-- [ ] Dependencies point inward only?
-- [ ] Interfaces defined in Domain, impls in Infrastructure?
-- [ ] No unnecessary abstraction?
-- [ ] DTOs used at every layer boundary?
+**Per Layer:**
+- Domain: Pure unit (no mocks)
+- Application: Mock repositories
+- Infrastructure: Integration (testcontainer)
+- Presentation: API tests (MockMvc)
+
+**Test Format:** `methodName_scenario_expected`
 
 ## Key Rules
 
@@ -120,6 +106,6 @@ Order: Domain → Application → Infrastructure → Presentation
 1. Read this skill BEFORE any work
 2. Define problem & non-goals
 3. Write test FIRST
-4. Design layers before writing code
+4. Design layers
 5. Implement with TDD
 6. Validate against checklist

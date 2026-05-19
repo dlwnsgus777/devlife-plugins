@@ -3,10 +3,7 @@ name: plan-creator
 description: Writes a structured Markdown plan document for any task, feature, or project.
   Use when the user requests a "계획 문서", "구현 계획", "실행 계획", "계획 MD로 정리",
   "계획서 작성", or "plan document".
-  Also trigger when the user says things like "[filename].md 만들어서 계획 작성",
-  "task.md에 계획 써줘", "[파일명].md로 계획 정리", or any variation of
-  "만들어서 계획을 작성" — i.e., when they want a plan written into a specific .md file.
-  Also trigger on "계획을 작성해줘", "계획 작성해줘",
+  Trigger on "계획을 작성해줘", "계획 작성해줘",
   "계획을 md 파일에 작성해줘", "계획을 md에 작성해줘",
   or any Korean sentence containing "계획" combined with a writing intent verb
   ("작성", "써줘", "정리", "만들어줘") — even if no specific file is mentioned.
@@ -71,3 +68,4 @@ After writing the document, use the `AskUserQuestion` tool to ask:
 > 특히 [단계 구성 / 누락된 항목 / 범위]에 대한 의견을 주시면 반영하겠습니다."
 
 Do NOT proceed to implementation without explicit approval.
+
