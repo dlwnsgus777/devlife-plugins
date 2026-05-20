@@ -86,7 +86,12 @@ After `claude/skills/` is up to date, check `codex/skills/{skill-name}/`:
 |---|---|
 | `codex/skills/` does not have this skill | Skip (do not create) |
 | `codex/skills/` has the skill, content identical to `claude/skills/` | No changes needed |
-| `codex/skills/` has the skill, content differs | **Overwrite** `codex/skills/{skill-name}/SKILL.md` with the `claude/skills/` version |
+| `codex/skills/` has the skill, content differs | **Preserve codex frontmatter, replace body** — see below |
+
+**Codex SKILL.md 업데이트 규칙**:
+codex 고유의 프런트매터(name, description 등 `---...---` 블록)는 그대로 유지하고,
+닫는 `---` 이후의 body 내용만 `claude/skills/` 버전으로 교체한다.
+(codex 형식 차이를 보호하기 위함)
 
 For asset files under `codex/skills/{skill-name}/assets/`:
 - If identical: no action

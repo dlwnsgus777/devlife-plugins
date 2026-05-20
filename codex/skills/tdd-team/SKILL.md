@@ -41,17 +41,31 @@ PROJECT_ROOT / SOURCE_DIR / TEST_DIR / TEST_CMD / TEST_FRAMEWORK
 CMUX_ENABLED (true/false) / RED_PANE / GREEN_PANE / REFACTOR_PANE
 ```
 
-### 2. Decompose into TDD Tasks
+### 2. Identify Domain Invariants
 
-Break the feature into small, incremental behaviors — each becomes one TDD cycle. Name each as a behavior statement: "returns X when Y". Example for "Calculator 클래스":
+Before decomposing tasks, extract the business rules that must never be violated. Scan existing code (enum state transitions, validation annotations, guard clauses) and ask the user if anything is missing. Express each invariant as a complete declarative sentence:
+
+> "결제 완료 상태로 전환된 주문의 금액은 어떠한 경우에도 변경될 수 없다."
+> "계약 해지 요청은 승인 완료 상태에서만 가능하다."
+
+These sentences become the **source of test names** in the TDD cycles that follow.
+
+### 3. Decompose into TDD Tasks
+
+Break the feature into small, incremental behaviors — each becomes one TDD cycle. Name each task as a **domain rule sentence**, not a method signature. The task name will become the test's DisplayName directly.
 
 ```
+# Bad — implementation-focused
 1. add(1, 2) returns 3
-2. subtract(5, 3) returns 2
-3. divide(10, 0) throws ArithmeticException
+2. divide(10, 0) throws ArithmeticException
+
+# Good — domain-rule sentences
+1. 두 정수를 더하면 합계를 반환한다
+2. 0으로 나누면 계산을 거부한다
+3. 결제 완료된 주문은 취소할 수 없다
 ```
 
-Present the task list and get user confirmation before starting.
+Present the invariant list and task list together, and get user confirmation before starting.
 
 ## TDD Cycle Execution
 

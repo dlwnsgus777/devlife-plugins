@@ -18,7 +18,19 @@
       "Bash(cp /Users/finn/.claude/skills/prd-creator/SKILL.md /Users/finn/Desktop/private_study/ai-rule/claude/skills/prd-creator/SKILL.md)",
       "Bash(cp /Users/finn/.claude/skills/prd-creator/assets/prd-template.md /Users/finn/Desktop/private_study/ai-rule/claude/skills/prd-creator/assets/prd-template.md)",
       "Bash(cp /Users/finn/.claude/skills/tdd-team/SKILL.md /Users/finn/Desktop/private_study/ai-rule/claude/skills/tdd-team/SKILL.md)",
-      "Bash(cp /Users/finn/.claude/skills/tdd-team/references/agent-prompts.md /Users/finn/Desktop/private_study/ai-rule/claude/skills/tdd-team/references/agent-prompts.md)"
+      "Bash(cp /Users/finn/.claude/skills/tdd-team/references/agent-prompts.md /Users/finn/Desktop/private_study/ai-rule/claude/skills/tdd-team/references/agent-prompts.md)",
+      "Bash(awk '/^## RED Agent Prompt/,/^## GREEN Agent Prompt/' /Users/finn/.claude/skills/tdd-team/references/agent-prompts.md)",
+      "Bash(awk '/^## GREEN Agent Prompt/,/^## REFACTOR Agent Prompt/' /Users/finn/.claude/skills/tdd-team/references/agent-prompts.md)",
+      "Bash(awk '/^## REFACTOR Agent Prompt/,0' /Users/finn/.claude/skills/tdd-team/references/agent-prompts.md)",
+      "Bash(awk '/## Fixture Pattern/,/^```$/' /Users/finn/.claude/skills/tdd-team/references/agent-prompts.md)",
+      "Bash(awk '/- Focus areas:/,/clean up assertion style/' /Users/finn/.claude/skills/tdd-team/references/agent-prompts.md)",
+      "Bash(mkdir -p /Users/finn/Desktop/private_study/ai-rule/.claude/skills/tdd-team/references)",
+      "Bash(cp -r /Users/finn/.claude/skills/tdd-team/. /Users/finn/Desktop/private_study/ai-rule/.claude/skills/tdd-team/)",
+      "Bash(cp ~/.claude/skills/tdd-team/SKILL.md /Users/finn/Desktop/private_study/ai-rule/.claude/skills/tdd-team/SKILL.md)",
+      "Bash(cp ~/.claude/skills/tdd-team/references/agent-prompts.md /Users/finn/Desktop/private_study/ai-rule/.claude/skills/tdd-team/references/agent-prompts.md)",
+      "Bash(cp ~/.claude/skills/tdd-team/references/cmux-integration.md /Users/finn/Desktop/private_study/ai-rule/.claude/skills/tdd-team/references/cmux-integration.md)",
+      "Bash(cp ~/.claude/skills/tdd-team/SKILL.md /Users/finn/Desktop/private_study/ai-rule/claude/skills/tdd-team/SKILL.md)",
+      "Bash(cp ~/.claude/skills/tdd-team/references/agent-prompts.md /Users/finn/Desktop/private_study/ai-rule/claude/skills/tdd-team/references/agent-prompts.md)"
     ]
   }
 }

@@ -28,6 +28,7 @@ Situations that require asking:
 - Scope decisions (e.g., "A has the same issue — fix it together or separately?")
 - Multiple valid implementation approaches
 - Ambiguous requirements or missing information
+- Domain invariants that aren't obvious from the code (e.g., state machine rules, ownership constraints)
 
 Use `AskUserQuestion` to ask 3–5 questions **in a single call** with **lettered options (A / B / C / D)**. All questions must be written in Korean. Cover: goal/problem, affected modules, API style, data source, and success definition.
 
@@ -52,14 +53,35 @@ Wait for answers before writing the plan.
 
 Read and use the template from `assets/plan-template.md` — fill every section, omit only if truly not applicable.
 
+#### Domain Context & Invariants (Section 2)
+
+Write **domain context** as prose sentences, not bullet points. A developer reading this for the first time should understand the domain's key concepts and assumptions from these sentences alone.
+
+Write **business invariants** as complete declarative sentences: "If X, then Y must always hold" / "Z is never permitted when W." Include what breaks if the invariant is violated — this is what makes the rule stick in the reader's mind.
+
+> Bad: `No amount change after approval`
+> Good: `The amount of an approved contract can never be changed under any circumstances. Allowing this causes settlement discrepancies and audit failures.`
+
+Also extract invariants from code discovered in Step 1 — enum state transitions, validation annotations, and guard clauses are all domain rules in disguise.
+
+#### TDD Test DisplayNames (Section 7)
+
+When listing test cases in the implementation order, name each test using a **domain rule sentence**, not a class or method name. The test list should read like a business specification.
+
+> Bad: `OrderCancelServiceTest — testCancel_WhenStatusIsPaid_ThrowsException`
+> Good: `OrderCancelServiceTest — "결제 완료된 주문은 취소할 수 없다"`
+
+The invariants you defined in Section 2 are the natural source for DisplayNames — each invariant is a candidate test name.
+
 The template is structured for Spring Boot API feature planning:
 - **1. Feature Overview**: Include a screen/function composition table — one row per UI section or feature unit
-- **2. API Design**: One subsection per endpoint with Request/Response JSON examples; explicitly cover edge cases (null, empty, etc.)
-- **3. Business Logic**: Numbered subsections for each logic area; use a mapping table when status values or enums need display labels
-- **4. Implementation Files**: List target classes per module + a package directory tree. After the table and tree, add a **"코드 스니핏"** subsection with skeleton code for each new or modified class — class/record declaration, field stubs, and key method signatures with brief inline comments. Base the snippets on the actual code patterns you found during Step 1. Snippets are scaffolding, not complete implementations, but they should be concrete enough that a developer can start coding immediately without re-reading the requirements.
-- **5. Considerations & Questions**: Numbered list of items needing confirmation, each with an alternative option if applicable
-- **6. Implementation Order (TDD)**: Checkbox list defining the build sequence
-- **7. Acceptance Criteria**: Final verification checklist
+- **2. Domain Context & Invariants**: Prose sentences for domain background; declarative sentences for business rules that must never be violated
+- **3. API Design**: One subsection per endpoint with Request/Response JSON examples; explicitly cover edge cases (null, empty, etc.)
+- **4. Business Logic**: Numbered subsections for each logic area; use a mapping table when status values or enums need display labels
+- **5. Implementation Files**: List target classes per module + a package directory tree. After the table and tree, add a **"코드 스니핏"** subsection with skeleton code for each new or modified class — class/record declaration, field stubs, and key method signatures with brief inline comments. Base the snippets on the actual code patterns you found during Step 1. Snippets are scaffolding, not complete implementations, but they should be concrete enough that a developer can start coding immediately without re-reading the requirements.
+- **6. Considerations & Questions**: Numbered list of items needing confirmation, each with an alternative option if applicable
+- **7. Implementation Order (TDD)**: Checkbox list with domain-rule DisplayNames for each test
+- **8. Acceptance Criteria**: Final verification checklist
 
 For non-API work (batch jobs, refactoring, etc.), omit sections that don't apply (e.g., API Design) and fill in the rest.
 

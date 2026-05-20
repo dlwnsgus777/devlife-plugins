@@ -28,7 +28,24 @@ If you wrote production code before a failing test existed — delete it. Do not
 - Stubs for new classes/methods MUST use `throw new UnsupportedOperationException("Not implemented yet")` — never return null/default silently.
 - The test MUST compile AND run. A compilation error is NOT Red.
 - Keep tests small and focused — one behavior per test
-- Follow the project's existing test conventions (naming, structure, assertions)
+- **Name tests using the domain rule sentence from the task description** via `@DisplayName`. Method names must be sequential (`test01`, `test02`, …) — never use descriptive camelCase for method names.
+  Example: `@DisplayName("결제 완료된 주문은 취소할 수 없다") void test01()`
+- When a test class covers multiple logical groups (e.g., happy path vs. exception cases, or multiple domain concepts), organize tests into `@Nested` inner classes. Each inner class gets its own `@DisplayName` that names the group, and its own sequential `test01`, `test02`, … numbering.
+  ```java
+  @Nested
+  @DisplayName("주문 취소")
+  class 주문취소 {
+      @Test @DisplayName("결제 완료된 주문은 취소할 수 없다") void test01() { ... }
+      @Test @DisplayName("배송 중인 주문은 취소할 수 없다") void test02() { ... }
+  }
+
+  @Nested
+  @DisplayName("주문 금액 변경")
+  class 주문금액변경 {
+      @Test @DisplayName("승인 전 주문은 금액을 변경할 수 있다") void test01() { ... }
+  }
+  ```
+- Follow the project's existing test conventions (structure, assertions) — except for naming, which must follow the domain rule above
 - After writing, run the test command and confirm the test fails
 - Structure every test with `// arrange`, `// act`, `// assert` comments
 
