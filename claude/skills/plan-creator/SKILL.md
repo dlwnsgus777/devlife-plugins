@@ -3,10 +3,7 @@ name: plan-creator
 description: Writes a structured Markdown plan document for any task, feature, or project.
   Use when the user requests a "계획 문서", "구현 계획", "실행 계획", "계획 MD로 정리",
   "계획서 작성", or "plan document".
-  Also trigger when the user says things like "[filename].md 만들어서 계획 작성",
-  "task.md에 계획 써줘", "[파일명].md로 계획 정리", or any variation of
-  "만들어서 계획을 작성" — i.e., when they want a plan written into a specific .md file.
-  Also trigger on "계획을 작성해줘", "계획 작성해줘",
+  Trigger on "계획을 작성해줘", "계획 작성해줘",
   "계획을 md 파일에 작성해줘", "계획을 md에 작성해줘",
   or any Korean sentence containing "계획" combined with a writing intent verb
   ("작성", "써줘", "정리", "만들어줘") — even if no specific file is mentioned.
@@ -28,7 +25,11 @@ Situations that require asking:
 - Scope decisions (e.g., "A has the same issue — fix it together or separately?")
 - Multiple valid implementation approaches
 - Ambiguous requirements or missing information
-- Domain invariants that aren't obvious from the code (e.g., state machine rules, ownership constraints)
+- **Domain context that isn't derivable from code alone** — code shows *what* happens, not *why*. If you cannot confidently explain the business reason behind a concept (e.g., "왜 이 상태에서는 금액 변경이 불가능한가?"), ask.
+- **Business invariants whose motivation is unclear** — don't infer the rule's intent from the guard clause alone. If the violation consequence or the constraint's origin isn't obvious, ask.
+- Domain-specific terminology or concepts that appear in the codebase but whose exact meaning is ambiguous
+
+**Important**: If you are unsure about any domain context or invariant, ask in this step. Do **not** defer to Step 3 and fill in the blanks with guesses.
 
 Use `AskUserQuestion` to ask 3–5 questions **in a single call** with **lettered options (A / B / C / D)**. All questions must be written in Korean. Cover: goal/problem, affected modules, API style, data source, and success definition.
 
@@ -55,14 +56,16 @@ Read and use the template from `assets/plan-template.md` — fill every section,
 
 #### Domain Context & Invariants (Section 2)
 
-Write **domain context** as prose sentences, not bullet points. A developer reading this for the first time should understand the domain's key concepts and assumptions from these sentences alone.
+**Rule: never guess.** If you don't know the business reason behind a concept or invariant, it means you should have asked in Step 2. If something is still unclear when you reach this section, **stop and ask the user before continuing** — do not fill the section with inferred or assumed content.
 
-Write **business invariants** as complete declarative sentences: "If X, then Y must always hold" / "Z is never permitted when W." Include what breaks if the invariant is violated — this is what makes the rule stick in the reader's mind.
+Write **domain context** as prose sentences, not bullet points. A developer reading this for the first time should understand the domain's key concepts and assumptions from these sentences alone. Only write what you know from Step 1 code analysis or Step 2 answers.
+
+Write **business invariants** as complete declarative sentences: "If X, then Y must always hold" / "Z is never permitted when W." Include what breaks if the invariant is violated — this is what makes the rule stick in the reader's mind. If you can't state the violation consequence with confidence, ask the user.
 
 > Bad: `No amount change after approval`
 > Good: `The amount of an approved contract can never be changed under any circumstances. Allowing this causes settlement discrepancies and audit failures.`
 
-Also extract invariants from code discovered in Step 1 — enum state transitions, validation annotations, and guard clauses are all domain rules in disguise.
+Also extract invariants from code discovered in Step 1 — enum state transitions, validation annotations, and guard clauses are all domain rules in disguise. But treat these as starting points for questions, not finished answers — code shows the constraint exists, not why it exists or what exactly it protects.
 
 #### TDD Test DisplayNames (Section 7)
 
@@ -93,3 +96,4 @@ After writing the document, use the `AskUserQuestion` tool to ask:
 > 특히 [단계 구성 / 누락된 항목 / 범위]에 대한 의견을 주시면 반영하겠습니다."
 
 Do NOT proceed to implementation without explicit approval.
+
