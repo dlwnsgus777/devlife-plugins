@@ -1,7 +1,7 @@
 ---
 name: cmux
 description: >
-  Use this skill to control the cmux terminal app from Codex. Trigger on
+  Use this skill to control the cmux terminal app from Claude Code. Trigger on
   "cmux", "open browser pane", "split pane", "browser split", "open in browser",
   "cmux browser", "cmux notify", "cmux split", "새 pane 열어", "브라우저 열어",
   "알림 보내", "사이드바", "workspace 만들어", "pane 분할", "browser automation",
@@ -11,7 +11,7 @@ description: >
   CLI, or set sidebar status/progress for build scripts. Do NOT trigger for
   general tmux commands — cmux is a different app. If cmux is not detected
   (no socket, no CLI), inform the user and skip.
-version: 0.2.0
+version: 0.3.0
 ---
 
 # cmux — Terminal Control from Claude Code
