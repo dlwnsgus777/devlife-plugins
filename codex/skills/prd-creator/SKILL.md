@@ -14,102 +14,106 @@ description: Writes a PRD (Product Requirements Document) for large-scale featur
 
 # PRD Creator
 
-## 목적
+## Purpose
 
-큰 규모의 기능이나 이니셔티브를 위한 PRD 문서를 작성합니다.
-PRD는 `plan-creator`의 상위 레이어로, 전체 배경·목표·범위를 정의하고
-각 하위 작업(sub-task)을 목록화합니다.
+Write a PRD for a large-scale feature or initiative.
+The PRD sits above `plan-creator` in the hierarchy: it defines the overall background, goals, and scope,
+and enumerates each sub-task.
 
-**워크플로우**:
+**Workflow**:
 ```
-prd-creator (전체 계획) → plan-creator (각 task 상세 계획) → 구현
+prd-creator (overall plan) → plan-creator (per-task detail plan) → implementation
 ```
 
 ---
 
 ## Process
 
-### Step 1: 코드베이스 탐색
+### Step 1: Explore the Codebase
 
-관련 모듈의 기존 코드를 먼저 스캔합니다.
-- 영향받을 도메인, 서비스, 컨트롤러 파악
-- 기존 패턴과 아키텍처 스타일 파악
-- 현재 상태와 목표 상태의 GAP 파악
+Scan relevant modules before asking any questions.
+- Identify affected domains, services, and controllers
+- Understand existing patterns and architectural style
+- Find the gap between current state and the target state
 
-이를 통해 질문을 구체적이고 의미있게 만듭니다.
+This makes your questions concrete and meaningful.
 
-### Step 2: 정보 수집 질문
+### Step 2: Gather Information
 
-**질문 전에 코드 탐색을 완료하세요.** `AskUserQuestion`으로 **한 번에** 4-6개 질문을 합니다.
-모든 질문은 한국어로 작성합니다.
+**Complete codebase exploration first.** Ask **4-6 questions at once** via `AskUserQuestion`.
+Write all questions in Korean.
 
-필수 질문 항목:
-- **배경 및 목표**: 이 작업이 왜 필요한가? 어떤 문제를 해결하는가?
-- **도메인 문맥**: 이 기능이 속한 도메인의 핵심 개념, 전제, 제약사항은? (예: 상태 머신 구조, 멀티테넌시 요구사항, 외부 시스템 의존성)
-- **비즈니스 불변성**: 구현 전 과정에서 절대 깨져서는 안 되는 규칙이 있는가? (예: "결제 완료 후 금액 변경 불가", "사용자당 활성 구독 하나")
-- **범위**: 이번에 다룰 것과 다루지 않을 것
-- **하위 작업 분해**: 어떻게 쪼갤 수 있는가? 의존 관계는?
-- **기술 방향**: 특정 접근 방식이나 제약사항이 있는가?
-- **우선순위**: 가장 먼저 시작해야 하는 작업은?
-- **성공 기준**: 전체 작업이 완료됐다고 볼 수 있는 조건은?
+Required topics:
+- **Background & Goals**: Why is this work needed? What problem does it solve?
+- **Domain Context**: What are the core concepts, assumptions, and constraints of the domain? (e.g., state machine structure, multi-tenancy requirements, external system dependencies). If code exploration left any concepts whose *business meaning* is unclear, ask here — code shows *what* happens, not *why*.
+- **Business Invariants**: Are there rules that must never be broken throughout implementation? (e.g., "amount cannot change after payment is complete", "one active subscription per user"). If you found guard clauses or validation logic in the codebase but don't know the business motivation behind them, ask — don't infer intent from code structure alone.
+- **Scope**: What is in scope and what is explicitly out of scope?
+- **Sub-task Breakdown**: How can it be split? What are the dependencies?
+- **Technical Direction**: Are there specific approaches or constraints?
+- **Priority**: Which task should start first?
+- **Success Criteria**: What does "done" look like for the entire initiative?
 
-답변을 받기 전까지 문서를 작성하지 마세요.
+**Important**: If you are unsure about domain context or any invariant, ask in this step. Do **not** defer to Step 3 and fill in the blanks with guesses.
 
-### Step 3: PRD 문서 작성
+Do not write the document until you have received answers.
 
-**파일 명명 규칙**:
-- 사용자가 파일명을 지정한 경우: 그 이름 사용
-- 지정하지 않은 경우: `prd-{feature}.md` 형식 (예: `prd-payment-refund.md`, `prd-user-auth.md`)
+### Step 3: Write the PRD Document
 
-**파일 위치**: 프로젝트 루트 (현재 작업 디렉토리)에 저장.
-별도 경로를 지정하지 않는 한 서브디렉토리 생성 금지.
+**Naming convention**:
+- If the user specifies a filename: use it
+- Otherwise: `prd-{feature}.md` (e.g., `prd-payment-refund.md`, `prd-user-auth.md`)
 
-`assets/prd-template.md` 템플릿을 읽고 모든 섹션을 채웁니다.
+**File location**: Project root (current working directory).
+Do not create subdirectories unless a path is explicitly specified.
 
-#### 도메인 문맥 및 불변성
+Read `assets/prd-template.md` and fill in all sections.
 
-**도메인 문맥**은 **산문 문장**으로 작성해야 합니다 (불릿 포인트 금지).
-이 도메인을 처음 접하는 독자가 이 문장만으로 기능의 배경을 이해할 수 있어야 합니다.
+#### Domain Context & Invariants
 
-**비즈니스 불변성**은 **완성된 선언 문장**으로 작성해야 합니다:
-"X이면 Y는 반드시 성립해야 한다" / "W인 경우 Z는 절대 허용되지 않는다".
-가능하면 불변성이 깨졌을 때 어떤 문제가 발생하는지도 명시합니다.
+**Rule: never guess.** If you don't know the business reason behind a concept or invariant, it means you should have asked in Step 2. If something is still unclear when you reach this section, **stop and ask the user before continuing** — do not fill the section with inferred or assumed content.
 
-> 나쁜 예: `결제 후 금액 변경 불가`
-> 좋은 예: `결제 완료 상태로 전환된 주문의 금액은 어떠한 경우에도 변경될 수 없다. 이를 허용하면 정산 불일치와 회계 감사 실패로 이어진다.`
+**Domain context** must be written as **prose sentences**, not bullet points.
+A reader new to this domain should be able to understand the feature's background from these sentences alone. Only write what you know from Step 1 code analysis or Step 2 answers.
 
-코드베이스 탐색 중 발견한 도메인 규칙(enum 값, 유효성 검사 로직, 주석)도 불변성으로 포착합니다.
+**Business invariants** must be written as **complete declarative sentences**:
+"If X, then Y must always hold" / "Z is never permitted when W".
+Where possible, hint at what goes wrong if the invariant is violated. If you can't state the violation consequence with confidence, ask the user.
 
-#### 하위 작업 분해 원칙
+> Bad: `No amount change after payment`
+> Good: `The amount of an order that has transitioned to payment-complete status can never be changed under any circumstances. Allowing this leads to settlement discrepancies and accounting audit failures.`
 
-각 sub-task는 다음 기준을 만족해야 합니다:
-- **독립성**: 가능한 한 다른 task와 독립적으로 구현 가능
-- **명확성**: `plan-creator`가 바로 상세 계획을 작성할 수 있을 만큼 구체적
-- **적정 크기**: 하나의 개발 세션(반나절~하루)에서 완료 가능한 규모
-- **검증 가능**: 완료 기준이 명확함
+Also capture domain rules you discovered during codebase exploration (enum values, validation logic, comments) as invariants — but treat these as starting points for questions, not finished answers. Code shows the constraint exists, not why it exists or what it protects.
 
-#### 복잡도 기준
+#### Sub-task Decomposition
 
-| 복잡도 | 기준 |
-|--------|------|
-| S (Small) | 단일 파일 수정, 3시간 이내 |
-| M (Medium) | 2-5개 파일, 반나절~하루 |
-| L (Large) | 여러 모듈, 하루 이상 |
+Each sub-task must satisfy:
+- **Independence**: implementable without blocking other tasks where possible
+- **Clarity**: specific enough for `plan-creator` to write a detailed plan immediately
+- **Right-sized**: completable in one development session (half to full day)
+- **Verifiable**: clear completion criteria
 
-L 크기 task는 더 작은 단위로 분해를 검토하세요.
+#### Complexity Guide
 
-### Step 4: 피드백 요청 (필수)
+| Size | Criteria |
+|------|----------|
+| S (Small) | Single file change, under 3 hours |
+| M (Medium) | 2-5 files, half to full day |
+| L (Large) | Multiple modules, more than one day |
 
-문서 작성 후 반드시 `AskUserQuestion`으로 확인합니다:
+Break down any L-sized task into smaller units.
+
+### Step 4: Request Feedback (Required)
+
+After writing the document, always confirm via `AskUserQuestion`:
 
 > "PRD 문서를 작성했습니다. 수정하거나 보완할 부분이 있으신가요?
 > 특히 [하위 작업 분해 방식 / 범위 정의 / 우선순위]에 대한 의견을 주시면 반영하겠습니다."
 
-명시적 승인 없이 구현 단계로 진행하지 마세요.
+Do not proceed to implementation without explicit approval.
 
-### Step 5: 다음 단계 안내
+### Step 5: Guide Next Steps
 
-피드백을 반영하고 승인이 나면, 다음 사용 방법을 안내합니다:
+Once feedback is incorporated and approved:
 
 ```
 PRD가 완성되었습니다. 이제 각 task를 시작할 때:

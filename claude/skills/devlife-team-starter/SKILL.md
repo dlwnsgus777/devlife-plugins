@@ -41,19 +41,20 @@ cmux ping
 
 If cmux is not available or we're not inside a cmux terminal, inform the user and stop.
 
-### Step 2: Check for existing agent panes
+### Step 2: Check for existing agent panes and save caller context
 
-Before creating new panes, check if codex is already running in the current workspace. The skill labels panes with `rename-tab` on creation, so we can detect them by title.
+Before creating new panes, capture the caller's pane ref and check if Codex is already running.
 
 ```bash
-# Get the tree of current workspace in JSON
-cmux tree --json
+# Get caller pane ref directly (caller.pane_ref is always present)
+CALLER_PANE=$(cmux identify --json | python3 -c "import json,sys; print(json.load(sys.stdin)['caller']['pane_ref'])")
+
+# Check for existing Codex surface by title in the current workspace
+cmux list-pane-surfaces --workspace "${CMUX_WORKSPACE_ID}" --json
 ```
 
-Parse the JSON to get all surfaces in the selected workspace. Check each surface's `title` field:
+Parse the `list-pane-surfaces` JSON and check each surface's `title` field:
 - `CODEX_RUNNING=true` if any surface title is exactly `"Codex"`
-
-Also save the caller's `pane_ref` (the pane containing `CMUX_SURFACE_ID`) — you'll need it in Step 5 to return focus.
 
 If Codex is already running, inform the user and stop:
 > "Codex가 이미 이 workspace에서 실행 중입니다."

@@ -11,7 +11,7 @@ description: >
   CLI, or set sidebar status/progress for build scripts. Do NOT trigger for
   general tmux commands — cmux is a different app. If cmux is not detected
   (no socket, no CLI), inform the user and skip.
-version: 0.2.0
+version: 0.3.0
 ---
 
 # cmux — Terminal Control from Claude Code
@@ -38,6 +38,8 @@ Environment variables set inside cmux terminals:
 | `CMUX_SURFACE_ID` | Current surface ID |
 | `CMUX_SOCKET_PATH` | Socket path (default: `~/Library/Application Support/cmux/cmux.sock`) |
 
+Use `CMUX_WORKSPACE_ID` and `CMUX_SURFACE_ID` as the default anchors for workspace-scoped actions. Prefer explicit `--workspace` and `--surface` flags on mutating commands.
+
 ## Core Concepts
 
 cmux has a four-level hierarchy:
@@ -49,6 +51,24 @@ Window → Workspace (sidebar tab) → Pane (split region) → Surface (tab with
 - **Workspace**: A sidebar entry containing split panes. Created with `⌘N` or `cmux new-workspace`.
 - **Pane**: A split region. Created with `⌘D` (right) or `⌘⇧D` (down), or `cmux new-split right|down`.
 - **Surface**: A tab within a pane. Each surface has a `CMUX_SURFACE_ID`. Surfaces hold either a terminal or a browser panel.
+
+Default output uses short refs: `window:N`, `workspace:N`, `pane:N`, `surface:N`. UUIDs are still accepted on input; request UUID output only when needed: `--id-format uuids|both`.
+
+## Identify and Targeting
+
+Use `identify` to resolve the current caller context before routing automation:
+
+```bash
+# Inspect current topology
+cmux identify --json
+
+# Override caller anchor
+cmux identify --workspace workspace:2
+cmux identify --workspace workspace:2 --surface surface:8
+
+# UUID output when needed
+cmux --json --id-format both identify
+```
 
 ## Window Management
 
@@ -87,7 +107,7 @@ cmux new-split down
 
 # Create a pane with a specific type
 cmux new-pane --type browser --direction right --url https://example.com
-cmux new-pane --type terminal --direction down
+cmux new-pane --type terminal --direction down --focus false
 
 # Add a new surface (tab) within an existing pane
 cmux new-surface --type terminal --pane pane:2
@@ -105,13 +125,29 @@ cmux tree                               # Show full workspace tree
 # Focus
 cmux focus-pane --pane pane:3
 cmux focus-panel --panel surface:3
-
-# Resize and rearrange panes
-cmux resize-pane --pane pane:2 -R --amount 10   # Grow right by 10
-cmux swap-pane --pane pane:2 --target-pane pane:3
-cmux break-pane --surface surface:4              # Break surface out to its own pane
-cmux join-pane --target-pane pane:2 --surface surface:4  # Join surface into another pane
 ```
+
+### Move and reorder surfaces
+
+```bash
+# Move surface to another pane (pass --focus false to avoid disrupting the user)
+cmux move-surface --surface surface:7 --pane pane:2 --focus false
+cmux move-surface --surface surface:7 --pane pane:2 --focus true
+
+# Move surface to another workspace/window
+cmux move-surface --surface surface:7 --workspace workspace:2 --window window:1 --after surface:4
+
+# Split a surface off into its own new pane
+cmux split-off --surface surface:7 right
+
+# Reorder surface within its pane
+cmux reorder-surface --surface surface:7 --before surface:3
+
+# Reorder workspace in sidebar
+cmux reorder-workspace --workspace workspace:4 --before workspace:2
+```
+
+Surface identity is stable across move/reorder/split-off. Layout commands are focus-neutral by default; pass `--focus true` only when you want the moved or created surface selected.
 
 ### Send input to panes
 
@@ -182,6 +218,9 @@ cmux clear-progress
 cmux log -- "Build started"
 cmux log --level success -- "All 42 tests passed"
 cmux log --level error --source build -- "Compilation failed"
+
+# Read current sidebar state
+cmux sidebar-state --workspace "${CMUX_WORKSPACE_ID:-}" --json
 ```
 
 ### Workspace management
@@ -197,6 +236,20 @@ cmux rename-workspace "New Name"        # Rename current workspace
 cmux rename-workspace --workspace workspace:2 "Build"  # Rename specific workspace
 cmux find-window --content --select "pytest"  # Search and focus by content
 ```
+
+### Visual cues and health checks
+
+```bash
+# Flash a surface or workspace to draw attention
+cmux trigger-flash --surface surface:7
+cmux trigger-flash --workspace workspace:2
+
+# Check surface health before routing focused input
+cmux surface-health
+cmux surface-health --workspace workspace:2
+```
+
+Use `surface-health` before routing focused input if UI state may be stale (e.g., hidden or detached surfaces).
 
 ### SSH connections
 
@@ -216,6 +269,7 @@ Open a markdown file in a formatted viewer panel with live reload:
 ```bash
 cmux markdown README.md                         # Open in split next to current pane
 cmux markdown open docs/ARCHITECTURE.md          # Explicit open subcommand
+cmux markdown open plan.md --workspace workspace:2
 ```
 
 ### Synchronization
@@ -269,21 +323,36 @@ cmux browser surface:2 eval "document.title"
 
 ```bash
 # 1. Open browser in a split
-BROWSER_OUT=$(cmux browser open-split https://example.com/login)
+BROWSER_OUT=$(cmux --json browser open https://example.com/login)
 SURFACE=$(echo "$BROWSER_OUT" | grep -o 'surface:[0-9]*')
 
-# 2. Wait for page load
+# 2. Verify navigation and wait for load
+cmux browser $SURFACE get url
 cmux browser $SURFACE wait --load-state complete --timeout-ms 10000
 
 # 3. Fill a form
+cmux browser $SURFACE snapshot --interactive
 cmux browser $SURFACE fill "#email" --text "user@example.com"
 cmux browser $SURFACE fill "#password" --text "secret"
-cmux browser $SURFACE click "button[type='submit']" --snapshot-after
+cmux --json browser $SURFACE click "button[type='submit']" --snapshot-after
 
 # 4. Verify result
 cmux browser $SURFACE wait --text "Welcome"
 cmux browser $SURFACE get title
 ```
+
+## Settings
+
+cmux settings live in `~/.config/cmux/cmux.json`. Use `cmux docs settings` for the schema, paths, and reload instructions.
+
+```bash
+cmux docs settings          # Print schema URL, paths, and reload command
+cmux settings path          # Print config file path
+cmux settings cmux-json     # Open settings UI
+cmux reload-config          # Apply changes (reloads cmux.json + Ghostty config, no restart needed)
+```
+
+`cmux reload-config` reloads BOTH `cmux.json` and Ghostty config (`~/.config/ghostty/config`) and refreshes terminals in place.
 
 ## Socket API
 
@@ -301,6 +370,14 @@ For the full socket API reference, see `references/socket-api.md`.
 cmux integrates with Claude Code hooks to send notifications when tasks complete. A hook script can call `cmux notify` on `Stop` or `PostToolUse` events to alert the user.
 
 For hook setup details, see `references/hooks-integration.md`.
+
+## References
+
+| Reference | When to Use |
+|-----------|-------------|
+| [references/browser-api.md](references/browser-api.md) | Full `cmux browser` subcommand reference |
+| [references/socket-api.md](references/socket-api.md) | Socket RPC API reference |
+| [references/hooks-integration.md](references/hooks-integration.md) | Claude Code hook setup for notifications |
 
 ## Error Handling
 

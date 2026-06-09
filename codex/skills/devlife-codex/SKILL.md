@@ -56,11 +56,10 @@ Write the file using the Write tool or by running: cat > "${RESULT_FILE}" << 'RE
 RESULT_EOF
 ```
 
-Send the prompt text via `cmux send`, then send an Enter key to submit. Codex's composer needs an explicit Enter press — `cmux send` inserts text but doesn't submit it.
+Send the prompt text via `cmux send` with `\n` at the end — cmux interprets `\n` as an Enter key, so this sends the text and submits it in a single command.
 
 ```bash
-cmux send --surface <codex_surface_ref> "<prompt>"
-cmux send-key --surface <codex_surface_ref> enter
+cmux send --surface <codex_surface_ref> "<prompt>\n"
 ```
 
 For prompts with special characters (quotes, backticks, `$`), escape them properly or use single quotes. For very long prompts, write to a temp file:
@@ -68,8 +67,7 @@ For prompts with special characters (quotes, backticks, `$`), escape them proper
 ```bash
 PROMPT_FILE=$(mktemp /tmp/codex-prompt-XXXXXX.txt)
 # Write prompt content to PROMPT_FILE
-cmux send --surface <codex_surface_ref> "$(cat "$PROMPT_FILE")"
-cmux send-key --surface <codex_surface_ref> enter
+cmux send --surface <codex_surface_ref> "$(cat "$PROMPT_FILE")\n"
 rm "$PROMPT_FILE"
 ```
 
@@ -111,7 +109,7 @@ When the background watcher completes:
 
 ## Notes
 
-- Send the prompt text with `cmux send`, then `cmux send-key enter` to submit. This two-step approach is necessary because `cmux send` inserts text into the composer but doesn't submit it.
+- Send the prompt with `cmux send "...\n"` — the `\n` at the end is interpreted by cmux as an Enter key press, submitting the composer in a single command. Do NOT use a separate `cmux send-key enter`.
 - If the prompt contains quotes or special shell characters, escape them or use the temp file approach.
 - The `devlifeteam/` directory is created automatically if it doesn't exist.
 - Result files accumulate in `devlifeteam/` — the user can clean them up as needed.
