@@ -17,6 +17,9 @@ description: Writes a structured Markdown plan document for any task, feature, o
 
 Scan the relevant module's existing code first — controllers, services, domain models, and similar features. This makes your questions targeted rather than generic.
 
+**신규 vs 기존 코드 수정 판별**: 코드 탐색 후, 이 작업이 "신규 파일 추가"인지 "기존 코드 수정"인지 판단한다.
+- **기존 코드 수정**이라면 — 어떤 클래스/메서드가 변경 대상인지 파악하고, 해당 코드에 새 요구사항을 추가하기 어렵게 만드는 구조적 문제(중첩 if, 긴 메서드, 하드코딩, 낮은 응집도 등)가 있는지 확인한다. 이 판단이 Section 0 작성 여부를 결정한다.
+
 ### Step 2: Clarifying Questions
 
 **Ask questions BEFORE writing the document.** If code analysis reveals any decision points or scope ambiguities, do NOT leave them as notes like "별도 확인 필요" inside the document. Instead, ask the user via `AskUserQuestion` first, then write the document after receiving answers.
@@ -77,13 +80,14 @@ When listing test cases in the implementation order, name each test using a **do
 The invariants you defined in Section 2 are the natural source for DisplayNames — each invariant is a candidate test name.
 
 The template is structured for Spring Boot API feature planning:
+- **0. Tidy First (코드 구조 정비)**: **기존 코드 수정 시에만 포함**. 정비 대상·기법(Extract Method, Guard Clause, Normalize Symmetry, Rename, Cohesion Ordering, Parameterize 등)·커밋 순서(`refactor` → `feat`)를 간결한 표 하나로 정리. 신규 파일만 추가하는 작업은 생략.
 - **1. Feature Overview**: Include a screen/function composition table — one row per UI section or feature unit
 - **2. Domain Context & Invariants**: Prose sentences for domain background; declarative sentences for business rules that must never be violated
 - **3. API Design**: One subsection per endpoint with Request/Response JSON examples; explicitly cover edge cases (null, empty, etc.)
 - **4. Business Logic**: Numbered subsections for each logic area; use a mapping table when status values or enums need display labels
 - **5. Implementation Files**: List target classes per module + a package directory tree. After the table and tree, add a **"코드 스니핏"** subsection with skeleton code for each new or modified class — class/record declaration, field stubs, and key method signatures with brief inline comments. Base the snippets on the actual code patterns you found during Step 1. Snippets are scaffolding, not complete implementations, but they should be concrete enough that a developer can start coding immediately without re-reading the requirements.
 - **6. Considerations & Questions**: Numbered list of items needing confirmation, each with an alternative option if applicable
-- **7. Implementation Order (TDD)**: Checkbox list with domain-rule DisplayNames for each test
+- **7. Implementation Order (TDD)**: **기존 코드 수정 시** "1단계: 코드 정비 (Tidy First)"와 "2단계: 기능 구현 (Behavior Change)"로 구분. 정비 단계는 동작 변경 없이 구조만 개선하며, 별도 커밋 후 기능 단계로 진행. 각 테스트는 domain-rule DisplayNames 사용.
 - **8. Acceptance Criteria**: Final verification checklist
 
 For non-API work (batch jobs, refactoring, etc.), omit sections that don't apply (e.g., API Design) and fill in the rest.
