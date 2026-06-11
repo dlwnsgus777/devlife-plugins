@@ -56,10 +56,13 @@ Write the file using the Write tool or by running: cat > "${RESULT_FILE}" << 'RE
 RESULT_EOF
 ```
 
-Send the prompt text via `cmux send` with `\n` at the end — cmux interprets `\n` as an Enter key, so this sends the text and submits it in a single command.
+Send the prompt text first, then send `\n` separately to press Enter. Splitting the two calls ensures the Enter is always delivered after the text is fully pasted.
 
+<!-- merged: check this section — global uses two separate calls; project used a single call with \n appended -->
 ```bash
-cmux send --surface <codex_surface_ref> "<prompt>\n"
+cmux send --surface <codex_surface_ref> "<prompt>"
+sleep 0.3
+cmux send --surface <codex_surface_ref> "\n"
 ```
 
 For prompts with special characters (quotes, backticks, `$`), escape them properly or use single quotes. For very long prompts, write to a temp file:
@@ -67,7 +70,9 @@ For prompts with special characters (quotes, backticks, `$`), escape them proper
 ```bash
 PROMPT_FILE=$(mktemp /tmp/codex-prompt-XXXXXX.txt)
 # Write prompt content to PROMPT_FILE
-cmux send --surface <codex_surface_ref> "$(cat "$PROMPT_FILE")\n"
+cmux send --surface <codex_surface_ref> "$(cat "$PROMPT_FILE")"
+sleep 0.3
+cmux send --surface <codex_surface_ref> "\n"
 rm "$PROMPT_FILE"
 ```
 
@@ -109,7 +114,8 @@ When the background watcher completes:
 
 ## Notes
 
-- Send the prompt with `cmux send "...\n"` — the `\n` at the end is interpreted by cmux as an Enter key press, submitting the composer in a single command. Do NOT use a separate `cmux send-key enter`.
+<!-- merged: check this section — global prefers two separate calls; project preferred single call with \n -->
+- Always send the prompt text and the Enter key (`\n`) as two separate `cmux send` calls with a short `sleep 0.3` between them. This ensures Enter is delivered after all text is pasted, even for multi-line prompts.
 - If the prompt contains quotes or special shell characters, escape them or use the temp file approach.
 - The `devlifeteam/` directory is created automatically if it doesn't exist.
 - Result files accumulate in `devlifeteam/` — the user can clean them up as needed.
