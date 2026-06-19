@@ -63,6 +63,12 @@
 - Infrastructure: Integration (Testcontainer)
 - Presentation: API tests (MockMvc)
 
+## 8. Planning Rule
+
+- Before starting any **action-oriented request** (code implementation, file creation, feature modification), always ask: "계획을 `/plan-creator`로 먼저 작성할까요?"
+- Skip for simple questions, code explanations, or read-only requests.
+- Skip if the user explicitly says "바로 해줘" or "계획 없이".
+
 ## Checkpoints (every 30 min or after key feature)
 
 - Completed / current / next test

@@ -30,7 +30,25 @@
       "Bash(cp ~/.claude/skills/tdd-team/references/agent-prompts.md /Users/finn/Desktop/private_study/ai-rule/.claude/skills/tdd-team/references/agent-prompts.md)",
       "Bash(cp ~/.claude/skills/tdd-team/references/cmux-integration.md /Users/finn/Desktop/private_study/ai-rule/.claude/skills/tdd-team/references/cmux-integration.md)",
       "Bash(cp ~/.claude/skills/tdd-team/SKILL.md /Users/finn/Desktop/private_study/ai-rule/claude/skills/tdd-team/SKILL.md)",
-      "Bash(cp ~/.claude/skills/tdd-team/references/agent-prompts.md /Users/finn/Desktop/private_study/ai-rule/claude/skills/tdd-team/references/agent-prompts.md)"
+      "Bash(cp ~/.claude/skills/tdd-team/references/agent-prompts.md /Users/finn/Desktop/private_study/ai-rule/claude/skills/tdd-team/references/agent-prompts.md)",
+      "Bash(python3 *)",
+      "Bash(qlmanage -p \"/Users/finn/Downloads/TalkFile_🚀 과제5.pdf\" -o /tmp/)",
+      "Bash(textutil -convert txt -stdout \"/Users/finn/Downloads/TalkFile_🚀 과제5.pdf\")",
+      "Bash(pdftotext \"/Users/finn/Downloads/TalkFile_🚀 과제5.pdf\" -)",
+      "Bash(grep -v \"^[[:space:]]*$\")",
+      "Bash(open *)",
+      "WebSearch",
+      "Bash(mkdir -p /Users/finn/Desktop/private_study/ai-rule/.claude/skills/cmux/references)",
+      "Bash(cp ~/.claude/skills/cmux/SKILL.md /Users/finn/Desktop/private_study/ai-rule/.claude/skills/cmux/SKILL.md)",
+      "Bash(cp ~/.claude/skills/cmux/references/* /Users/finn/Desktop/private_study/ai-rule/.claude/skills/cmux/references/)",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\" && head -5 {}')",
+      "Bash([ -f \"$RESULT_FILE\" ])",
+      "Bash([ -s \"$RESULT_FILE\" ])",
+      "Bash(cp ~/.claude/skills/plan-creator/SKILL.md codex/skills/plan-creator/SKILL.md)",
+      "Bash(cp ~/.claude/skills/plan-creator/assets/plan-template.md codex/skills/plan-creator/assets/plan-template.md)",
+      "Bash(git *)",
+      "Bash(cp -r ~/.claude/skills/grill-me /Users/finn/Desktop/private_study/ai-rule/claude/skills/grill-me)",
+      "Bash(cp -r ~/.claude/skills/plan-grill /Users/finn/Desktop/private_study/ai-rule/claude/skills/plan-grill)"
     ]
   }
 }

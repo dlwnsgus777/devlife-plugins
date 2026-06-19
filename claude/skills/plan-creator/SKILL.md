@@ -17,6 +17,8 @@ description: Writes a structured Markdown plan document for any task, feature, o
 
 Scan the relevant module's existing code first — controllers, services, domain models, and similar features. This makes your questions targeted rather than generic.
 
+**Reusable code scan**: Before planning any new implementation, search the same domain (and adjacent packages) for existing services, utilities, and exception classes that already handle overlapping concerns. In particular, "find-by-id + throw" patterns are often already encapsulated in a ReadService — injecting that service is almost always preferable to wiring a repository directly. Record any reuse candidates found here; reflect them as injected dependencies in the snippets rather than new classes.
+
 **신규 vs 기존 코드 수정 판별**: 코드 탐색 후, 이 작업이 "신규 파일 추가"인지 "기존 코드 수정"인지 판단한다.
 - **기존 코드 수정**이라면 — 어떤 클래스/메서드가 변경 대상인지 파악하고, 해당 코드에 새 요구사항을 추가하기 어렵게 만드는 구조적 문제(중첩 if, 긴 메서드, 하드코딩, 낮은 응집도 등)가 있는지 확인한다. 이 판단이 Section 0 작성 여부를 결정한다.
 
@@ -85,7 +87,7 @@ The template is structured for Spring Boot API feature planning:
 - **2. Domain Context & Invariants**: Prose sentences for domain background; declarative sentences for business rules that must never be violated
 - **3. API Design**: One subsection per endpoint with Request/Response JSON examples; explicitly cover edge cases (null, empty, etc.)
 - **4. Business Logic**: Numbered subsections for each logic area; use a mapping table when status values or enums need display labels
-- **5. Implementation Files**: List target classes per module + a package directory tree. After the table and tree, add a **"코드 스니핏"** subsection with skeleton code for each new or modified class — class/record declaration, field stubs, and key method signatures with brief inline comments. Base the snippets on the actual code patterns you found during Step 1. Snippets are scaffolding, not complete implementations, but they should be concrete enough that a developer can start coding immediately without re-reading the requirements.
+- **5. Implementation Files**: List target classes per module + a package directory tree. After the table and tree, add a **"코드 스니핏"** subsection with skeleton code for each new or modified class — class/record declaration, field stubs, and key method signatures with brief inline comments. Base the snippets on the actual code patterns you found during Step 1. Snippets are scaffolding, not complete implementations, but they should be concrete enough that a developer can start coding immediately without re-reading the requirements. **For `private final` dependency fields, prefer injecting existing services found in Step 1 over introducing new classes.**
 - **6. Considerations & Questions**: Numbered list of items needing confirmation, each with an alternative option if applicable
 - **7. Implementation Order (TDD)**: **기존 코드 수정 시** "1단계: 코드 정비 (Tidy First)"와 "2단계: 기능 구현 (Behavior Change)"로 구분. 정비 단계는 동작 변경 없이 구조만 개선하며, 별도 커밋 후 기능 단계로 진행. 각 테스트는 domain-rule DisplayNames 사용.
 - **8. Acceptance Criteria**: Final verification checklist
