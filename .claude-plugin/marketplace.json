@@ -1,0 +1,16 @@
+{
+  "name": "devlife-plugins",
+  "description": "개발 워크플로우를 자동화하는 Claude Code 스킬 모음 (TDD, PRD, 브랜치 리뷰, 계획 수립 등)",
+  "owner": {
+    "name": "dlwnsgus777"
+  },
+  "plugins": [
+    {
+      "name": "devlife",
+      "source": "./",
+      "description": "개발 워크플로우를 위한 Claude Code 스킬 모음",
+      "repository": "https://github.com/dlwnsgus777/devlife-plugins",
+      "license": "MIT"
+    }
+  ]
+}

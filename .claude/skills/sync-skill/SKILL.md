@@ -8,7 +8,7 @@ description: Syncs a skill from the global ~/.claude/skills/ into this project's
 
 # Sync Skill
 
-Copies or merges a skill from `~/.claude/skills/` into `claude/skills/` of the current project,
+Copies or merges a skill from `~/.claude/skills/` into `skills/` of the current project,
 then propagates the result to `codex/skills/` if the same skill exists there.
 
 ## Usage
@@ -29,7 +29,7 @@ If no skill name is given, ask the user which skill to sync using `AskUserQuesti
 | 디렉토리 | 역할 | 싱크 대상 |
 |---|---|---|
 | `~/.claude/skills/` | 전역 소스 | 읽기 전용 (소스) |
-| `claude/skills/` | 프로젝트 Claude 스킬 | **대상** |
+| `skills/` | 프로젝트 Claude 스킬 (플러그인 표준 경로) | **대상** |
 | `codex/skills/` | 프로젝트 Codex 스킬 | **대상** (스킬이 존재할 때만) |
 | `.claude/skills/` | 현재 프로젝트의 Claude Code 설정 | **제외** — 절대 읽거나 쓰지 않음 |
 
@@ -56,7 +56,7 @@ Run the following checks in parallel:
 1. **Global skill** — `~/.claude/skills/{skill-name}/`
    - List all files inside (SKILL.md, assets/, etc.)
 
-2. **Project skill** — `claude/skills/{skill-name}/`
+2. **Project skill** — `skills/{skill-name}/`
    - If it exists, read `SKILL.md` for comparison
 
 3. **Codex skill** — `codex/skills/{skill-name}/`
@@ -64,11 +64,11 @@ Run the following checks in parallel:
 
 ---
 
-### Step 3: Sync Global → claude/skills/
+### Step 3: Sync Global → skills/
 
 | Situation | Action |
 |---|---|
-| Project skill does not exist | **Copy** all files from global to `claude/skills/` |
+| Project skill does not exist | **Copy** all files from global to `skills/` |
 | Project skill exists, content identical | No changes needed |
 | Project skill exists, content differs | **Merge** — see Step 4 |
 
@@ -84,7 +84,7 @@ Read both `SKILL.md` files fully, then produce a merged result:
 3. If a section exists only in one version, include it
 4. Never silently drop content — if two versions conflict in meaning, include both and add a comment `<!-- merged: check this section -->`
 
-Write the merged result to `claude/skills/{skill-name}/SKILL.md`.
+Write the merged result to `skills/{skill-name}/SKILL.md`.
 
 For asset files (e.g., `assets/*.md`):
 - If identical: no action
@@ -100,18 +100,18 @@ After `claude/skills/` is up to date, check `codex/skills/{skill-name}/`:
 | Situation | Action |
 |---|---|
 | `codex/skills/` does not have this skill | Skip (do not create) |
-| `codex/skills/` has the skill, content identical to `claude/skills/` | No changes needed |
+| `codex/skills/` has the skill, content identical to `skills/` | No changes needed |
 | `codex/skills/` has the skill, content differs | **Preserve codex frontmatter, replace body** — see below |
 
 **Codex SKILL.md 업데이트 규칙**:
 codex 고유의 프런트매터(name, description 등 `---...---` 블록)는 그대로 유지하고,
-닫는 `---` 이후의 body 내용만 `claude/skills/` 버전으로 교체한다.
+닫는 `---` 이후의 body 내용만 `skills/` 버전으로 교체한다.
 (codex 형식 차이를 보호하기 위함)
 
 For asset files under `codex/skills/{skill-name}/assets/`:
 - If identical: no action
-- If missing: copy from `claude/skills/`
-- If different: overwrite with `claude/skills/` version
+- If missing: copy from `skills/`
+- If different: overwrite with `skills/` version
 
 ---
 
@@ -122,7 +122,7 @@ After all writes are complete, summarize:
 ```
 ## 동기화 결과: {skill-name}
 
-### claude/skills/
+### skills/
 - SKILL.md: [복사됨 / 병합됨 / 변경 없음]
 - assets/{file}: [복사됨 / 변경 없음]
 

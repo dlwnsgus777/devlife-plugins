@@ -1,3 +1,8 @@
+---
+name: branch-review
+description: Analyzes all changes on the current branch against main, scores across 4 dimensions (code conventions, test quality, domain logic, design quality), and saves a timestamped review report. Use when reviewing a branch before merging, creating a PR, or doing a code review.
+---
+
 # Branch Code Review
 
 Analyze all changes on the current branch against `main`, score across 4 dimensions, and save a timestamped review report.
