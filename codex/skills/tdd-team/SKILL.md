@@ -15,6 +15,7 @@ description: >
   tests, or debugging test failures — those are not TDD workflows.
 ---
 
+
 # TDD Team
 
 Orchestrate a 3-phase Red-Green-Refactor TDD cycle using sequential Agent calls. Each cycle implements one small behavior increment.
@@ -100,33 +101,52 @@ TDD 태스크 목록
 
 > **BLOCKING REQUIREMENT — ORCHESTRATOR ONLY**: You are the orchestrator. After user confirmation, you MUST use the `Agent` tool for every RED / GREEN / REFACTOR step. Do NOT call `Edit`, `Write`, or `Read` on source or test files yourself. If you find yourself about to edit a file directly — stop and spawn an Agent instead.
 
-For each task, call the `Agent` tool three times sequentially (RED → GREEN → REFACTOR). Each agent reads its own prompt from `{SKILL_DIR}/references/agent-prompts.md`.
+For each task, call the `Agent` tool three times sequentially (RED → GREEN → REFACTOR). Each agent reads only its own prompt file.
 
 ### Agent Tool Call Pattern
 
-Call the `Agent` tool exactly like this for each phase, substituting `{PHASE}` with RED, GREEN, or REFACTOR:
-
+**RED:**
 ```
 Agent({
-  description: "{PHASE}: {task description}",
+  description: "RED: {task description}",
   prompt: """
-Read {SKILL_DIR}/references/agent-prompts.md — you have permission to access this file.
-Follow the "{PHASE} Agent Prompt" section exactly.
+Read {SKILL_DIR}/references/red-agent.md — you have permission to access this file.
+Follow it exactly.
 
 Task: {task description}
-
-Environment:
-- Project root: {PROJECT_ROOT}
-- Source dir:   {SOURCE_DIR}
-- Test dir:     {TEST_DIR}
-- Test command: {TEST_CMD}
-- Framework:    {TEST_FRAMEWORK}
 """
 })
 ```
 
-**GREEN**: append only the RED_RESULT block from RED output — do NOT include RED's reasoning or full output.
-**REFACTOR**: append only the GREEN_RESULT block from GREEN output — do NOT include GREEN's reasoning or full output.
+**GREEN** (append only the RED_RESULT block — not RED's full output):
+```
+Agent({
+  description: "GREEN: {task description}",
+  prompt: """
+Read {SKILL_DIR}/references/green-agent.md — you have permission to access this file.
+Follow it exactly.
+
+Task: {task description}
+
+{RED_RESULT block}
+"""
+})
+```
+
+**REFACTOR** (append only the GREEN_RESULT block — not GREEN's full output):
+```
+Agent({
+  description: "REFACTOR: {task description}",
+  prompt: """
+Read {SKILL_DIR}/references/refactor-agent.md — you have permission to access this file.
+Follow it exactly.
+
+Task: {task description}
+
+{GREEN_RESULT block}
+"""
+})
+```
 
 ### Cycle Flow
 
@@ -139,6 +159,17 @@ Environment:
 ### Cycle Summary and User Checkpoint
 
 ⛔ **MANDATORY STOP after every task — including task 1.**
+
+Before presenting the summary, verify the cycle is genuinely complete:
+
+- [ ] Every new function/method has a test
+- [ ] The test was watched to fail before implementation
+- [ ] The failure was for the expected reason (missing feature, not a typo or compile error)
+- [ ] Only minimal code was written to pass the test
+- [ ] All tests pass with pristine output (no warnings or noise)
+- [ ] Mocks were used only when unavoidable
+
+If any box is unchecked → do not present the summary. Escalate the gap to the relevant agent first.
 
 Present:
 

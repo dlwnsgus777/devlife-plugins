@@ -9,22 +9,36 @@ description: Writes a structured Markdown plan document for any task, feature, o
   ("작성", "써줘", "정리", "만들어줘") — even if no specific file is mentioned.
 ---
 
+
 # Plan Creator
 
 ## Process
 
 ### Step 1: Context Gathering
 
-Scan the relevant module's existing code first — controllers, services, domain models, and similar features. This makes your questions targeted rather than generic.
+Delegate wide code discovery to an **Explore subagent** to protect the main context window from bulk search output.
 
-**Reusable code scan**: Before planning any new implementation, search the same domain (and adjacent packages) for existing services, utilities, and exception classes that already handle overlapping concerns. In particular, "find-by-id + throw" patterns are often already encapsulated in a ReadService — injecting that service is almost always preferable to wiring a repository directly. Record any reuse candidates found here; reflect them as injected dependencies in the snippets rather than new classes.
+**Spawn an Explore subagent with the following prompt** (fill in `[feature domain]` based on the user's request):
 
-**신규 vs 기존 코드 수정 판별**: 코드 탐색 후, 이 작업이 "신규 파일 추가"인지 "기존 코드 수정"인지 판단한다.
-- **기존 코드 수정**이라면 — 어떤 클래스/메서드가 변경 대상인지 파악하고, 해당 코드에 새 요구사항을 추가하기 어렵게 만드는 구조적 문제(중첩 if, 긴 메서드, 하드코딩, 낮은 응집도 등)가 있는지 확인한다. 이 판단이 Section 0 작성 여부를 결정한다.
+> "Scan the [feature domain] in this project and report the following — file paths and signatures only, no full implementations:
+> 1. Controllers handling [feature] — file paths, endpoint annotations, method signatures
+> 2. Services in the same domain — class names, public method signatures
+> 3. Domain models/entities involved — class names, key fields, enum values
+> 4. Any 'find-by-id + throw' patterns already encapsulated in ReadService classes
+> 5. Related exception classes and where they're thrown
+> 6. Validation annotations or guard clauses that hint at business constraints
+> 7. Existing test classes in the same domain — class names and `@DisplayName` values or method names that already verify related behavior"
+
+**After the Explore subagent returns**, directly Read only the 2–3 most relevant files to identify business invariants (guard clauses, state transitions, validation annotations).
+
+**Reusable code scan**: From the Explore results, identify existing services, utilities, and exception classes that already handle overlapping concerns. In particular, if "find-by-id + throw" patterns are encapsulated in a ReadService, inject that service rather than wiring a repository directly — reflect this in the code snippets.
+
+**New file vs. existing code modification**: After exploring, determine whether this task adds new files or modifies existing code.
+- **If modifying existing code** — identify which classes/methods are the change targets and check whether the current structure makes adding the new requirement difficult (nested ifs, long methods, hardcoding, low cohesion, etc.). This judgment decides whether Section 0 is included.
 
 ### Step 2: Clarifying Questions
 
-**Ask questions BEFORE writing the document.** If code analysis reveals any decision points or scope ambiguities, do NOT leave them as notes like "별도 확인 필요" inside the document. Instead, ask the user via `AskUserQuestion` first, then write the document after receiving answers.
+**Ask questions BEFORE writing the document.** If code analysis reveals any decision points or scope ambiguities, do NOT leave them as notes like "별도 확인 필요" inside the document. Instead, ask the user first, then write the document after receiving answers.
 
 Situations that require asking:
 - Scope decisions (e.g., "A has the same issue — fix it together or separately?")
@@ -36,16 +50,24 @@ Situations that require asking:
 
 **Important**: If you are unsure about any domain context or invariant, ask in this step. Do **not** defer to Step 3 and fill in the blanks with guesses.
 
-Use `AskUserQuestion` to ask 3–5 questions **in a single call** with **lettered options (A / B / C / D)**. All questions must be written in Korean. Cover: goal/problem, affected modules, API style, data source, and success definition.
+Ask through natural conversational text — do **not** use the `AskUserQuestion` tool for
+this step. Its multiple-choice/lettered-option format is too constrained for open-ended
+domain and invariant questions. (A lettered A/B/C list written as plain text is still fine
+for narrow scope decisions, if it helps clarity.)
 
-Format:
-```
-Q1. 구현 방식을 선택해 주세요:
-A) 신규 REST API 엔드포인트 추가
-B) 기존 API 응답 필드 확장
-C) 배치 작업 추가
-D) 내부 서비스 로직 변경만
-```
+Ask in **rounds of up to 4 questions at a time**, in Korean. Wait for answers before
+starting the next round. Cover: goal/problem, affected modules, API style, data source,
+and success definition, along with any domain/invariant questions raised in Step 1.
+
+**Continuing vs. stopping**: Once a round's answers resolve the open questions above,
+proactively check in:
+
+> "지금까지 답변해주신 내용으로 계획 문서를 작성해도 괜찮을까요? 더 확인하고 싶은 부분이 있으신가요?"
+
+- Confirmed → proceed to Step 3.
+- More to discuss → another round of up to 4 questions.
+- User asks to stop mid-round while real ambiguity remains → mention it once, then
+  respect the user's final decision. Do not ask twice.
 
 Wait for answers before writing the plan.
 
@@ -81,6 +103,12 @@ When listing test cases in the implementation order, name each test using a **do
 
 The invariants you defined in Section 2 are the natural source for DisplayNames — each invariant is a candidate test name.
 
+**Existing test check**: Before proposing a new test for each invariant, check whether an existing test (from the Explore results in Step 1) already verifies that behavior. Tag each entry accordingly:
+- `[NEW]` — no existing test covers this; write a new one
+- `[REGRESSION]` — an existing test already covers this; run it as-is to confirm the behavior is preserved, do not add a duplicate test
+
+Never add a new test when an existing one already verifies the same business rule.
+
 The template is structured for Spring Boot API feature planning:
 - **0. Tidy First (코드 구조 정비)**: **기존 코드 수정 시에만 포함**. 정비 대상·기법(Extract Method, Guard Clause, Normalize Symmetry, Rename, Cohesion Ordering, Parameterize 등)·커밋 순서(`refactor` → `feat`)를 간결한 표 하나로 정리. 신규 파일만 추가하는 작업은 생략.
 - **1. Feature Overview**: Include a screen/function composition table — one row per UI section or feature unit
@@ -89,7 +117,7 @@ The template is structured for Spring Boot API feature planning:
 - **4. Business Logic**: Numbered subsections for each logic area; use a mapping table when status values or enums need display labels
 - **5. Implementation Files**: List target classes per module + a package directory tree. After the table and tree, add a **"코드 스니핏"** subsection with skeleton code for each new or modified class — class/record declaration, field stubs, and key method signatures with brief inline comments. Base the snippets on the actual code patterns you found during Step 1. Snippets are scaffolding, not complete implementations, but they should be concrete enough that a developer can start coding immediately without re-reading the requirements. **For `private final` dependency fields, prefer injecting existing services found in Step 1 over introducing new classes.**
 - **6. Considerations & Questions**: Numbered list of items needing confirmation, each with an alternative option if applicable
-- **7. Implementation Order (TDD)**: **기존 코드 수정 시** "1단계: 코드 정비 (Tidy First)"와 "2단계: 기능 구현 (Behavior Change)"로 구분. 정비 단계는 동작 변경 없이 구조만 개선하며, 별도 커밋 후 기능 단계로 진행. 각 테스트는 domain-rule DisplayNames 사용.
+- **7. Implementation Order (TDD)**: **When modifying existing code**, split into "Phase 1: Tidy First" and "Phase 2: Behavior Change". The tidy phase improves structure only with no behavior changes; commit separately before moving to the behavior phase. Each test uses domain-rule DisplayNames. Tag each entry with `[NEW]` or `[REGRESSION]` — `[REGRESSION]` means run the existing test as-is to confirm the behavior is preserved; never add a duplicate test.
 - **8. Acceptance Criteria**: Final verification checklist
 
 For non-API work (batch jobs, refactoring, etc.), omit sections that don't apply (e.g., API Design) and fill in the rest.
@@ -102,4 +130,3 @@ After writing the document, use the `AskUserQuestion` tool to ask:
 > 특히 [단계 구성 / 누락된 항목 / 범위]에 대한 의견을 주시면 반영하겠습니다."
 
 Do NOT proceed to implementation without explicit approval.
-

@@ -58,7 +58,6 @@ RESULT_EOF
 
 Send the prompt text first, then send `\n` separately to press Enter. Splitting the two calls ensures the Enter is always delivered after the text is fully pasted.
 
-<!-- merged: check this section — global uses two separate calls; project used a single call with \n appended -->
 ```bash
 cmux send --surface <codex_surface_ref> "<prompt>"
 sleep 0.3
@@ -114,7 +113,6 @@ When the background watcher completes:
 
 ## Notes
 
-<!-- merged: check this section — global prefers two separate calls; project preferred single call with \n -->
 - Always send the prompt text and the Enter key (`\n`) as two separate `cmux send` calls with a short `sleep 0.3` between them. This ensures Enter is delivered after all text is pasted, even for multi-line prompts.
 - If the prompt contains quotes or special shell characters, escape them or use the temp file approach.
 - The `devlifeteam/` directory is created automatically if it doesn't exist.
