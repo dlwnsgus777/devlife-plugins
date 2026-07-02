@@ -52,7 +52,14 @@ task-{feature}.md
 ## 워크플로우 위치
 
 ```
-prd-creator
-└── plan-creator  ← 현재 위치
-    └── tdd-team / test-driven-development
+devlife-brainstorming
+└── spec-creator
+    └── plan-creator  ← 현재 위치
+        └── tdd-team / test-driven-development
 ```
+
+## 관련 스킬
+
+- [spec-creator](./spec-creator.md) — plan-creator 실행 전 Spec 문서 작성
+- [tdd-team](./tdd-team.md) — 계획 문서를 입력으로 TDD 사이클 실행
+- [prd-creator](./prd-creator.md) — spec-creator 대안 (product-focused)

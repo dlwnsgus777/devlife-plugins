@@ -1,7 +1,7 @@
 # devlife-plugins
 
 개발 워크플로우를 위한 Claude Code 스킬 모음입니다.  
-TDD, PRD 작성, 브랜치 리뷰, 계획 수립, 멀티 에이전트 협업 등 반복되는 개발 작업을 자동화합니다.
+TDD, 기획 문서화, 브랜치 리뷰, 계획 수립, 멀티 에이전트 협업 등 반복되는 개발 작업을 자동화합니다.
 
 ---
 
@@ -11,9 +11,9 @@ TDD, PRD 작성, 브랜치 리뷰, 계획 수립, 멀티 에이전트 협업 등
 
 | 스킬 | 설명 | 트리거 예시 |
 |------|------|------------|
-| [devlife-brainstorming](skills/devlife-brainstorming/SKILL.md) | 막연한 아이디어 → 구체적 설계 결정 도출 | "브레인스토밍", "아이디어 정리" |
-| [prd-creator](docs/prd-creator.md) | 대규모 기능의 PRD 문서 작성 | "PRD 작성해줘" |
+| [devlife-brainstorming](docs/devlife-brainstorming.md) | 막연한 아이디어 → 구체적 설계 결정 도출 | "브레인스토밍", "아이디어 정리" |
 | [spec-creator](docs/spec-creator.md) | 대규모 기능의 기술 명세(Spec) 문서 작성 | "스펙 작성해줘" |
+| [prd-creator](docs/prd-creator.md) | 대규모 기능의 PRD 문서 작성 | "PRD 작성해줘" |
 | [plan-creator](docs/plan-creator.md) | 단일 태스크 구현 계획 문서 작성 | "계획 작성해줘" |
 | [pdf-to-spec](docs/pdf-to-spec.md) | PDF → Spec 문서 변환 | "PDF 보고 spec 만들어줘" |
 | [project-history](docs/project-history.md) | Jira 티켓 기반 작업 이력 정리 | "RB-623 이력 정리해줘" |
@@ -30,7 +30,7 @@ TDD, PRD 작성, 브랜치 리뷰, 계획 수립, 멀티 에이전트 협업 등
 | 스킬 | 설명 | 트리거 예시 |
 |------|------|------------|
 | [branch-review](docs/branch-review.md) | 브랜치 코드 리뷰 (4개 차원 점수화) | "브랜치 리뷰해줘" |
-| [pr-review](docs/pr-review.md) | Bitbucket PR 리뷰 | "PR 리뷰해줘" |
+| [pr-review](docs/pr-review.md) | Bitbucket PR 리뷰 (PN 룰 기반) | "PR 리뷰해줘" |
 | [grill-me](docs/grill-me.md) | 설계/계획에 대한 집중 심문 인터뷰 | "grill me" |
 
 ### 유틸리티
@@ -47,8 +47,10 @@ TDD, PRD 작성, 브랜치 리뷰, 계획 수립, 멀티 에이전트 협업 등
 ## 워크플로우
 
 ```
-기획 단계
+기획 단계 (풀 체인)
 devlife-brainstorming → spec-creator → plan-creator → tdd-team
+
+기획 단계 (PRD 경로)
 prd-creator → plan-creator → tdd-team
 
 PDF 기반 기획

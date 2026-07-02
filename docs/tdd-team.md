@@ -73,13 +73,22 @@ Tests: 5 passed, 0 failed
 [x] 1. 취소 불가 검증   [>] 2. 환불 금액 계산   [ ] 3. 이벤트 발행
 ```
 
+## Codex 호환
+
+Codex 환경에서도 동일하게 동작합니다.
+
+- RED / GREEN / REFACTOR / Cycle Reviewer / Final Reviewer 단계 모두 Codex 서브에이전트로 위임
+- Codex 서브에이전트 도구를 사용할 수 없는 경우 `not available`로 표시 후 로컬 실행으로 전환
+- 프로젝트 AGENTS.md에 "각 단계 후 피드백 요청" 규칙이 있으면 RED → GREEN → REFACTOR → 리뷰 단계마다 사용자 승인 대기
+
 ## 주의사항
 
-- 오케스트레이터(Claude)는 파일을 직접 수정하지 않고 반드시 Agent 도구를 통해 위임합니다
+- 오케스트레이터는 파일을 직접 수정하지 않고 반드시 서브에이전트를 통해 위임합니다
 - 매 사이클 후 사용자 승인 없이는 다음 태스크로 진행하지 않습니다
-- PRD가 없으면 요구사항 공유를 먼저 요청합니다
+- plan-creator 문서가 없으면 요구사항 공유를 먼저 요청합니다
 
 ## 관련 스킬
 
-- [test-driven-development](./test-driven-development.md) — 직접 TDD 구현 시 원칙 가이드
 - [plan-creator](./plan-creator.md) — 태스크 계획 문서 (Section 7에 TDD 순서 포함)
+- [test-driven-development](./test-driven-development.md) — 직접 TDD 구현 시 원칙 가이드
+- [spec-creator](./spec-creator.md) — tdd-team 실행 전 기술 명세 작성

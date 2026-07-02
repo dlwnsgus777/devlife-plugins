@@ -29,4 +29,5 @@
 
 ## 관련 스킬
 
-- [plan-grill](./plan-grill.md) — plan-creator와 체인으로 실행
+- [plan-creator](./plan-creator.md) — 계획 문서 작성 후 grill-me로 검증
+- [devlife-brainstorming](./devlife-brainstorming.md) — 브레인스토밍 방향 결정 후 검증
