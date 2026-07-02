@@ -48,7 +48,27 @@
       "Bash(cp ~/.claude/skills/plan-creator/assets/plan-template.md codex/skills/plan-creator/assets/plan-template.md)",
       "Bash(git *)",
       "Bash(cp -r ~/.claude/skills/grill-me /Users/finn/Desktop/private_study/ai-rule/claude/skills/grill-me)",
-      "Bash(cp -r ~/.claude/skills/plan-grill /Users/finn/Desktop/private_study/ai-rule/claude/skills/plan-grill)"
+      "Bash(cp -r ~/.claude/skills/plan-grill /Users/finn/Desktop/private_study/ai-rule/claude/skills/plan-grill)",
+      "Bash(gh repo *)",
+      "Read(//Users/finn/.claude/skills/**)",
+      "Bash(cp -r /Users/finn/Desktop/private_study/devlife-plugins/claude/skills /Users/finn/Desktop/private_study/devlife-plugins/skills)",
+      "Bash(cp -r /Users/finn/Desktop/private_study/devlife-plugins/claude/agents /Users/finn/Desktop/private_study/devlife-plugins/agents)",
+      "Bash(claude plugin *)",
+      "Bash(git -C ~/Desktop/private_study/devlife-plugins status)",
+      "Bash(git -C ~/Desktop/private_study/devlife-plugins log --oneline -3)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2, ensure_ascii=False\\)\\)\")",
+      "Bash(cp -r /Users/finn/.claude/skills/create-pr /Users/finn/Desktop/private_study/devlife-plugins/skills/create-pr)",
+      "Bash(cp -r /Users/finn/.claude/skills/devlife-brainstorming /Users/finn/Desktop/private_study/devlife-plugins/skills/devlife-brainstorming)",
+      "Bash(cp /Users/finn/.claude/skills/branch-review/SKILL.md /Users/finn/Desktop/private_study/devlife-plugins/skills/branch-review/SKILL.md)",
+      "Bash(cp /Users/finn/.claude/skills/branch-review/references/ddd-checklist.md /Users/finn/Desktop/private_study/devlife-plugins/skills/branch-review/references/ddd-checklist.md)",
+      "Bash(cp /Users/finn/.claude/skills/plan-creator/SKILL.md /Users/finn/Desktop/private_study/devlife-plugins/skills/plan-creator/SKILL.md)",
+      "Bash(git -C /Users/finn/Desktop/private_study/devlife-plugins log --all --oneline -- \"skills/create-pr/\" \"skills/jira/\" \"skills/jira-to-branch/\")",
+      "Bash(git -C /Users/finn/Desktop/private_study/devlife-plugins ls-tree -r HEAD --name-only)",
+      "Bash(git -C /Users/finn/.claude/skills log --all --oneline)",
+      "Bash(gh api *)",
+      "Bash(git -C /Users/finn/Desktop/private_study/devlife-plugins add README.md)",
+      "Bash(git -C /Users/finn/Desktop/private_study/devlife-plugins commit -m ' *)",
+      "Bash(git -C /Users/finn/Desktop/private_study/devlife-plugins push)"
     ]
   }
 }
