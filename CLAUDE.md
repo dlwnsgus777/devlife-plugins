@@ -38,6 +38,17 @@ devlife-plugins/
 - `skills/`, `codex/skills/`, `docs/` 세 곳 모두에서 제거
 - `README.md` 테이블에서도 제거
 
+### 버전 관리
+
+스킬 내용이 수정되면 반드시 버전을 올립니다.
+
+- `README.md` Skills 테이블의 해당 스킬 버전 업데이트
+- 버전 규칙: `major.minor.patch`
+  - `patch` — 오탈자, 설명 보완 등 동작 변화 없는 수정
+  - `minor` — 기능 추가, 트리거 추가, 프로세스 변경
+  - `major` — 하위 호환 불가한 구조 변경
+- `CHANGELOG.md`에 변경 내용 기록 (날짜, 스킬명, 버전, 변경 요약)
+
 ### 스킬 구조 컨벤션
 
 - `SKILL.md` 상단 frontmatter에 `name`, `description`, 트리거 키워드 포함
