@@ -1,7 +1,7 @@
 {
-  "name": "devlife-local",
+  "name": "devlife-plugins",
   "interface": {
-    "displayName": "Devlife Local"
+    "displayName": "Devlife Plugins"
   },
   "plugins": [
     {
