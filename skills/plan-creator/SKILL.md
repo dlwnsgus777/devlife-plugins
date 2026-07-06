@@ -29,13 +29,10 @@ If no document is provided, proceed to Step 1 as normal.
 
 ### Step 1: Context Gathering
 
-Use a Codex Explore sub-agent for wide code discovery:
-1. Discover the available multi-agent tool with `tool_search`.
-2. Spawn an explorer sub-agent with the prompt below.
-3. Ask for file paths and signatures only, no full implementations.
-4. If no Codex sub-agent tool is available, say `not available`, then perform targeted local discovery with `rg`, `rg --files`, and focused file reads.
-
-Do not use Claude Code `Agent({ ... })` syntax.
+Use the Explore sub-agent for wide code discovery:
+1. Spawn a sub-agent via `Agent({ subagent_type: "Explore", ... })` with the prompt below.
+2. Ask for file paths and signatures only, no full implementations.
+3. If the Explore agent is unavailable, say `not available`, then perform targeted local discovery with `rg`, `rg --files`, and focused file reads.
 
 Explorer prompt (fill in `[feature domain]` based on the user's request):
 

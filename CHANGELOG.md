@@ -4,6 +4,60 @@
 
 ---
 
+## 2026-07-06
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `plan-creator` | `1.1.0` | Step 1 코드 탐색 방식을 Claude용으로 수정 — Codex 전용 문구("Codex Explore 서브에이전트", "Do not use Claude Code Agent 문법")를 제거하고 Claude의 `Agent({ subagent_type: "Explore" })` 방식으로 교체. `codex/skills/plan-creator`는 기존 Codex 방식 그대로 유지 |
+| `spec-creator` | `1.1.0` | Step 3.5 Spec Review 방식을 Claude용으로 수정 — `tool_search`로 Codex 서브에이전트를 찾던 방식을 `Agent({ subagent_type: "general-purpose" })`로 교체. `codex/skills/spec-creator`는 기존 방식 유지 |
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-team` | `1.1.0` | "Codex Compatibility Rules" 섹션 및 RED/GREEN/REFACTOR/Cycle Reviewer/Final Reviewer 전 구간의 "Codex 서브에이전트", `tool_search`, `apply_patch`, `AGENTS.md` 언급을 제거하고 Claude의 `Agent({ subagent_type: "..." })` 방식과 `CLAUDE.md`로 교체. `codex/skills/tdd-team`은 기존 Codex 방식 유지. README·docs의 "Codex 호환" 설명도 함께 수정 |
+
+### devlife-review
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `pr-review` | - | 스킬 제거 — `skills/`, `docs/`, README.md `devlife-review` 테이블에서 삭제. 플랫폼(Bitbucket)·회사 조직(`ratel_pe`, `acuvue-*` 모듈)에 강하게 결합된 스킬이라 공개 마켓플레이스 레포에는 부적합하다고 판단. 글로벌 `~/.claude/skills/pr-review`는 개인 업무용으로 유지 (제거하지 않음). `devlife-review` 카테고리 자체는 유지되며 이제 `grill-me`만 포함 |
+| `branch-review` | - | 스킬 제거 — `skills/`, `codex/skills/`, `docs/`, README.md 테이블에서 삭제, 글로벌 `~/.claude/skills/branch-review`도 함께 삭제 |
+
+---
+
+## 2026-07-03 (3)
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `devlife-brainstorming` | `1.7.0` | Step 1을 도메인 이해 확인 게이트로 전환 (기존 도메인 레이어 코드를 실제로 읽고 이해한 내용을 사용자에게 확인받은 후 진행), Step 2 체크리스트에 도메인 정합성·사이드이펙트 항목 추가, 설계 spec 템플릿에 Domain Impact 섹션(영향받는 기존 도메인 요소/충돌 및 해결 방식/예상 사이드이펙트) 추가, Step 6 셀프 리뷰에 도메인 정합성·사이드이펙트 근거 검증 항목 추가 |
+
+---
+
+## 2026-07-03 (2)
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `devlife-brainstorming` | `1.6.0` | Step 7·8 통합 — 문서 확인 후 명시적 '승인' 요구를 없애고, 수정 요청이 없으면 별도 확인 질문 없이 바로 plan-creator로 핸드오프 (프롬프트 왕복 1회로 축소) |
+
+---
+
+## 2026-07-03
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `devlife-brainstorming` | `1.5.0` | Step 2 질문 방식 변경 — 체크리스트 항목을 한 번에 하나씩 묻던 방식에서 한 메시지에 모아 묻는 방식으로 변경, 불명확한 항목만 개별 후속 질문 |
+
+---
+
 ## 2026-07-02 (4)
 
 ### devlife-planning

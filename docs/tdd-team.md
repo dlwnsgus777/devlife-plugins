@@ -73,13 +73,11 @@ Tests: 5 passed, 0 failed
 [x] 1. 취소 불가 검증   [>] 2. 환불 금액 계산   [ ] 3. 이벤트 발행
 ```
 
-## Codex 호환
+## 실행 방식
 
-Codex 환경에서도 동일하게 동작합니다.
-
-- RED / GREEN / REFACTOR / Cycle Reviewer / Final Reviewer 단계 모두 Codex 서브에이전트로 위임
-- Codex 서브에이전트 도구를 사용할 수 없는 경우 `not available`로 표시 후 로컬 실행으로 전환
-- 프로젝트 AGENTS.md에 "각 단계 후 피드백 요청" 규칙이 있으면 RED → GREEN → REFACTOR → 리뷰 단계마다 사용자 승인 대기
+- RED / GREEN / REFACTOR / Cycle Reviewer / Final Reviewer 단계 모두 서브에이전트로 위임
+- 서브에이전트 도구를 사용할 수 없는 경우 `not available`로 표시 후 로컬 실행으로 전환
+- 프로젝트 CLAUDE.md에 "각 단계 후 피드백 요청" 규칙이 있으면 RED → GREEN → REFACTOR → 리뷰 단계마다 사용자 승인 대기
 
 ## 주의사항
 

@@ -18,12 +18,11 @@ description: >
 
 Orchestrate a 3-phase Red-Green-Refactor TDD cycle. Each cycle implements one small behavior increment.
 
-## Codex Compatibility Rules
+## Execution Rules
 
-- Respect system, developer, and project `AGENTS.md` instructions above this skill.
+- Respect system, developer, and project `CLAUDE.md` instructions above this skill.
 - If project instructions require feedback after each stage, pause after RED, GREEN, REFACTOR, and review stages and ask for feedback before continuing.
-- Use Codex sub-agents for RED, GREEN, REFACTOR, cycle review, and final review. If the Codex sub-agent tool is not available, say `not available` and fall back to local execution.
-- In Codex, do not use Claude Code `Agent({ ... })`, `Read`, `Edit`, or `Write` tool names as literal tool calls. Use the available Codex tools and `apply_patch` for edits.
+- Use sub-agents (`Agent({ subagent_type: "..." })`) for RED, GREEN, REFACTOR, cycle review, and final review. If the Agent tool is not available, say `not available` and fall back to local execution.
 
 ## Agent Roles
 
@@ -119,11 +118,11 @@ TDD 태스크 목록
 
 > **BLOCKING REQUIREMENT — TDD ORDER**: Do not write production implementation before a failing test has been written and verified.
 
-For each task, execute RED → GREEN → REFACTOR in order using Codex sub-agents.
+For each task, execute RED → GREEN → REFACTOR in order using sub-agents.
 
-### Codex Sub-Agent Pattern
+### Sub-Agent Dispatch Pattern
 
-Discover the available multi-agent tool with `tool_search`, then spawn one worker per phase sequentially.
+Spawn one worker per phase sequentially via `Agent({ subagent_type: "general-purpose", ... })`.
 Each worker prompt must include:
 - The phase reference file path
 - The task description
@@ -131,10 +130,10 @@ Each worker prompt must include:
 - The previous phase result block where applicable
 - A warning that other agents or the user may have edited the workspace and unrelated changes must not be reverted
 
-If no Codex sub-agent tool is available, say `not available`, then execute the same phase locally:
+If the Agent tool is not available, say `not available`, then execute the same phase locally:
 1. Read the relevant reference file for the phase.
 2. Follow that phase's workflow locally.
-3. Use `apply_patch` for file edits.
+3. Use `Edit`/`Write` for file edits.
 
 **RED:**
 ```
@@ -171,15 +170,14 @@ Task: {task description}
    - Build fails → RED handles internally (fix stubs, re-verify)
 2. **GREEN** → capture files modified, all test results
 3. **REFACTOR** — skip if GREEN output is already clean
-4. **CYCLE REVIEWER** → use a Codex reviewer sub-agent
+4. **CYCLE REVIEWER** → use a reviewer sub-agent
 
 ### Cycle Reviewer Dispatch
 
-After REFACTOR completes, review the cycle with a Codex reviewer sub-agent.
+After REFACTOR completes, review the cycle with a reviewer sub-agent.
 
-1. Discover the available multi-agent tool with `tool_search`.
-2. Spawn a reviewer sub-agent with the prompt below.
-3. If no Codex sub-agent tool is available, say `not available`, then apply `references/cycle-reviewer.md` locally to the cycle diff.
+1. Spawn a sub-agent via `Agent({ subagent_type: "general-purpose", ... })` with the prompt below.
+2. If the Agent tool is not available, say `not available`, then apply `references/cycle-reviewer.md` locally to the cycle diff.
 
 ```
 Read {SKILL_DIR}/references/cycle-reviewer.md — you have permission to access this file.
@@ -196,7 +194,7 @@ Diff:
 
 **Handle reviewer verdict:**
 - `APPROVED` → log progress, proceed to next task
-- `NEEDS_FIX` → use a Codex fix sub-agent for Critical/Important findings, then re-run cycle reviewer. If no Codex sub-agent tool is available, fix locally.
+- `NEEDS_FIX` → use a fix sub-agent (`Agent({ subagent_type: "general-purpose", ... })`) for Critical/Important findings, then re-run cycle reviewer. If the Agent tool is not available, fix locally.
   - Minor findings: log and continue
 
 Follow project feedback gates between stages and cycles. If no feedback gate is required, continue through the task list without asking between cycles.
@@ -211,11 +209,10 @@ Follow project feedback gates between stages and cycles. If no feedback gate is 
 
 ## Final Review
 
-After all cycles complete, run a final review with a Codex reviewer sub-agent.
+After all cycles complete, run a final review with a reviewer sub-agent.
 
-1. Discover the available multi-agent tool with `tool_search`.
-2. Spawn a reviewer sub-agent with the prompt below.
-3. If no Codex sub-agent tool is available, say `not available`, then apply `references/final-reviewer.md` locally to the plan and full branch diff.
+1. Spawn a sub-agent via `Agent({ subagent_type: "general-purpose", ... })` with the prompt below.
+2. If the Agent tool is not available, say `not available`, then apply `references/final-reviewer.md` locally to the plan and full branch diff.
 
 ```
 Read {SKILL_DIR}/references/final-reviewer.md — you have permission to access this file.
@@ -229,7 +226,7 @@ Branch diff:
 
 **Handle final reviewer verdict:**
 - `APPROVED` → proceed to session end
-- `NEEDS_FIX` → use a Codex fix sub-agent with the complete findings list, then re-run final reviewer. If no Codex sub-agent tool is available, fix locally.
+- `NEEDS_FIX` → use a fix sub-agent (`Agent({ subagent_type: "general-purpose", ... })`) with the complete findings list, then re-run final reviewer. If the Agent tool is not available, fix locally.
 
 ## Session End
 

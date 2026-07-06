@@ -131,13 +131,10 @@ Break down any L-sized task into smaller units.
 
 After writing the document, review it before asking the user.
 
-Use a Codex sub-agent for the independent review:
-1. Discover the available multi-agent tool with `tool_search`.
-2. Spawn a reviewer sub-agent with the reviewer instructions below.
-3. Pass only the spec path and the reviewer instructions. Do not pass your expected verdict.
-4. If no Codex sub-agent tool is available, say `not available`, then perform the same review locally.
-
-Do not use Claude Code `Agent({ ... })` syntax.
+Use a sub-agent for the independent review:
+1. Spawn a sub-agent via `Agent({ subagent_type: "general-purpose", ... })` with the reviewer instructions below.
+2. Pass only the spec path and the reviewer instructions. Do not pass your expected verdict.
+3. If the Agent tool is unavailable, say `not available`, then perform the same review locally.
 
 Reviewer prompt:
 

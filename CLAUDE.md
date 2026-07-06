@@ -26,6 +26,15 @@ devlife-plugins/
 
 ## 스킬 작업 규칙
 
+### 플랫폼 분리 원칙
+
+`skills/`(Claude Code용)와 `codex/skills/`(Codex용)는 같은 스킬의 플랫폼별 사본입니다.
+
+- `skills/{skill-name}/SKILL.md`에는 Codex 전용 문구(예: "Codex Explore 서브에이전트", `tool_search`로 멀티에이전트 툴 탐색, "Do not use Claude Code Agent 문법")가 들어가면 안 됩니다.
+- Claude용 스킬에서 서브에이전트가 필요하면 Claude Code의 `Agent({ subagent_type: "..." })` 문법을 사용합니다.
+- 두 버전은 프로세스 뼈대(단계 구성, 질문 흐름 등)는 동일하게 유지하되, 에이전트 호출 문법·툴 이름은 플랫폼에 맞게 다르게 작성합니다.
+- `README.md` 등 사람이 읽는 문서에서도 Claude용 스킬을 설명할 때 Codex 전용 툴 이름을 쓰지 않습니다.
+
 ### 스킬 추가/수정 시
 
 1. `skills/{skill-name}/SKILL.md` 수정 — 스킬 본문
