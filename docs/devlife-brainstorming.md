@@ -22,13 +22,13 @@ What/Why에 집중하고, How(구현 방법)는 plan-creator에 위임합니다.
 
 ## 실행 흐름
 
-1. **프로젝트 컨텍스트 스캔** — 최근 커밋, 기존 spec/plan 문서, 관련 도메인 레이어 코드(엔티티/유스케이스/기존 규칙)를 실제로 읽음 (사용자에게 보고하지 않음)
+1. **프로젝트 컨텍스트 스캔** — 최근 커밋, 기존 spec/plan 문서, 관련 도메인 레이어 코드를 실제로 읽고 bounded context, 기존 aggregate/entity/value object, invariant, domain event, ubiquitous language를 식별 (사용자에게 보고하지 않음)
 2. **Scope 크기 확인** — 여러 독립 서브시스템이 섞인 아이디어는 즉시 분해 제안, 첫 번째 sub-project부터 시작
 3. **대화형 탐색** — 핵심 문제, 대상 사용자, 성공 기준, 범위, 설계 결정, 제약사항, **기존 도메인**(Step 1 스캔 결과를 인라인으로 제시하고 충돌 지점·예상 사이드이펙트 확인)을 **한 번에 모아서** 질문, 불명확하거나 누락된 항목만 후속 질문으로 하나씩 확인
 4. **방향 선택지 제시** — 2-3가지 설계 방향과 트레이드오프 제시, 추천 방향 안내
-5. **설계 섹션 발표** — Architecture / Components / Data Flow / Error Handling / Testing 섹션을 하나씩 발표하고 승인 받음, 복잡도에 따라 깊이 조절
-6. **Design Spec 문서 작성** — `docs/brainstorming/YYYY-MM-DD-{topic}.md` 생성, 고정 템플릿 없이 자유 구성
-7. **셀프 리뷰** — 문서 작성 후 직접 검토: 플레이스홀더 없음, 일관성, 모호함 제거, YAGNI 준수, 기존 도메인과의 충돌/사이드이펙트가 스캔·대화 확인에 근거해 문서에 명시됐는지 확인
+5. **설계 섹션 발표** — Architecture / Domain Model(도메인 로직이 없으면 스킵) / Components / Data Flow / Error Handling / Testing 섹션을 하나씩 발표하고 승인 받음, 복잡도에 따라 깊이 조절
+6. **Design Spec 문서 작성** — `docs/brainstorming/YYYY-MM-DD-{topic}.md` 생성, 고정 템플릿 없이 자유 구성이지만 필수 항목은 어딘가에 반드시 커버
+7. **셀프 리뷰** — 문서 작성 후 직접 검토: 플레이스홀더 없음, 일관성, 모호함 제거, YAGNI 준수, 기존 도메인과의 충돌/사이드이펙트가 스캔·대화 확인에 근거해 문서에 명시됐는지 확인, DDD 정합성(용어 일관성, aggregate/invariant 경계 위반 여부, anemic domain model 여부, Step 2/4에서 나온 항목이 문서에 모두 반영됐는지) 확인
 8. **사용자 리뷰 & plan-creator 핸드오프** — 문서 확인 요청 후, 수정 요청이 있으면 반영하고 다시 확인 요청, 없으면 별도 확인 질문 없이 바로 plan-creator로 진행
 
 ## 생성 문서 구조
@@ -42,8 +42,9 @@ docs/brainstorming/YYYY-MM-DD-{topic}.md (자유 구성)
 ├── Success Criteria     ← 잘 만들었다는 것을 어떻게 판단하는가
 ├── Scope                ← In / Out 명시
 ├── Key Design Decisions ← 선택한 방향과 트레이드오프
-├── Existing Domain      ← 건드리는 기존 도메인 개념, 충돌/해결 방식, 예상 사이드이펙트
+├── Existing Domain      ← 건드리는 기존 도메인 개념(bounded context/aggregate/invariant/domain event/ubiquitous language), 충돌/해결 방식, 예상 사이드이펙트
 ├── Architecture         ← 전체 구조, 레이어, 주요 모듈
+├── Domain Model         ← aggregate 소유권, invariant 배치, 신규 value object/domain event (도메인 로직 없으면 생략)
 ├── Components           ← 핵심 클래스/모듈, 책임, 인터페이스
 ├── Data Flow            ← 데이터 흐름, 핵심 변환
 ├── Error Handling       ← 실패 시나리오, 에러 경계, 복구 전략
@@ -62,6 +63,7 @@ docs/brainstorming/YYYY-MM-DD-{topic}.md (자유 구성)
 - **리뷰 후 즉시 핸드오프** — 수정 요청이 없으면 별도 확인 질문 없이 바로 plan-creator로 진행
 - **추측하지 않음** — 불명확하면 묻고, 빈칸을 채우지 않음
 - **YAGNI** — 사용자가 언급하지 않은 범위는 추가하지 않음
+- **도메인 주도, 적용 가능할 때만** — 기존 bounded context, aggregate, ubiquitous language를 존중 (Step 1); 도메인 로직이 없는 기능은 완전히 스킵
 
 ## 워크플로우 위치
 

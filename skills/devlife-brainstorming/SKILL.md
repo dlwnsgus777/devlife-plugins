@@ -10,7 +10,7 @@ description: Explore ideas conversationally to define what/why/design decisions,
 
 ## Purpose
 
-Turn a vague idea into an approved design spec. This skill covers **what** to build, **why**, and **how it's designed** (architecture, components, data flow, error handling, testing).
+Turn a vague idea into an approved design spec. This skill covers **what** to build, **why**, and **how it's designed** (architecture, components, data flow, error handling, testing) — through a DDD lens: existing bounded contexts, aggregates, entities/value objects, and ubiquitous language are identified and respected before any new domain logic is proposed.
 Implementation breakdown (which files, step-by-step tasks, commit units) is handled by plan-creator.
 
 <HARD-GATE>
@@ -37,7 +37,12 @@ Before asking questions, briefly scan the current project state:
 - Recent commits (`git log --oneline -5`)
 - Key files in project root
 - Titles of any existing spec/plan docs
-- Domain-layer code relevant to this feature area (entities, use cases, existing business rules/invariants) — read the actual code, not just filenames
+- Domain-layer code relevant to this feature area — read the actual code, not just filenames, and identify:
+  - which **bounded context** this feature falls into (or whether it needs a new one)
+  - existing **aggregates/entities** and **value objects** nearby, and which aggregate would own new behavior
+  - **invariants** already enforced in the domain layer for this area
+  - **domain events** already published/consumed nearby
+  - **ubiquitous language** terms already used in code/tickets for this area (so new naming reuses them instead of inventing synonyms)
 
 This makes questions concrete and contextual, and grounds the domain question in Step 2. Do NOT report findings to the user — proceed directly to Step 1.5.
 
@@ -46,7 +51,7 @@ This makes questions concrete and contextual, and grounds the domain question in
 Before asking the first question, assess whether the idea contains multiple independent subsystems.
 
 - **Single system or feature** → proceed to Step 2
-- **Multiple independent subsystems** (e.g., "platform with chat, billing, file storage, analytics")
+- **Multiple independent subsystems** (e.g., "platform with chat, billing, file storage, analytics" — usually a sign of multiple bounded contexts)
   → flag immediately:
     > "Your idea contains several independent pieces. It's better to tackle them one at a time.
     >  Which would you like to start with — [A], [B], or [C]?"
@@ -100,10 +105,11 @@ Once the direction is approved, present the design **section by section** and ge
 
 **Sections to cover (in order):**
 1. **Architecture** — overall structure, layers, main modules
-2. **Components** — key classes/modules, responsibilities, interfaces
-3. **Data Flow** — how data moves through the system, key transformations
-4. **Error Handling** — failure modes, error boundaries, recovery strategies
-5. **Testing** — test strategy, key scenarios, test boundaries
+2. **Domain Model** (skip if the feature has no domain/business logic) — building on the Step 1 findings, decide aggregate ownership (existing vs. new), invariant placement (domain layer only), and whether new value objects/domain events are needed
+3. **Components** — key classes/modules, responsibilities, interfaces
+4. **Data Flow** — how data moves through the system, key transformations
+5. **Error Handling** — failure modes, error boundaries, recovery strategies
+6. **Testing** — test strategy, key scenarios, test boundaries
 
 **Scale each section to its complexity:**
 - Simple feature: a few sentences
@@ -123,15 +129,19 @@ Once all sections are confirmed → proceed to Step 5.
 **Filename**: `YYYY-MM-DD-{topic}.md` (e.g. `2026-07-02-payment-refund.md`)
 **Location**: `docs/brainstorming/` (create the directory if it does not exist)
 
-No fixed section template — organize freely into whatever sections best fit the feature, scaled to its complexity. The following must all be covered somewhere in the document (merge, split, or reorder as makes sense):
+Organize the document to reflect how the conversation actually unfolded — let the structure follow the feature's own shape, not a fixed list. A one-screen config change might read as three short paragraphs; a multi-component feature might need a dozen named sections. Don't reach for the same section names every time — naming and grouping should come from what was actually discussed, not a checklist.
+
+<!-- merged: check this section -->
+The following must all be covered somewhere in the document (merge, split, or reorder as makes sense — this is a coverage requirement, not a section template):
 
 - **Core Problem** — what this solves and why it needs to exist
 - **Target Users / Context** — who uses it, when, in what situation
 - **Success Criteria** — how to judge whether this was built well
 - **Scope** — what's in, what's explicitly out
 - **Key Design Decisions** — trade-offs and the chosen direction
-- **Existing Domain** — what existing domain concepts this touches, any conflicts and how they're resolved, and expected side effects on existing domain logic or other features (if genuinely none, state that explicitly with the reasoning)
+- **Existing Domain** — what existing domain concepts this touches (bounded context, aggregates, invariants, domain events, ubiquitous language from Step 1), any conflicts and how they're resolved, and expected side effects on existing domain logic or other features (if genuinely none, state that explicitly with the reasoning)
 - **Architecture** — overall structure, layers, main modules
+- **Domain Model** — aggregate ownership, invariant placement, new value objects/domain events (skip if the feature has no domain/business logic)
 - **Components** — key classes/modules, responsibilities, interfaces
 - **Data Flow** — how data moves through the system, key transformations
 - **Error Handling** — failure modes, error boundaries, recovery strategies
@@ -146,6 +156,7 @@ Before showing the file to the user, review it yourself and fix issues inline:
 - Ambiguity: any decision with multiple interpretations is made explicit
 - YAGNI: no feature is added unless it came from the conversation
 - Domain coverage: the document states whether this conflicts with existing domain logic and what side effects to expect, grounded in the Step 1 scan and Step 2 confirmation — not speculation
+- DDD consistency & coverage: without re-listing terms or forcing new headings, verify the Step 1 domain vocabulary is used consistently, aggregate/invariant boundaries aren't violated, behavior isn't scattered into services when it belongs on the owning entity (anemic domain model), and every topic raised in Step 2 and Step 4 actually appears somewhere in the doc. Add whatever's missing into whichever section fits.
 
 ### Step 7: User Review → Hand Off to plan-creator (Terminal State)
 
@@ -166,10 +177,10 @@ After writing the document, present the path and ask the user to review it. Reso
 
 ## Principles
 
-- **what/why + design** — covers direction, architecture, components, dataflow, error handling, testing; implementation breakdown (how exactly) belongs to plan-creator
-- **Scale to complexity** — design sections can be a few sentences or up to 200-300 words; match the depth to the task
-- **Batch the checklist, then narrow** — ask all checklist topics together in one message; only follow up one-at-a-time on items left unclear
-- **Domain understanding is confirmed, not assumed** — the Step 1 domain scan is presented back to the user as part of the Step 2 batch and confirmed before design proceeds, so decisions rest on verified understanding rather than a silent scan
-- **Spec structure is free-form** — no fixed section template; cover the required topics (including existing-domain conflicts/side effects) in whatever structure fits the feature
-- **Never guess** — if something is unclear, ask; don't fill in the blanks
-- **YAGNI** — don't add scope the user didn't mention
+- **what/why + design, not how** — implementation breakdown belongs to plan-creator
+- **Scale to complexity** — sections can be a few sentences or several hundred words
+- **Batch, then narrow** — ask everything at once in Step 2; follow up only on gaps
+- **Confirm domain understanding, don't assume it** — verified in Step 2, not guessed
+- **Spec structure is free-form** — organized by how the conversation unfolded, not a fixed template; the required topics listed in Step 5 must still appear somewhere in the document, and their coverage is double-checked in Step 6
+- **Never guess; YAGNI** — ask when unclear, don't add scope the user didn't mention
+- **Domain-driven, when applicable** — respect existing bounded contexts, aggregates, and ubiquitous language (Step 1); skip entirely for features with no domain logic
