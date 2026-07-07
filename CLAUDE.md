@@ -99,6 +99,25 @@ cp ~/.claude/skills/{skill-name}/SKILL.md skills/{skill-name}/SKILL.md
 cp -r skills/{skill-name} ~/.claude/skills/
 ```
 
+## 커밋 메시지 규칙
+
+형식: `type: subject`
+
+- `feat` — 스킬 신규 추가, 기능/트리거/프로세스 추가, 글로벌 ↔ 프로젝트 스킬 동기화 반영
+- `fix` — 버그 수정
+- `docs` — README, docs/, CLAUDE.md 등 문서 변경
+- `chore` — 설정 파일, 권한, 잡무성 변경
+
+예:
+```
+feat: sync devlife-brainstorming skill from global
+docs: add versioning/changelog rules to CLAUDE.md
+chore: update allowed permissions in settings.local.json
+```
+
+- subject는 소문자로 시작, 명령형으로 작성 (add/update/remove/sync 등)
+- 하나의 커밋에는 하나의 관심사만 담기 — 여러 스킬을 동시에 바꿨다면 스킬별로 커밋 분리 고려
+
 ## 마켓플레이스
 
 `.claude-plugin/marketplace.json`과 `plugin.json`이 설정되어 있어 아래 명령으로 설치 가능합니다.
