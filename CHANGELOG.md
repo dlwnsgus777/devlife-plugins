@@ -12,6 +12,12 @@
 |-------|---------|--------|
 | `devlife-brainstorming` | `1.9.0` | 자동 진행 제거 — Step 5 문서 작성과 Step 7 plan-creator 핸드오프를 "명시적 지시가 있을 때만" 수행하도록 변경(단계 확인은 작성/핸드오프 지시가 아님), HARD-GATE에 두 게이트 명시. Step 4→5 사이에 "우려 지점 계속 표면화 → 없으면 요약 후 진행 확인" 흐름 추가. 군더더기·중복 문장 정리(레거시 주석 제거, Principles에서 단계 재진술 제거, 새 가드레일 원칙 추가) — Step 5 필수 커버리지 체크리스트는 유지 |
 
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-team` | `1.2.0` | 사이클 속도 개선 (두 축) — (1) RED/GREEN/REFACTOR가 매번 전체 테스트 스위트를 돌리던 것을 `TEST_SCOPED_CMD`(작업 중 테스트 클래스만 실행)로 교체, 전체 스위트는 Final Review에서 1회만 실행해 교차 클래스 회귀 확인, Setup에 빌드 데몬 워밍업·`--offline`·`clean` 금지 추가. (2) Setup에 "5. Capture Project Context" 단계 추가 — 오케스트레이터가 기능 영역을 1회만 탐색해 `PROJECT_CONTEXT` 블록(패키지 구조·테스트/픽스처 컨벤션·관련 타입 시그니처·도메인 앵커) 캡처, RED/GREEN/REFACTOR가 매번 코드를 재탐색하던 workflow를 `PROJECT_CONTEXT` 참조로 교체하고 dispatch 템플릿에 주입. `SKILL.md`(skills/codex/global)·`references`(red/green/refactor/agent-prompts)·docs 동기화 |
+
 ---
 
 ## 2026-07-06

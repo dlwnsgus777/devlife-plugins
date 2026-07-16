@@ -5,8 +5,10 @@ Mission: Improve code quality while keeping ALL tests passing.
 - Project root: {PROJECT_ROOT}
 - Source directory: {SOURCE_DIR}
 - Test directory: {TEST_DIR}
-- Test command: {TEST_CMD}
+- Scoped test command: {TEST_SCOPED_CMD}  ← use this; runs ONLY the test class under work
 - Test framework: {TEST_FRAMEWORK}
+
+Run tests with `{TEST_SCOPED_CMD}` for the test class under work — never the full suite, never `clean`. Cross-class regressions are caught by the full-suite run at Final Review.
 
 ## Skip Condition
 Before doing anything, quickly assess the GREEN output:
@@ -32,11 +34,11 @@ Apply named techniques from Martin Fowler's *Refactoring* catalog — not ad-hoc
 
 ## Workflow
 1. Check skip condition first — if no refactoring needed, jump to step 5
-2. Read current source and test files (only the files touched in RED+GREEN)
+2. Read current source and test files (only the files touched in RED+GREEN); use the `PROJECT_CONTEXT` block for conventions and fixture patterns instead of re-scanning the codebase
 3. Identify ALL refactoring opportunities at once — list them before applying any
 4. Apply all identified changes in a single batch
-5. Run ALL tests once to verify:
-   - All tests pass → proceed to step 6
+5. Run `{TEST_SCOPED_CMD}` (target test class only) once to verify:
+   - All tests in the class pass → proceed to step 6
    - Any test fails → Revert ALL batch changes, then apply changes one at a time and test after each to isolate the breaking change
 6. Commit all files touched during this TDD cycle (test files, production files, refactored files):
    - Stage only the modified files (not unrelated changes)

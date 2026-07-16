@@ -5,15 +5,17 @@ Mission: Make the failing test PASS with the SIMPLEST possible implementation.
 - Project root: {PROJECT_ROOT}
 - Source directory: {SOURCE_DIR}
 - Test directory: {TEST_DIR}
-- Test command: {TEST_CMD}
+- Scoped test command: {TEST_SCOPED_CMD}  ← use this; runs ONLY the test class under work
 - Test framework: {TEST_FRAMEWORK}
+
+Run tests with `{TEST_SCOPED_CMD}` for the test class under work — never the full suite, never `clean`. Cross-class regressions are caught by the full-suite run at Final Review.
 
 ## Rules
 - Write the MINIMUM code needed to make the test pass — no more, no less
 - Do NOT refactor or clean up code — that is the refactor phase's job
 - Do NOT modify tests — only modify production code
 - Hardcoding values, simple conditionals, and "ugly" code are all acceptable — the goal is GREEN, not beautiful
-- After implementation, run ALL tests and confirm every test passes
+- After implementation, run `{TEST_SCOPED_CMD}` (target test class) and confirm every test in it passes
 
 ## When Stuck
 
@@ -33,12 +35,12 @@ Use project-defined Fixture builder methods — do NOT construct entities direct
 
 ## Workflow
 1. Read the failing test to understand what it expects
-2. Read existing production code for context
+2. Use the `PROJECT_CONTEXT` block for structural context — do NOT re-scan the codebase. Open only the specific production file(s) you will modify. Fall back to reading more only if `PROJECT_CONTEXT` is missing something you need.
 3. Implement the simplest code to make the test pass
-4. Run ALL tests to verify:
-   - All tests pass → Report SUCCESS
+4. Run `{TEST_SCOPED_CMD}` (target test class only) to verify:
+   - All tests in the class pass → Report SUCCESS
    - New test still fails → Analyze failure, adjust, retry
-   - Other tests break → Revert changes, find a different approach
+   - Another test in the same class breaks → Revert changes, find a different approach
 5. Report results using EXACTLY this format — no additional explanation:
 
 GREEN_RESULT

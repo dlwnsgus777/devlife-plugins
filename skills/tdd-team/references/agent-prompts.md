@@ -7,9 +7,11 @@ Append the detected environment context block to each prompt before spawning.
 - Project root: {PROJECT_ROOT}
 - Source directory: {SOURCE_DIR}
 - Test directory: {TEST_DIR}
-- Test command: {TEST_CMD}
+- Scoped test command: {TEST_SCOPED_CMD}  ← in-cycle runs use this (single test class only)
 - Test framework: {TEST_FRAMEWORK}
 ```
+
+In-cycle test runs (RED/GREEN/REFACTOR) use `{TEST_SCOPED_CMD}` — the single test class under work, never the full suite, never `clean`. The full suite runs once at Final Review.
 
 ---
 
@@ -47,7 +49,7 @@ If you wrote production code before a failing test existed — delete it. Do not
   ```
 - Follow the project's existing test conventions (structure, assertions) — except for naming, which must follow the domain rule above
 - Test expectations come from the domain requirement in the task description, never from what the implementation currently does
-- After writing, run the test command and confirm the test fails
+- After writing, run `{TEST_SCOPED_CMD}` (target test class only) and confirm the test fails
 - Structure every test with `// arrange`, `// act`, `// assert` comments
 
 ## Do NOT write tests for
@@ -62,10 +64,10 @@ If you wrote production code before a failing test existed — delete it. Do not
 - **Compilation error**: NOT Red. Fix stubs until the build passes, then re-run to verify failure.
 
 ## Workflow
-1. Read the task description
-2. Read existing source files for structural context only (method signatures, class hierarchy, existing APIs). Read existing test files for conventions and fixture patterns. Ask "What SHOULD this behavior be?" not "What DOES this code do?"
+1. Read the task description and the `PROJECT_CONTEXT` block in your prompt
+2. Rely on `PROJECT_CONTEXT` for structural context (signatures, layout, conventions, fixtures) — do NOT re-scan the codebase. Open a specific file only when you need its exact current contents (e.g., a signature you must match) or when `PROJECT_CONTEXT` is missing something. Ask "What SHOULD this behavior be?" not "What DOES this code do?"
 3. Write the failing test (and stubs with `UnsupportedOperationException` if new classes/methods are needed)
-4. Run tests to verify:
+4. Run `{TEST_SCOPED_CMD}` (target test class only) to verify:
    - Build succeeds + new test fails (UnsupportedOperationException or assertion failure) → Report SUCCESS with failure message
    - New test passes unexpectedly → Report ALREADY_PASSES
    - Build fails → Fix compilation issues, then re-verify
@@ -90,7 +92,7 @@ Mission: Make the failing test PASS with the SIMPLEST possible implementation.
 - Do NOT refactor or clean up code — that is the refactor phase's job
 - Do NOT modify tests — only modify production code
 - Hardcoding values, simple conditionals, and "ugly" code are all acceptable — the goal is GREEN, not beautiful
-- After implementation, run ALL tests and confirm every test passes
+- After implementation, run `{TEST_SCOPED_CMD}` (target test class) and confirm every test in it passes
 
 ## Fixture Pattern (when creating test data)
 Use project-defined Fixture builder methods — do NOT construct entities directly via `new` or raw `.builder()`.
@@ -100,12 +102,12 @@ Use project-defined Fixture builder methods — do NOT construct entities direct
 
 ## Workflow
 1. Read the failing test to understand what it expects
-2. Read existing production code for context
+2. Use the `PROJECT_CONTEXT` block for structural context — do NOT re-scan the codebase. Open only the specific production file(s) you will modify. Fall back to reading more only if `PROJECT_CONTEXT` is missing something you need.
 3. Implement the simplest code to make the test pass
-4. Run ALL tests to verify:
-   - All tests pass → Report SUCCESS
+4. Run `{TEST_SCOPED_CMD}` (target test class only) to verify:
+   - All tests in the class pass → Report SUCCESS
    - New test still fails → Analyze failure, adjust, retry
-   - Other tests break → Revert changes, find a different approach
+   - Another test in the same class breaks → Revert changes, find a different approach
 5. Report results using EXACTLY this format — no additional explanation:
 ```
 GREEN_RESULT
@@ -145,11 +147,11 @@ Apply named techniques from Martin Fowler's *Refactoring* catalog — not ad-hoc
 
 ## Workflow
 1. Check skip condition first — if no refactoring needed, jump to step 5
-2. Read current source and test files (only the files touched in RED+GREEN)
+2. Read current source and test files (only the files touched in RED+GREEN); use the `PROJECT_CONTEXT` block for conventions and fixture patterns instead of re-scanning the codebase
 3. Identify ALL refactoring opportunities at once — list them before applying any
 4. Apply all identified changes in a single batch
-5. Run ALL tests once to verify:
-   - All tests pass → proceed to step 6
+5. Run `{TEST_SCOPED_CMD}` (target test class only) once to verify:
+   - All tests in the class pass → proceed to step 6
    - Any test fails → Revert ALL batch changes, then apply changes one at a time and test after each to isolate the breaking change
 6. Commit all files touched during this TDD cycle (test files, production files, refactored files):
    - Stage only the modified files (not unrelated changes)

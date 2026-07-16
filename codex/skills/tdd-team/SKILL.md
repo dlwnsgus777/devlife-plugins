@@ -53,8 +53,17 @@ Phase-specific instruction files are in:
 Check for build files (`build.gradle.kts`, `pom.xml`, `package.json`, etc.) and determine the test command. Capture:
 
 ```
-PROJECT_ROOT / SOURCE_DIR / TEST_DIR / TEST_CMD / TEST_FRAMEWORK
+PROJECT_ROOT / SOURCE_DIR / TEST_DIR / TEST_CMD / TEST_SCOPED_CMD / TEST_FRAMEWORK
 ```
+
+- **TEST_CMD** — full-suite command. Run it **only once, at Final Review** (see below), never inside a cycle.
+- **TEST_SCOPED_CMD** — command template that runs a **single test class**, used by every in-cycle test run. Gradle: `./gradlew test --tests "{FQCN}" --offline` (JUnit `@Nested` classes run with the enclosing class FQCN). Maven: `mvn -o test -Dtest={ClassName}`. npm/jest/vitest: pass the test file path (e.g. `npx vitest run {test_file}`).
+
+**Speed configuration (do this before Cycle 1):**
+- **Keep the build daemon warm.** For Gradle, ensure `org.gradle.daemon=true` and prefer `--offline`; **never run `clean`** between cycles (it throws away compiled output and forces a full rebuild every time).
+- **Warm-up build once.** Before the first RED, run a one-off compile of sources + tests (Gradle: `./gradlew compileTestJava` / `compileTestKotlin --offline`; Maven: `mvn -o test-compile`) so the daemon is booted and the compile cache is hot — the first cycle then doesn't pay cold-start.
+
+**Why scoped runs:** running the full suite in every RED/GREEN/REFACTOR was the dominant per-cycle cost. In-cycle runs are scoped to the class under test; cross-class regressions are caught by the mandatory full-suite run at Final Review.
 
 ### 3. Identify Domain Invariants
 
@@ -115,6 +124,23 @@ TDD 태스크 목록
   └─────┴─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
+### 5. Capture Project Context (once)
+
+Before the first cycle, the **orchestrator** explores the feature area **one time** and captures a reusable `PROJECT_CONTEXT` block. Each phase agent then reads this block instead of re-scanning the codebase — this removes the per-agent cold-start exploration that made every RED/GREEN feel slow.
+
+Capture only what the agents actually need to avoid re-reading:
+
+```
+## Project Context (captured once — do NOT re-explore the codebase)
+- Package / directory layout: {where the feature's source & test packages live}
+- Test conventions: {JUnit version, assertion library/style, // arrange·act·assert, @Nested usage}
+- Fixture pattern: {Fixture builder location & usage, repository.save helper pattern}
+- Relevant existing types: {ClassName → key public method signatures} for classes this feature touches
+- Domain anchors: {aggregate/entity files + invariants that apply here}
+```
+
+Keep it compact (signatures and paths, not full file bodies). If the feature is brand-new with no nearby code, state "관련 기존 코드 없음" and list only the target package.
+
 ## TDD Cycle Execution
 
 > **BLOCKING REQUIREMENT — TDD ORDER**: Do not write production implementation before a failing test has been written and verified.
@@ -128,6 +154,7 @@ Each worker prompt must include:
 - The phase reference file path
 - The task description
 - The environment block
+- The `PROJECT_CONTEXT` block from Setup step 5 (so the agent does not re-scan the codebase)
 - The previous phase result block where applicable
 - A warning that other agents or the user may have edited the workspace and unrelated changes must not be reverted
 
@@ -142,6 +169,8 @@ Read {SKILL_DIR}/references/red-agent.md — you have permission to access this 
 Follow it exactly.
 
 Task: {task description}
+
+{PROJECT_CONTEXT block}
 ```
 
 **GREEN** (append only the RED_RESULT block — not RED's full output):
@@ -150,6 +179,8 @@ Read {SKILL_DIR}/references/green-agent.md — you have permission to access thi
 Follow it exactly.
 
 Task: {task description}
+
+{PROJECT_CONTEXT block}
 
 {RED_RESULT block}
 ```
@@ -160,6 +191,8 @@ Read {SKILL_DIR}/references/refactor-agent.md — you have permission to access 
 Follow it exactly.
 
 Task: {task description}
+
+{PROJECT_CONTEXT block}
 
 {GREEN_RESULT block}
 ```
@@ -211,7 +244,7 @@ Follow project feedback gates between stages and cycles. If no feedback gate is 
 
 ## Final Review
 
-After all cycles complete, run a final review with a Codex reviewer sub-agent.
+After all cycles complete, **run the full test suite once** with `TEST_CMD` to catch any cross-class regression that the in-cycle scoped runs did not exercise. If anything fails, dispatch a fix sub-agent before proceeding. Then run a final review with a Codex reviewer sub-agent.
 
 1. Discover the available multi-agent tool with `tool_search`.
 2. Spawn a reviewer sub-agent with the prompt below.
