@@ -10,12 +10,14 @@ description: Explore ideas conversationally to define what/why/design decisions,
 
 ## Purpose
 
-Turn a vague idea into an approved design spec. This skill covers **what** to build, **why**, and **how it's designed** (architecture, components, data flow, error handling, testing) — through a DDD lens: existing bounded contexts, aggregates, entities/value objects, and ubiquitous language are identified and respected before any new domain logic is proposed.
-Implementation breakdown (which files, step-by-step tasks, commit units) is handled by plan-creator.
+Turn a vague idea into an approved design spec — **what** to build, **why**, and **how it's designed** (architecture, components, data flow, error handling, testing), through a DDD lens that respects existing bounded contexts, aggregates, and ubiquitous language. Implementation breakdown (files, steps, commit units) is plan-creator's job.
 
 <HARD-GATE>
-Do not write implementation code, scaffold files, or start implementation planning until the
-brainstorming document has been written and the user has explicitly approved it.
+Two things require an **explicit instruction** from the user — never do them on your own:
+1. **Writing the design spec document.** A confirmation ("좋아", "맞아", "다음", "계속") means the user agrees with the current step. It is NOT permission to write the file. Wait until the user tells you to write it.
+2. **Handing off to plan-creator.** Do not invoke plan-creator until the user explicitly tells you to proceed.
+
+Never write implementation code or scaffold files at any point.
 </HARD-GATE>
 
 **Position in the workflow chain:**
@@ -42,25 +44,23 @@ Before asking questions, briefly scan the current project state:
   - existing **aggregates/entities** and **value objects** nearby, and which aggregate would own new behavior
   - **invariants** already enforced in the domain layer for this area
   - **domain events** already published/consumed nearby
-  - **ubiquitous language** terms already used in code/tickets for this area (so new naming reuses them instead of inventing synonyms)
+  - **ubiquitous language** terms already used in code/tickets (so new naming reuses them instead of inventing synonyms)
 
-This makes questions concrete and contextual, and grounds the domain question in Step 2. Do NOT report findings to the user — proceed directly to Step 1.5.
+This grounds the questions and the domain confirmation in Step 2. Do NOT report findings to the user — proceed directly to Step 1.5.
 
 ### Step 1.5: Scope Size Check
 
-Before asking the first question, assess whether the idea contains multiple independent subsystems.
+Assess whether the idea contains multiple independent subsystems.
 
 - **Single system or feature** → proceed to Step 2
-- **Multiple independent subsystems** (e.g., "platform with chat, billing, file storage, analytics" — usually a sign of multiple bounded contexts)
-  → flag immediately:
-    > "Your idea contains several independent pieces. It's better to tackle them one at a time.
-    >  Which would you like to start with — [A], [B], or [C]?"
-  → brainstorm only the first sub-project; each gets its own design spec and plan-creator cycle
+- **Multiple independent subsystems** (e.g., "platform with chat, billing, file storage, analytics" — usually multiple bounded contexts) → flag immediately:
+    > "아이디어에 독립적인 조각이 여러 개 있습니다. 하나씩 다루는 게 좋습니다. 어느 것부터 시작할까요 — [A], [B], [C]?"
+  → brainstorm only the first sub-project; each gets its own spec and plan-creator cycle
 
 ### Step 2: Explore the Idea (Batched Questions)
 
 **Rules:**
-- Ask **all checklist topics together in a single message**, laid out as a numbered/bulleted list the user can answer item by item in one reply
+- Ask **all checklist topics together in a single message**, as a numbered/bulleted list the user can answer item by item
 - Prefer open-ended questions; offer A/B/C choices only when options are clear
 - Ask in Korean
 
@@ -73,65 +73,56 @@ Before asking the first question, assess whether the idea contains multiple inde
 - [ ] **Constraints**: Technical, timeline, or business constraints?
 - [ ] **Existing domain**: Present the Step 1 domain scan findings inline and ask for confirmation, e.g. "제가 파악한 기존 도메인은 {스캔 결과 요약}입니다 — 맞나요? 충돌하는 지점이나 예상되는 사이드이펙트가 있다면 알려주세요." If no relevant existing domain was found, state "기존 도메인 없음" and skip confirmation.
 
-**Follow-up:**
+**Follow-up:** After the batched reply, ask **targeted follow-ups** only for items that are missing, ambiguous, or contradictory — do not re-ask the full list.
 
-After the batched reply, only ask **targeted follow-up questions** for items that are missing, ambiguous, or contradictory — do not re-ask the full list. Follow-ups can go one at a time since only a few items typically need clarification.
+**Surface concerns, then summarize and confirm:** Throughout, keep raising anything that worries you — ambiguity, risk, contradiction, a hidden side effect — and ask about it before moving on. When you have **no remaining concerns**, summarize what you've gathered and confirm:
 
-**When to stop asking:**
-
-Once the checklist is mostly covered (batched answers + follow-ups), proactively check in:
-
-> "I think I have enough to write the brainstorming document. Is there anything else you'd like to cover first?"
+> "지금까지 정리한 내용은 {요약}입니다. 이대로 진행해도 괜찮을까요? 더 다룰 부분이 있으면 알려주세요."
 
 - Confirmed → proceed to Step 3
-- More to discuss → continue questions
-- User says "stop asking" / "that's enough" → mention any uncovered item once, then follow the user's call
+- More to discuss → keep asking
 
 ### Step 3: Present Direction Options
 
-Before presenting the design, propose 2-3 possible product/design directions with trade-offs.
-Lead with the recommended direction and explain why it best fits the user's answers.
+Propose 2-3 possible product/design directions with trade-offs. Lead with the recommended direction and explain why it best fits the user's answers.
 
 Ask:
-
 > "이 방향이 맞나요? 이걸 바탕으로 설계를 발표하겠습니다."
 
 - Approved → proceed to Step 4
-- Changes requested → revise the direction options or ask one more clarifying question
+- Changes requested → revise the options or ask one more clarifying question
 
 ### Step 4: Present Design Sections
 
-Once the direction is approved, present the design **section by section** and get confirmation after each.
+Present the design **section by section**, getting confirmation after each. Scale each section to its complexity — a few sentences for a simple feature, up to 200-300 words for a complex system.
 
-**Sections to cover (in order):**
+**Sections (in order):**
 1. **Architecture** — overall structure, layers, main modules
-2. **Domain Model** (skip if the feature has no domain/business logic) — building on the Step 1 findings, decide aggregate ownership (existing vs. new), invariant placement (domain layer only), and whether new value objects/domain events are needed
+2. **Domain Model** (skip if no domain/business logic) — aggregate ownership (existing vs. new), invariant placement (domain layer only), new value objects/domain events
 3. **Components** — key classes/modules, responsibilities, interfaces
 4. **Data Flow** — how data moves through the system, key transformations
 5. **Error Handling** — failure modes, error boundaries, recovery strategies
 6. **Testing** — test strategy, key scenarios, test boundaries
 
-**Scale each section to its complexity:**
-- Simple feature: a few sentences
-- Complex system: up to 200-300 words
-
 After each section, ask:
-
 > "이 [섹션명] 방향이 맞나요?"
 
-- Confirmed → proceed to the next section
-- Changes requested → revise and re-present that section before continuing
+- Confirmed → next section
+- Changes requested → revise and re-present that section first
 
-Once all sections are confirmed → proceed to Step 5.
+Once all sections are confirmed, summarize the full design and **ask for an explicit instruction to write the document** — do not write it yet:
 
-### Step 5: Write the Design Spec Document
+> "설계가 모두 정리됐습니다. {요약}. 이대로 spec 문서를 작성할까요?"
+
+### Step 5: Write the Design Spec Document (only when explicitly instructed)
+
+Only after the user explicitly tells you to write it, create the file.
 
 **Filename**: `YYYY-MM-DD-{topic}.md` (e.g. `2026-07-02-payment-refund.md`)
 **Location**: `docs/brainstorming/` (create the directory if it does not exist)
 
-Organize the document to reflect how the conversation actually unfolded — let the structure follow the feature's own shape, not a fixed list. A one-screen config change might read as three short paragraphs; a multi-component feature might need a dozen named sections. Don't reach for the same section names every time — naming and grouping should come from what was actually discussed, not a checklist.
+Organize the document to reflect how the conversation actually unfolded — structure follows the feature's shape, not a fixed list. Don't reach for the same section names every time.
 
-<!-- merged: check this section -->
 The following must all be covered somewhere in the document (merge, split, or reorder as makes sense — this is a coverage requirement, not a section template):
 
 - **Core Problem** — what this solves and why it needs to exist
@@ -139,9 +130,9 @@ The following must all be covered somewhere in the document (merge, split, or re
 - **Success Criteria** — how to judge whether this was built well
 - **Scope** — what's in, what's explicitly out
 - **Key Design Decisions** — trade-offs and the chosen direction
-- **Existing Domain** — what existing domain concepts this touches (bounded context, aggregates, invariants, domain events, ubiquitous language from Step 1), any conflicts and how they're resolved, and expected side effects on existing domain logic or other features (if genuinely none, state that explicitly with the reasoning)
+- **Existing Domain** — existing domain concepts this touches (bounded context, aggregates, invariants, domain events, ubiquitous language from Step 1), conflicts and how they're resolved, and expected side effects on existing domain logic or other features (if genuinely none, state that explicitly with reasoning)
 - **Architecture** — overall structure, layers, main modules
-- **Domain Model** — aggregate ownership, invariant placement, new value objects/domain events (skip if the feature has no domain/business logic)
+- **Domain Model** — aggregate ownership, invariant placement, new value objects/domain events (skip if no domain/business logic)
 - **Components** — key classes/modules, responsibilities, interfaces
 - **Data Flow** — how data moves through the system, key transformations
 - **Error Handling** — failure modes, error boundaries, recovery strategies
@@ -150,25 +141,21 @@ The following must all be covered somewhere in the document (merge, split, or re
 
 ### Step 6: Self-Review
 
-Before showing the file to the user, review it yourself and fix issues inline:
-- Placeholder scan: no `TBD`, `TODO`, or empty sections
-- Consistency: scope, success criteria, and design sections do not contradict each other
-- Ambiguity: any decision with multiple interpretations is made explicit
-- YAGNI: no feature is added unless it came from the conversation
-- Domain coverage: the document states whether this conflicts with existing domain logic and what side effects to expect, grounded in the Step 1 scan and Step 2 confirmation — not speculation
-- DDD consistency & coverage: without re-listing terms or forcing new headings, verify the Step 1 domain vocabulary is used consistently, aggregate/invariant boundaries aren't violated, behavior isn't scattered into services when it belongs on the owning entity (anemic domain model), and every topic raised in Step 2 and Step 4 actually appears somewhere in the doc. Add whatever's missing into whichever section fits.
+Before showing the file, review it yourself and fix issues inline:
+- **Placeholders**: no `TBD`, `TODO`, or empty sections
+- **Consistency**: scope, success criteria, and design sections don't contradict each other
+- **Ambiguity**: any decision with multiple interpretations is made explicit
+- **YAGNI**: no feature added unless it came from the conversation
+- **Domain coverage & DDD consistency**: conflicts and side effects are grounded in the Step 1 scan and Step 2 confirmation (not speculation); domain vocabulary is used consistently; aggregate/invariant boundaries aren't violated; behavior isn't scattered into services when it belongs on the owning entity (anemic domain model); every topic from Step 2 and Step 4 appears somewhere in the doc. Add whatever's missing into whichever section fits.
 
-### Step 7: User Review → Hand Off to plan-creator (Terminal State)
+### Step 7: User Review → Hand Off (only when explicitly instructed)
 
-After writing the document, present the path and ask the user to review it. Resolve review and hand-off in a single round-trip — do not ask a separate "진행할까요?" question afterward:
+After writing, present the path and ask for review:
 
-> "설계 spec 문서를 `{file path}`에 작성했습니다.
->  확인해주시고, 수정할 부분이 있으면 알려주세요.
->  별다른 요청이 없으면 이어서 plan-creator로 구현 계획을 작성하겠습니다."
+> "설계 spec 문서를 `{file path}`에 작성했습니다. 확인해주시고, 수정할 부분이 있으면 알려주세요."
 
-- **change request** → apply the changes, then re-present the updated document with the same message (repeat this step)
-- **any other reply with no change requested** (confirmation, "다음", "계속" 등) → immediately invoke plan-creator with the design spec document path as input
-- **explicit stop request** ("여기서 멈춰줘", "plan-creator는 나중에 할게" 등) → share the document path and exit without invoking plan-creator
+- **change request** → apply the changes, then re-present the updated document
+- **Do NOT invoke plan-creator automatically.** Only when the user explicitly instructs you to proceed ("plan-creator로 넘어가줘", "구현 계획 작성해줘" 등) → invoke plan-creator with the spec document path as input
 
 **If plan-creator is not available:**
 > "plan-creator를 찾을 수 없습니다. 문서 경로: `{file path}`"
@@ -177,10 +164,11 @@ After writing the document, present the path and ask the user to review it. Reso
 
 ## Principles
 
+- **Never write or hand off without an explicit instruction** — confirming a step ≠ telling you to write the file or run plan-creator (see HARD-GATE)
+- **Surface concerns continuously; summarize and confirm when none remain** — don't move on with an open worry unspoken
 - **what/why + design, not how** — implementation breakdown belongs to plan-creator
 - **Scale to complexity** — sections can be a few sentences or several hundred words
 - **Batch, then narrow** — ask everything at once in Step 2; follow up only on gaps
 - **Confirm domain understanding, don't assume it** — verified in Step 2, not guessed
-- **Spec structure is free-form** — organized by how the conversation unfolded, not a fixed template; the required topics listed in Step 5 must still appear somewhere in the document, and their coverage is double-checked in Step 6
 - **Never guess; YAGNI** — ask when unclear, don't add scope the user didn't mention
 - **Domain-driven, when applicable** — respect existing bounded contexts, aggregates, and ubiquitous language (Step 1); skip entirely for features with no domain logic
