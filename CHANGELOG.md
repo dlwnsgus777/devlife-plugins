@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-07-16
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `devlife-brainstorming` | `1.10.0` | 확인 절차 단축 — Step 4를 "설계 6섹션을 하나씩 발표하고 매번 승인"에서 "전체 설계를 한 메시지에 발표하고 1번만 확인"으로 변경(수정 요청 시 해당 섹션만 재발표). spec 문서까지의 왕복 확인이 약 10회 → 약 4회로 감소. 문서 작성·plan-creator 핸드오프 HARD-GATE는 유지. `SKILL.md`(skills/codex)·docs 동기화 |
+| `plan-creator` | `1.2.0` | 계획 문서 저장 위치를 프로젝트 루트에서 `docs/plan/`로 변경(디렉토리 없으면 생성). `SKILL.md`(skills/codex)·docs 동기화 |
+| `plan-creator` | `1.3.0` | Section 5에서 "패키지 위치" ASCII 트리 제거 — 다음 소비자 tdd-team이 Setup에서 패키지/디렉토리 레이아웃을 재스캔(`PROJECT_CONTEXT`)하므로 중복이고, 구현 전 추측성 트리라 stale 위험. 파일/역할 테이블·코드 스니핏은 유지. `SKILL.md`·`assets/plan-template.md`(skills/codex) 동기화 |
+
+---
+
 ## 2026-07-15
 
 ### devlife-planning

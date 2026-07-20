@@ -92,9 +92,9 @@ Ask:
 - Approved → proceed to Step 4
 - Changes requested → revise the options or ask one more clarifying question
 
-### Step 4: Present Design Sections
+### Step 4: Present the Full Design
 
-Present the design **section by section**, getting confirmation after each. Scale each section to its complexity — a few sentences for a simple feature, up to 200-300 words for a complex system.
+Present the **entire design in one message** — all sections together, not one at a time. Scale each section to its complexity — a few sentences for a simple feature, up to 200-300 words for a complex system.
 
 **Sections (in order):**
 1. **Architecture** — overall structure, layers, main modules
@@ -104,13 +104,11 @@ Present the design **section by section**, getting confirmation after each. Scal
 5. **Error Handling** — failure modes, error boundaries, recovery strategies
 6. **Testing** — test strategy, key scenarios, test boundaries
 
-After each section, ask:
-> "이 [섹션명] 방향이 맞나요?"
+After presenting all sections, ask **once**:
+> "이 설계 방향이 맞나요? 수정할 섹션이 있으면 알려주세요."
 
-- Confirmed → next section
-- Changes requested → revise and re-present that section first
-
-Once all sections are confirmed, summarize the full design and **ask for an explicit instruction to write the document** — do not write it yet:
+- Changes requested → revise the affected section(s) and re-present **only those**, then ask again
+- Confirmed → summarize the full design and **ask for an explicit instruction to write the document** — do not write it yet:
 
 > "설계가 모두 정리됐습니다. {요약}. 이대로 spec 문서를 작성할까요?"
 

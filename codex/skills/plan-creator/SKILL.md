@@ -96,7 +96,7 @@ Wait for answers before writing the plan.
 - If the user explicitly specified a filename (e.g., "ffs-contract-cancel.md에 작성해줘"), use that exact name.
 - Otherwise, default to `task-{feature}.md` where `{feature}` is a short kebab-case summary of the feature (e.g., `task-consultant-change-cancel.md`, `task-payment-refund.md`).
 
-**File Location**: Always save the plan document to the **project root** (the current working directory). Do NOT create subdirectories (e.g., `.omc/plans/`, `docs/`, etc.) unless the user explicitly specifies a different path.
+**File Location**: Always save the plan document to `docs/plan/` (create the directory if it does not exist). Do NOT save elsewhere unless the user explicitly specifies a different path.
 
 Read and use the template from `assets/plan-template.md` — fill every section, omit only if truly not applicable.
 
@@ -125,7 +125,7 @@ Never add a new test when an existing one already verifies the same business rul
 
 The template is structured for Spring Boot API feature planning. Non-obvious section requirements:
 - **0. Tidy First**: Only when modifying existing code. One table: target, technique (Extract Method, Guard Clause, etc.), commit order (`refactor` → `feat`).
-- **5. Implementation Files**: File table + package tree, then add a **"코드 스니핏" subsection** — class declaration, field stubs, key method signatures. For `private final` dependencies, prefer injecting existing services found in Step 1.
+- **5. Implementation Files**: File table, then add a **"코드 스니핏" subsection** — class declaration, field stubs, key method signatures. For `private final` dependencies, prefer injecting existing services found in Step 1.
 - **7. Implementation Order**: When modifying existing code, split into Tidy First → Behavior Change phases with separate commits. Tag every entry `[NEW]` or `[REGRESSION]` — `[REGRESSION]` means run the existing test as-is; never add a duplicate.
 
 For non-API work (batch jobs, refactoring, etc.), omit sections that don't apply (e.g., API Design) and fill in the rest.

@@ -122,23 +122,6 @@ Authorization: Bearer {token}
 | `[ClassName]` | [역할 설명] |
 | `[ClassName]` | [역할 설명] |
 
-### 패키지 위치
-
-```
-[모듈]/src/main/java/[패키지경로]/
-├── [domain]/
-│   ├── query/
-│   │   ├── api/
-│   │   │   ├── [Controller].java        (신규/수정)
-│   │   │   └── dto/
-│   │   │       └── [ResponseDTO].java   (신규/수정)
-│   │   └── executor/
-│   │       └── [Executor].java          (신규/수정)
-│   └── command/  (필요 시)
-│       ├── api/
-│       └── executor/
-```
-
 ### [다른 모듈명] 모듈 변경사항
 
 - [변경 내용] 또는 "변경 없음 — 기존 서비스 재활용"
