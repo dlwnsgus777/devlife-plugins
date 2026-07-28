@@ -68,7 +68,7 @@ TDD 실행 워크플로우. 서브에이전트 기반 Red/Green/Refactor 사이�
 | `devlife-team-starter` | `1.0.0` | cmux에 Codex 에이전트 pane 생성 — Claude + Codex 병렬 작업 환경 구성 |
 | `devlife-codex` | `1.0.0` | Codex cmux pane에 태스크 전송 + 결과 파일 수집 (`devlifeteam/` 폴더) |
 | `cmux` | `1.0.0` | Ghostty 기반 터미널 제어 — pane/workspace 관리, 브라우저 자동화, 알림, SSH, 마크다운 뷰어 |
-| `md-to-html` | `1.0.0` | Markdown → 독립형 HTML 변환 (외부 CSS/JS 없음) |
+| `md-to-html` | `1.1.0` | Markdown → 독립형 HTML 변환 (외부 CSS/JS 없음) — 서브에이전트 위임 실행 |
 
 ---
 
