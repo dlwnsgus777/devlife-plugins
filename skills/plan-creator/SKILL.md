@@ -1,17 +1,14 @@
 ---
 name: plan-creator
 description: Writes a structured Markdown plan document for any task, feature, or project.
-  Use when the user requests a "계획 문서", "구현 계획", "실행 계획", "계획 MD로 정리",
-  "계획서 작성", or "plan document".
-  Trigger on "계획을 작성해줘", "계획 작성해줘",
-  "계획을 md 파일에 작성해줘", "계획을 md에 작성해줘",
-  or any Korean sentence containing "계획" combined with a writing intent verb
+  Use when the user requests a "계획 문서", "구현 계획", "실행 계획", "계획서 작성", or "plan document",
+  or writes any Korean sentence combining "계획" with a writing intent verb
   ("작성", "써줘", "정리", "만들어줘") — even if no specific file is mentioned.
 ---
 
 # Plan Creator
 
-<!-- Chain: devlife-brainstorming → plan-creator → tdd-team -->
+<!-- Chain: devlife-brainstorming → spec-creator → plan-creator → tdd-team -->
 
 ## Process
 
@@ -31,8 +28,7 @@ If no document is provided, proceed to Step 1 as normal.
 
 Use the Explore sub-agent for wide code discovery:
 1. Spawn a sub-agent via `Agent({ subagent_type: "Explore", ... })` with the prompt below.
-2. Ask for file paths and signatures only, no full implementations.
-3. If the Explore agent is unavailable, say `not available`, then perform targeted local discovery with `rg`, `rg --files`, and focused file reads.
+2. If the Explore agent is unavailable, say `not available`, then perform targeted local discovery with `rg`, `rg --files`, and focused file reads.
 
 Explorer prompt (fill in `[feature domain]` based on the user's request):
 
@@ -49,22 +45,21 @@ After discovery, directly read only the 2–3 most relevant files to identify bu
 
 **Reusable code scan**: From the Explore results, identify existing services, utilities, and exception classes that already handle overlapping concerns. In particular, if "find-by-id + throw" patterns are encapsulated in a ReadService, inject that service rather than wiring a repository directly — reflect this in the code snippets.
 
-**New file vs. existing code modification**: After exploring, determine whether this task adds new files or modifies existing code.
-- **If modifying existing code** — identify which classes/methods are the change targets and check whether the current structure makes adding the new requirement difficult (nested ifs, long methods, hardcoding, low cohesion, etc.). This judgment decides whether Section 0 is included.
+**Existing code modification**: If this task modifies existing code rather than only adding files, identify the change targets and judge whether their current structure makes the new requirement hard to add — that judgment decides whether Section 0 is included.
+
+**Variation point scan**: Find the axis this domain keeps changing along — branching on an enum/type/channel, policy values hardcoded in a service, near-duplicate methods differing in one step. That axis is where the next requirement lands, so it is the abstraction candidate for `0-2`.
+
+**Two-case rule — never force it.** Propose an abstraction only when the axis has 2+ concrete cases (already, or counting the one this requirement adds) **and** the domain says it keeps growing (Section 2 context or a Step 2 answer). A single case, or a structural smell with no domain reason, means no proposal — an interface with one implementation is an anti-pattern. Nothing qualifies → `해당 없음`, never an invented axis.
 
 ### Step 2: Clarifying Questions
 
 **Ask questions BEFORE writing the document.** If code analysis reveals any decision points or scope ambiguities, do NOT leave them as notes like "별도 확인 필요" inside the document. Instead, ask the user first, then write the document after receiving answers.
 
 Situations that require asking:
-- Scope decisions (e.g., "A has the same issue — fix it together or separately?")
-- Multiple valid implementation approaches
-- Ambiguous requirements or missing information
 - **Domain context that isn't derivable from code alone** — code shows *what* happens, not *why*. If you cannot confidently explain the business reason behind a concept (e.g., "왜 이 상태에서는 금액 변경이 불가능한가?"), ask.
 - **Business invariants whose motivation is unclear** — don't infer the rule's intent from the guard clause alone. If the violation consequence or the constraint's origin isn't obvious, ask.
 - Domain-specific terminology or concepts that appear in the codebase but whose exact meaning is ambiguous
-
-**Important**: If you are unsure about any domain context or invariant, ask in this step. Do **not** defer to Step 3 and fill in the blanks with guesses.
+- **Whether a variation axis from Step 1 is real** — code shows today's branches, not whether more are coming (e.g., "정산 정책이 앞으로 채널별로 더 늘어날 예정인가요?"). A "no" drops the proposal.
 
 Ask through natural conversational text in normal assistant messages.
 Multiple-choice/lettered-option formats are too constrained for open-ended domain and
@@ -80,22 +75,16 @@ proactively check in:
 
 > "지금까지 답변해주신 내용으로 계획 문서를 작성해도 괜찮을까요? 더 확인하고 싶은 부분이 있으신가요?"
 
-- Confirmed → proceed to Step 3.
-- More to discuss → another round of up to 4 questions.
-- User asks to stop mid-round while real ambiguity remains → mention it once, then
-  respect the user's final decision. Do not ask twice.
-
-Wait for answers before writing the plan.
+If the user asks to stop mid-round while real ambiguity remains, mention it once, then
+respect their final decision — do not ask twice.
 
 ### Step 3: Write the Plan Document
 
-**File Naming**: Determine the filename as follows:
-- If the user explicitly specified a filename (e.g., "ffs-contract-cancel.md에 작성해줘"), use that exact name.
-- Otherwise, default to `task-{feature}.md` where `{feature}` is a short kebab-case summary of the feature (e.g., `task-consultant-change-cancel.md`, `task-payment-refund.md`).
+**File Naming**: `task-{feature}.md` with a short kebab-case feature summary (e.g., `task-payment-refund.md`), unless the user named the file.
 
-**File Location**: Always save the plan document to `docs/plan/` (create the directory if it does not exist). Do NOT save elsewhere unless the user explicitly specifies a different path.
+**File Location**: `docs/plan/`, unless the user specifies another path.
 
-Read and use the template from `assets/plan-template.md` — fill every section, omit only if truly not applicable.
+Read and use the template from `assets/plan-template.md` — fill every section, omitting only those that truly don't apply (e.g., API Design for batch or refactoring work).
 
 #### Domain Context & Invariants (Section 2)
 
@@ -112,37 +101,35 @@ Also extract invariants from code discovered in Step 1 — enum state transition
 
 #### TDD Test DisplayNames (Section 7)
 
-When listing test cases in the implementation order, name each test using a **domain rule sentence**, not a class or method name. Invariants from Section 2 are natural candidates for DisplayNames.
+When listing test cases in the implementation order, name each test using a **domain rule sentence**, not a class or method name.
 
 **Existing test check**: Before proposing a new test for each invariant, check whether an existing test (from the Explore results in Step 1) already verifies that behavior. Tag each entry accordingly:
 - `[NEW]` — no existing test covers this; write a new one
-- `[REGRESSION]` — an existing test already covers this; run it as-is to confirm the behavior is preserved, do not add a duplicate test
-
-Never add a new test when an existing one already verifies the same business rule.
+- `[REGRESSION]` — an existing test already covers this; run it as-is to confirm the behavior is preserved, never add a duplicate
 
 The template is structured for Spring Boot API feature planning. Non-obvious section requirements:
-- **0. Tidy First**: Only when modifying existing code. One table: target, technique (Extract Method, Guard Clause, etc.), commit order (`refactor` → `feat`).
+- **0. 코드 구조 정비**: Only when modifying existing code. `0-1. Tidy First` — behavior-preserving cleanup (Extract Method, Guard Clause, …). `0-2. 추상화 제안` — entries passing the two-case rule; it is a design decision, so leave 적용 여부 as pending until Step 4 approves it. Commit order: `refactor` → `feat`.
 - **5. Implementation Files**: File table, then add a **"코드 스니핏" subsection** — class declaration, field stubs, key method signatures. For `private final` dependencies, prefer injecting existing services found in Step 1.
-- **7. Implementation Order**: When modifying existing code, split into Tidy First → Behavior Change phases with separate commits. Tag every entry `[NEW]` or `[REGRESSION]` — `[REGRESSION]` means run the existing test as-is; never add a duplicate.
-
-For non-API work (batch jobs, refactoring, etc.), omit sections that don't apply (e.g., API Design) and fill in the rest.
+- **7. Implementation Order**: When modifying existing code, split into Tidy First → Behavior Change phases with separate commits, and tag every entry `[NEW]` or `[REGRESSION]`. An approved `0-2` abstraction is extracted in the Tidy First phase from the cases that already exist (`refactor`), and the new case follows in the behavior-change phase.
 
 ### Step 3.5: Self-Review
 
 After writing the document, review it yourself before showing it to the user. Fix issues inline — no need to re-review after fixing.
 
-**1. Spec coverage** (spec 문서가 제공된 경우): 각 요구사항/불변성에 대응하는 구현 항목이 섹션 7에 있는가? 누락된 항목은 추가한다.
+**1. Spec coverage** (when a spec document was provided): does every requirement and invariant have a matching implementation entry in Section 7? Add whatever is missing.
 
-**2. Placeholder scan**: 다음 패턴이 있으면 즉시 수정한다.
+**2. Placeholder scan**: fix these patterns immediately.
 - "TBD", "TODO", "추후 확인", "별도 확인 필요"
-- "적절한 예외 처리 추가" / "유효성 검증 추가" (구체적 내용 없이)
-- 코드 스니핏 없이 "구현한다"만 적힌 단계
+- "적절한 예외 처리 추가" / "유효성 검증 추가" with no concrete content
+- A step that only says "구현한다" with no code snippet
 
-**3. DisplayName check**: 섹션 7의 테스트 이름이 메서드명이 아닌 도메인 규칙 문장인가?
+**3. DisplayName check**: are the test names in Section 7 domain rule sentences rather than method names?
 - Bad: `testCancelWhenPaid`
 - Good: `결제 완료된 주문은 취소할 수 없다`
 
-**4. Consistency**: 섹션 5의 클래스명/메서드명이 섹션 7의 코드 스니핏과 일치하는가?
+**4. Consistency**: do the class and method names in Section 5 match the code snippets in Section 7?
+
+**5. Abstraction justification**: does every `0-2` entry have 2+ cases and a domain reason? Delete the ones that don't — `해당 없음` beats a padded table.
 
 ### Step 4: Request Feedback (Mandatory)
 
@@ -151,11 +138,15 @@ After writing the document, ask the user in a normal assistant message:
 > "계획 문서를 작성했습니다. 수정하거나 보완할 부분이 있으신가요?
 > 특히 [단계 구성 / 누락된 항목 / 범위]에 대한 의견을 주시면 반영하겠습니다."
 
+If `0-2` has an entry, ask about it in the same message and delete it from the document if rejected — never leave it as "추후 검토":
+
+> "섹션 0-2에 [변화 지점] 추상화([제안])를 제안했습니다. 지금 도입할지, 케이스가 더 쌓일 때까지 미룰지 판단해주세요."
+
 Do NOT proceed to implementation without explicit approval.
 
 ### Step 5: Hand Off to tdd-team (Terminal State)
 
-Once feedback is incorporated and approved:
+Once approved:
 
 > "계획 문서가 완성되었습니다. 이제 tdd-team을 사용해 구현을 시작하겠습니다."
 
