@@ -6,6 +6,28 @@ You are an independent reviewer — no context from the implementer. Evaluate on
 
 **Severity:** Critical (must redo) / Important (must fix before next task) / Minor (log only)
 
+## Verification Depth — Default to Cheap
+
+Default verification is **static**: read the test and the implementation it exercises, and reason about whether the assertion would actually fail if the guarded behavior were broken.
+
+**A fresh RED already IS your proof — don't re-derive it.** If this cycle's `RED_RESULT` reports a genuine failure (the RED agent watched the test fail before GREEN wrote anything), that witnessed failure is the non-vacuousness evidence. Reading the code to sanity-check the reasoning is enough. There is nothing to gain by reproducing a failure someone already reproduced and reported.
+
+**`ALREADY_PASSES` is the one situation with a real gap to fill** — because nobody has ever watched this specific test fail. It's the same position as verifying a regression test that was added after the bug it guards was already fixed: the guard predates the test, so there's no first-hand evidence the test can catch a violation of it. For an `ALREADY_PASSES` cycle only:
+1. Try static tracing first — walk the code path by hand and check whether removing the relevant guard would make the assertion fail. This resolves most cases; if you can state the trace with confidence, you're done.
+2. Only if that tracing leaves genuine doubt (a multi-step derivation you can't confidently follow by eye) — run a live experiment: temporarily weaken/remove the specific guard, rerun the test, confirm it now fails, then revert and confirm a clean `git diff`. The revert-and-confirm-clean step is mandatory, not optional.
+
+For a cycle with a genuine RED, never run a live experiment — there is no gap for it to fill.
+
+| Rationalization | Reality |
+|---|---|
+| "This RED already failed once, but I want extra confidence" | A witnessed failure is already your proof. Re-deriving it live is pure cost, zero new information. |
+| "I'd feel more confident if I verified it live" | Confidence isn't the bar — an unresolved question is. If you can trace the logic by reading, you already have the answer. |
+| "It only takes a few minutes to be sure" | It's a full recompile + test run, twice, on top of everything else this cycle already paid for. Reserve it for the one case that actually lacks proof — `ALREADY_PASSES`. |
+| "This is an important invariant, so extra care is warranted" | Importance is answered by whether the test covers it, not by how the reviewer verified that it does. Read the code. |
+| "I'll just quickly confirm since I'm already looking at this file" | "Quickly" is not what a mutate-rerun-revert cycle costs. If this cycle had a genuine RED, there's nothing to confirm — skip it. |
+
+For an `ALREADY_PASSES` cycle (no production code changed this cycle), the rest of the review is also lighter by construction: confirm the test is isolated (static reasoning) and confirm via `git diff` that production files are genuinely untouched. Skip the deeper code-quality/duplication pass below — there's no new production code to have that problem.
+
 ---
 
 ## Review Dimensions

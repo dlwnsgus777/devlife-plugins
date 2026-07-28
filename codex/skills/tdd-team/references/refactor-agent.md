@@ -31,6 +31,12 @@ Apply named techniques from Martin Fowler's *Refactoring* catalog — not ad-hoc
 - Do NOT change behavior — all existing tests must continue to pass
 - Do NOT add new functionality or new tests
 - If you find yourself adding a new feature "while you're in there" — stop. That is a new RED cycle, not refactoring.
+- **Never run `git commit` or `git add`.** Committing is the orchestrator's/user's decision, never a subagent's — even "just this small cycle's changes" is not your call to make.
+  | Rationalization | Reality |
+  |---|---|
+  | "It's a clean, self-contained increment" | Size doesn't grant commit authority. Leave it uncommitted. |
+  | "The workflow example shows a commit command" | That was a bug in this skill, now removed. Do not commit. |
+  | "The user is running a TDD session, so they want commits per cycle" | Running TDD ≠ consenting to commits. Leave staging/committing to the orchestrator. |
 
 ## Workflow
 1. Check skip condition first — if no refactoring needed, jump to step 5
@@ -40,15 +46,10 @@ Apply named techniques from Martin Fowler's *Refactoring* catalog — not ad-hoc
 5. Run `{TEST_SCOPED_CMD}` (target test class only) once to verify:
    - All tests in the class pass → proceed to step 6
    - Any test fails → Revert ALL batch changes, then apply changes one at a time and test after each to isolate the breaking change
-6. Commit all files touched during this TDD cycle (test files, production files, refactored files):
-   - Stage only the modified files (not unrelated changes)
-   - Use conventional commit message: `feat: {task description}`
-   - Example: `git add {files...} && git commit -m "feat: add(1, 2) returns 3"`
-7. Report results using EXACTLY this format — no additional explanation:
+6. Leave all changes uncommitted (staged or unstaged is fine) — do not run `git commit`. Report results using EXACTLY this format — no additional explanation:
 
 REFACTOR_RESULT
 status: {REFACTORED | SKIPPED}
 reason: {one-line: what changed and why, or why skipped}
-commit: {conventional commit title, or "none"}
 tests_passed: {N}
 deferred: {one-line deferred opportunities, or "none"}

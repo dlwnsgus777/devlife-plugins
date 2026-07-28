@@ -11,6 +11,7 @@ Mission: Make the failing test PASS with the SIMPLEST possible implementation.
 Run tests with `{TEST_SCOPED_CMD}` for the test class under work — never the full suite, never `clean`. Cross-class regressions are caught by the full-suite run at Final Review.
 
 ## Rules
+- If RED reported multiple test methods (a batched task), make ALL of the Red ones pass with one coherent implementation — don't implement them one at a time as separate changes. If they can't share one small implementation, say so and report BLOCKED; that's a signal the batch was too coarse.
 - Write the MINIMUM code needed to make the test pass — no more, no less
 - Do NOT refactor or clean up code — that is the refactor phase's job
 - Do NOT modify tests — only modify production code

@@ -16,7 +16,7 @@ description: >
 
 # TDD Team
 
-Orchestrate a 3-phase Red-Green-Refactor TDD cycle. Each cycle implements one small behavior increment.
+Orchestrate a 3-phase Red-Green-Refactor TDD cycle using sequential sub-agent dispatches. Each cycle implements one small behavior increment.
 
 ## Codex Compatibility Rules
 
@@ -33,12 +33,23 @@ Orchestrate a 3-phase Red-Green-Refactor TDD cycle. Each cycle implements one sm
 | **green** | GREEN | Make it pass with minimal code |
 | **refactor** | REFACTOR | Improve quality, keep tests passing |
 
+## Right-Size the Ceremony
+
+**Never cut RED/GREEN isolation, regardless of change size.** The reason RED and GREEN are separate dispatches isn't "this feature is risky, so be careful" — it's structural: one mind writing both the test and the implementation gravitates to happy-path-only coverage, because the test ends up describing whatever you already intended to build rather than pressure-testing the actual requirement. A tiny change is just as vulnerable to that bias as a large one — the implementer *wants* green, and a test they wrote with the implementation already in mind is the easiest way to get there. So RED always runs blind to how GREEN will implement it, and GREEN always runs as a separate dispatch from RED, on every cycle, no matter how small the task looks.
+
+What legitimately scales down with change size and risk is everything *around* that isolation:
+- **Cycle granularity** — batch related scenarios that share one implementation change into a single task instead of one full RED→GREEN→REFACTOR→REVIEW per test method (see Step 4's batching guidance).
+- **REFACTOR** — already skips itself when GREEN's output is clean; don't force it to run when there's nothing to improve.
+- **CYCLE REVIEWER depth** — static reasoning by default; reserve live mutation experiments for genuine doubt (see cycle-reviewer.md's Verification Depth section).
+- **Final Review scope** — touched classes only, not the full suite, unless the change has wide blast radius (see Final Review below).
+
+Mid-session signal to downshift the granularity (not the isolation): if most of the cycles you've run so far turned out `ALREADY_PASSES` (the behavior was already implied by an earlier cycle's implementation), stop spawning one cycle per remaining scenario — batch what's left into a single RED pass (see Step 4). RED and GREEN still run as separate dispatches for that batched cycle.
+
 ## Setup
 
 ### 1. Resolve Skill Path
 
-This SKILL.md was loaded from a known absolute path. Capture its parent directory as `SKILL_DIR`.
-Phase-specific instruction files are in:
+This SKILL.md was loaded from a known absolute path. Capture its parent directory as `SKILL_DIR`. Each phase agent's prompt file lives under `{SKILL_DIR}/references/` and is read directly by that phase's sub-agent dispatch — there is no separate aggregate prompts file to load here.
 
 ```
 {SKILL_DIR}/references/red-agent.md
@@ -56,14 +67,14 @@ Check for build files (`build.gradle.kts`, `pom.xml`, `package.json`, etc.) and 
 PROJECT_ROOT / SOURCE_DIR / TEST_DIR / TEST_CMD / TEST_SCOPED_CMD / TEST_FRAMEWORK
 ```
 
-- **TEST_CMD** — full-suite command. Run it **only once, at Final Review** (see below), never inside a cycle.
-- **TEST_SCOPED_CMD** — command template that runs a **single test class**, used by every in-cycle test run. Gradle: `./gradlew test --tests "{FQCN}" --offline` (JUnit `@Nested` classes run with the enclosing class FQCN). Maven: `mvn -o test -Dtest={ClassName}`. npm/jest/vitest: pass the test file path (e.g. `npx vitest run {test_file}`).
+- **TEST_CMD** — full-suite command. Not run by default (see Final Review) — only run it if the user explicitly asks for full-suite/cross-class regression coverage.
+- **TEST_SCOPED_CMD** — command template that runs a **single test class**, used by every in-cycle test run and by Final Review. Gradle: `./gradlew test --tests "{FQCN}" --offline` (JUnit `@Nested` classes run with the enclosing class FQCN). Maven: `mvn -o test -Dtest={ClassName}`. npm/jest/vitest: pass the test file path (e.g. `npx vitest run {test_file}`). Most frameworks accept multiple `--tests`/file-path arguments in one invocation — use that to run several touched classes together instead of one command per class.
 
 **Speed configuration (do this before Cycle 1):**
 - **Keep the build daemon warm.** For Gradle, ensure `org.gradle.daemon=true` and prefer `--offline`; **never run `clean`** between cycles (it throws away compiled output and forces a full rebuild every time).
 - **Warm-up build once.** Before the first RED, run a one-off compile of sources + tests (Gradle: `./gradlew compileTestJava` / `compileTestKotlin --offline`; Maven: `mvn -o test-compile`) so the daemon is booted and the compile cache is hot — the first cycle then doesn't pay cold-start.
 
-**Why scoped runs:** running the full suite in every RED/GREEN/REFACTOR was the dominant per-cycle cost. In-cycle runs are scoped to the class under test; cross-class regressions are caught by the mandatory full-suite run at Final Review.
+**Why scoped runs:** running the full suite in every RED/GREEN/REFACTOR was the dominant per-cycle cost. In-cycle runs are scoped to the class under test; Final Review re-runs the same scoping across every class touched this session — see Final Review below for why the full suite is opt-in, not default.
 
 ### 3. Identify Domain Invariants
 
@@ -72,8 +83,9 @@ PROJECT_ROOT / SOURCE_DIR / TEST_DIR / TEST_CMD / TEST_SCOPED_CMD / TEST_FRAMEWO
 1. Read the document
 2. Extract invariants from **Section 2 (Domain Context & Invariants)** — do not re-derive
 3. Extract the task list from **Section 7 (Implementation Order / TDD)** — use `[NEW]` tagged items as TDD tasks; skip `[REGRESSION]` items (they are existing tests to run, not new cycles)
-4. Present the task list in the format below and ask for confirmation before starting cycles
-5. Skip Steps 3 and 4 below entirely
+4. **Merge plan items that share one implementation change into a single task** before presenting the list — a plan often lists scenarios one-per-line for readability, which is a documentation granularity, not a cycle granularity. See the batching guidance under Step 4 below for the signal to merge vs. split.
+5. Present the task list in the format below and ask for confirmation before starting cycles
+6. Skip the "no plan document" branch just below, and skip Step 4 (Decompose into TDD Tasks) entirely — Section 7 already gave you the task list, there's nothing left to derive
 
 **If no plan document is provided — Source: PRD first, code second.**
 
@@ -110,6 +122,11 @@ Name each task as a **domain rule sentence** — it becomes the test's `@Display
 # Good: 두 정수를 더하면 합계를 반환한다
 ```
 
+**Batch scenarios that share one implementation change.** A cycle should map to a unit of *implementation work*, not to a single test method. Before finalizing the task list, look for groups of scenarios that will all be satisfied by the same guard clause, the same conditional, or the same small function — e.g. the positive and negative branches of one check, or a family of role/state permutations against one lookup. Merge each such group into a single task with multiple `@DisplayName`s under it, rather than one task per scenario.
+
+> Signal you merged too coarsely: GREEN can't make all of a task's test methods pass with one small change — split it back apart.
+> Signal you split too finely: cycle N's RED comes back `ALREADY_PASSES` because cycle N-1's GREEN already covered it — merge it into whichever earlier task actually implements the shared logic, going forward.
+
 Present the task list in this format, then get user confirmation before starting:
 
 ```
@@ -118,7 +135,7 @@ TDD 태스크 목록
   ┌─────┬─────────────────────────────────────────────────────────────────────────────────┐
   │  #  │                                    태스크                                       │
   ├─────┼─────────────────────────────────────────────────────────────────────────────────┤
-  │ 1   │ {domain rule sentence → @DisplayName}                                           │
+  │ 1   │ {domain rule sentence → @DisplayName} (+ {domain rule sentence → @DisplayName} if batched) │
   ├─────┼─────────────────────────────────────────────────────────────────────────────────┤
   │ 2   │ {domain rule sentence → @DisplayName}                                           │
   └─────┴─────────────────────────────────────────────────────────────────────────────────┘
@@ -126,7 +143,7 @@ TDD 태스크 목록
 
 ### 5. Capture Project Context (once)
 
-Before the first cycle, the **orchestrator** explores the feature area **one time** and captures a reusable `PROJECT_CONTEXT` block. Each phase agent then reads this block instead of re-scanning the codebase — this removes the per-agent cold-start exploration that made every RED/GREEN feel slow.
+Before the first cycle, the **orchestrator** explores the feature area **one time** and captures a reusable `PROJECT_CONTEXT` block. Each phase agent then reads this block instead of re-scanning the codebase — this removes the per-agent cold-start exploration that made every RED/GREEN feel slow. (This one read is allowed for the orchestrator; the ORCHESTRATOR ONLY rule below governs source/test file *edits* during cycles, not this Setup scan.)
 
 Capture only what the agents actually need to avoid re-reading:
 
@@ -144,8 +161,10 @@ Keep it compact (signatures and paths, not full file bodies). If the feature is 
 ## TDD Cycle Execution
 
 > **BLOCKING REQUIREMENT — TDD ORDER**: Do not write production implementation before a failing test has been written and verified.
+>
+> **BLOCKING REQUIREMENT — ORCHESTRATOR ONLY**: You are the orchestrator. After user confirmation, you MUST dispatch a Codex sub-agent for every RED / GREEN / REFACTOR step. Do NOT read or patch source or test files yourself. If you find yourself about to edit a file directly — stop and dispatch a sub-agent instead.
 
-For each task, execute RED → GREEN → REFACTOR in order using Codex sub-agents.
+For each task, dispatch a Codex sub-agent three times sequentially (RED → GREEN → REFACTOR). Each agent reads only its own prompt file. Include the `PROJECT_CONTEXT` block (from Setup step 5) in every agent prompt so the agent does not re-scan the codebase.
 
 ### Codex Sub-Agent Pattern
 
@@ -199,16 +218,17 @@ Task: {task description}
 
 ### Cycle Flow
 
-1. **RED** → capture test file path, method name, failure message
-   - `ALREADY_PASSES` → skip GREEN + REFACTOR, proceed to next task
+1. **RED** → capture test file path, method name(s), failure message(s) — a batched task reports one line per scenario
+   - Every reported method is `ALREADY_PASSES` → skip GREEN + REFACTOR, proceed to next task (still run CYCLE REVIEWER — it's the only check that the new tests are real coverage, not vacuous)
+   - At least one method is genuinely Red → proceed to GREEN as usual; GREEN targets the Red ones, the `ALREADY_PASSES` ones just ride along as already-passing coverage
    - Build fails → RED handles internally (fix stubs, re-verify)
 2. **GREEN** → capture files modified, all test results
 3. **REFACTOR** — skip if GREEN output is already clean
-4. **CYCLE REVIEWER** → use a Codex reviewer sub-agent
+4. **CYCLE REVIEWER** → dispatch an independent Codex reviewer sub-agent (see below)
 
 ### Cycle Reviewer Dispatch
 
-After REFACTOR completes, review the cycle with a Codex reviewer sub-agent.
+After REFACTOR completes, dispatch an independent reviewer sub-agent.
 
 1. Discover the available multi-agent tool with `tool_search`.
 2. Spawn a reviewer sub-agent with the prompt below.
@@ -229,7 +249,7 @@ Diff:
 
 **Handle reviewer verdict:**
 - `APPROVED` → log progress, proceed to next task
-- `NEEDS_FIX` → use a Codex fix sub-agent for Critical/Important findings, then re-run cycle reviewer. If no Codex sub-agent tool is available, fix locally.
+- `NEEDS_FIX` → dispatch a Codex fix sub-agent for Critical/Important findings, then re-run cycle reviewer. If no Codex sub-agent tool is available, fix locally.
   - Minor findings: log and continue
 
 Follow project feedback gates between stages and cycles. If no feedback gate is required, continue through the task list without asking between cycles.
@@ -244,7 +264,9 @@ Follow project feedback gates between stages and cycles. If no feedback gate is 
 
 ## Final Review
 
-After all cycles complete, **run the full test suite once** with `TEST_CMD` to catch any cross-class regression that the in-cycle scoped runs did not exercise. If anything fails, dispatch a fix sub-agent before proceeding. Then run a final review with a Codex reviewer sub-agent.
+After all cycles complete, run **only the test classes touched this session** — collect the distinct `test_file` values from every cycle's `RED_RESULT` and run them together in one `TEST_SCOPED_CMD` invocation (e.g. Gradle: `./gradlew test --tests "FQCN1" --tests "FQCN2" ... --offline`). Do **not** run the full suite by default — it's the single most expensive step in this whole workflow (minutes, on a large module) for a regression class (cross-class breakage from a shared dependency) that the touched-classes run usually already catches, since GREEN/REFACTOR already re-ran each class individually. Only fall back to the full `TEST_CMD` if the user explicitly asks for full-suite/cross-class coverage, or if the change touched something with many indirect callers (a shared utility, a widely-used base class) where breakage wouldn't show up in the touched classes alone.
+
+If anything fails, dispatch a fix sub-agent before proceeding. Then dispatch an independent final reviewer sub-agent.
 
 1. Discover the available multi-agent tool with `tool_search`.
 2. Spawn a reviewer sub-agent with the prompt below.
@@ -262,7 +284,7 @@ Branch diff:
 
 **Handle final reviewer verdict:**
 - `APPROVED` → proceed to session end
-- `NEEDS_FIX` → use a Codex fix sub-agent with the complete findings list, then re-run final reviewer. If no Codex sub-agent tool is available, fix locally.
+- `NEEDS_FIX` → dispatch a single Codex fix sub-agent with the complete findings list, then re-run final reviewer. If no Codex sub-agent tool is available, fix locally.
 
 ## Session End
 

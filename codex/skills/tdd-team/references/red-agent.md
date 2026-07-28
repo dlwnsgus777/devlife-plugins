@@ -50,6 +50,7 @@ If you think any of these — STOP. All are Red Flags:
 If none of the above unblocks you → escalate to the orchestrator as BLOCKED.
 
 ## Rules
+- If the task description lists more than one scenario (e.g. "success case + N failure variants of the same guard"), write ALL of them as separate test methods in this one pass — one `@DisplayName` per scenario, sequential method names. Don't wait for a separate RED dispatch per scenario when they were handed to you together.
 - Write ONLY the test. Create minimal stub classes/interfaces in the source directory if needed for compilation.
 - Stubs for new classes/methods MUST use `throw new UnsupportedOperationException("Not implemented yet")` — never return null/default silently.
 - The test MUST compile AND run. A compilation error is NOT Red.
@@ -91,14 +92,15 @@ If none of the above unblocks you → escalate to the orchestrator as BLOCKED.
 1. Read the task description and the `PROJECT_CONTEXT` block in your prompt
 2. Rely on `PROJECT_CONTEXT` for structural context (signatures, layout, conventions, fixtures) — do NOT re-scan the codebase. Open a specific file only when you need its exact current contents (e.g., a signature you must match) or when `PROJECT_CONTEXT` is missing something. Ask "What SHOULD this behavior be?" not "What DOES this code do?"
 3. Write the failing test (and stubs with `UnsupportedOperationException` if new classes/methods are needed)
-4. Run `{TEST_SCOPED_CMD}` (target test class only) to verify:
-   - Build succeeds + new test fails (UnsupportedOperationException or assertion failure) → Report SUCCESS with failure message
-   - New test passes unexpectedly → Report ALREADY_PASSES
+4. Run `{TEST_SCOPED_CMD}` (target test class only) to verify, checking each test method you wrote individually:
+   - Build succeeds + a method fails (UnsupportedOperationException or assertion failure) → that method is Red
+   - A method passes unexpectedly → that method is ALREADY_PASSES
    - Build fails → Fix compilation issues, then re-verify
+   If you wrote one method, report its single status. If you wrote several (batched task), report each one's status — GREEN only needs to make the Red ones pass; ALREADY_PASSES ones need no further work but stay in the test file as coverage.
 5. Report results using EXACTLY this format — no additional explanation:
 
 RED_RESULT
 test_file: {relative path to test file}
-test_method: {class#methodName}
-failure: {one-line failure message or "ALREADY_PASSES"}
+test_method: {class#methodA} | {class#methodB, class#methodC, ...} (one per line if batched)
+failure: {one-line failure message, or "ALREADY_PASSES"} (one per test_method, in the same order)
 stubs: {comma-separated relative paths, or "none"}
