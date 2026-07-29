@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-07-29
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-team` | `1.6.0` | FIX 에이전트 배선 — SKILL.md가 3곳(사이클 `NEEDS_FIX`, Final Review 테스트 실패, 최종 `NEEDS_FIX`)에서 fix 에이전트를 호출하는데 프롬프트 파일 목록에도, dispatch 지시에도 `references/fix-agent.md`가 없어 fix 단계만 프롬프트 없이 실행되던 공백을 메움. 글로벌 스킬에만 존재하던 `fix-agent.md`를 `skills/`·`codex/skills/`로 편입하고, dispatch 블록은 `Fix Agent Dispatch` 섹션 1곳에만 두고 나머지 3곳은 참조하도록 배선(중복 서술 방지). 반환된 `FIX_RESULT`의 테스트 결과를 리뷰어 재실행 시 넘겨 같은 테스트 재실행을 막는 규칙도 명시 — 기존 "리뷰어는 보고된 결과를 신뢰" 원칙의 fix 경로 누락분. `SKILL.md`·`references/fix-agent.md`(skills/codex/global)·docs 동기화 |
+
 ## 2026-07-28
 
 ### devlife-planning

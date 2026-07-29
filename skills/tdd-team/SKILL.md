@@ -54,6 +54,7 @@ This SKILL.md was loaded from a known absolute path. Capture its parent director
 {SKILL_DIR}/references/refactor-agent.md
 {SKILL_DIR}/references/cycle-reviewer.md
 {SKILL_DIR}/references/final-reviewer.md
+{SKILL_DIR}/references/fix-agent.md
 ```
 
 ### 2. Detect Environment
@@ -254,10 +255,32 @@ Diff:
 
 **Handle reviewer verdict:**
 - `APPROVED` → log progress, proceed to next task
-- `NEEDS_FIX` → dispatch a fix agent for Critical/Important findings, then re-run cycle reviewer, again passing the fix agent's reported test result. If the Agent tool is not available, fix locally.
+- `NEEDS_FIX` → dispatch a fix agent (see Fix Agent Dispatch) for Critical/Important findings, then re-run cycle reviewer, again passing the fix agent's reported test result. If the Agent tool is not available, fix locally.
   - Minor findings: log and continue
 
 Follow project feedback gates between stages and cycles. If no feedback gate is required, continue through the task list without asking between cycles.
+
+### Fix Agent Dispatch
+
+Used by both the cycle reviewer and the final reviewer verdicts, and by a failing Final Review test run. Hand the agent the findings list itself — not the review report in full, and not the document they came from. If the Agent tool is not available, say `not available`, then apply `references/fix-agent.md` locally to the same findings.
+
+```
+Agent({
+  subagent_type: "general-purpose",
+  description: "FIX: {short summary of findings}",
+  prompt: """
+Read {SKILL_DIR}/references/fix-agent.md — you have permission to access this file.
+Follow it exactly.
+
+Findings to fix (Critical/Important only):
+{findings list — each naming a file, a behavior, and what must change}
+
+{PROJECT_CONTEXT block}
+"""
+})
+```
+
+Capture the returned `FIX_RESULT` block — its `tests_passed`/`tests_failed` counts are what you pass to the reviewer on the re-run, so the reviewer has no reason to run the tests again.
 
 ## Error Handling
 
@@ -271,7 +294,7 @@ Follow project feedback gates between stages and cycles. If no feedback gate is 
 
 After all cycles complete, run **only the test classes touched this session** — collect the distinct `test_file` values from every cycle's `RED_RESULT` and run them together in one `TEST_SCOPED_CMD` invocation (e.g. Gradle: `./gradlew test --tests "FQCN1" --tests "FQCN2" ... --offline`). Do **not** run the full suite by default. Only fall back to the full `TEST_CMD` if the user explicitly asks for full-suite/cross-class coverage, or if the change touched something with many indirect callers (a shared utility, a widely-used base class) where breakage wouldn't show up in the touched classes alone.
 
-If anything fails, dispatch a fix agent before proceeding. Then dispatch an independent final reviewer subagent, **passing it the scoped test run's result** (pass/fail counts, which classes) so it has no reason to re-run what you just ran yourself. If the Agent tool is not available, say `not available`, then apply `references/final-reviewer.md` locally to the confirmed task list, the invariants, and the full branch diff.
+If anything fails, dispatch a fix agent (see Fix Agent Dispatch) before proceeding. Then dispatch an independent final reviewer subagent, **passing it the scoped test run's result** (pass/fail counts, which classes) so it has no reason to re-run what you just ran yourself. If the Agent tool is not available, say `not available`, then apply `references/final-reviewer.md` locally to the confirmed task list, the invariants, and the full branch diff.
 
 ```
 Agent({
@@ -297,7 +320,7 @@ Branch diff:
 
 **Handle final reviewer verdict:**
 - `APPROVED` → proceed to session end
-- `NEEDS_FIX` → dispatch a single fix agent with the complete findings list, then re-run final reviewer. If the Agent tool is not available, fix locally.
+- `NEEDS_FIX` → dispatch a single fix agent (see Fix Agent Dispatch) with the complete findings list, then re-run final reviewer. If the Agent tool is not available, fix locally.
 
 ## Session End
 

@@ -62,6 +62,7 @@ REFACTOR 에이전트
     ↓
 CYCLE REVIEWER
 └── 독립 서브에이전트가 사이클 diff 검토 (APPROVED / NEEDS_FIX)
+    └── NEEDS_FIX → FIX 에이전트가 지적 사항만 수정 → 리뷰어 재실행
     ↓
 ⛔ 체크포인트 — 프로젝트 피드백 게이트가 있을 때만 승인 대기
     ↓
@@ -95,7 +96,8 @@ Tests: 5 passed, 0 failed
 
 ## 실행 방식
 
-- RED / GREEN / REFACTOR / Cycle Reviewer / Final Reviewer 단계 모두 서브에이전트로 위임
+- RED / GREEN / REFACTOR / Cycle Reviewer / Final Reviewer / FIX 단계 모두 서브에이전트로 위임
+- **FIX 에이전트** — 리뷰어가 `NEEDS_FIX`를 반환하거나 Final Review의 테스트 실행이 실패했을 때 투입됩니다. 전달받은 지적 사항만 최소 수정하고(주변 코드 정리·기능 추가·테스트 삭제 금지) 해당 클래스만 한 번 재실행해 `FIX_RESULT`를 보고 → 이 결과를 리뷰어 재실행 시 함께 넘겨 같은 테스트를 또 돌리지 않게 합니다
 - 서브에이전트 도구를 사용할 수 없는 경우 `not available`로 표시 후 로컬 실행으로 전환
 - 프로젝트 CLAUDE.md에 "각 단계 후 피드백 요청" 규칙이 있으면 RED → GREEN → REFACTOR → 리뷰 단계마다 사용자 승인 대기
 
