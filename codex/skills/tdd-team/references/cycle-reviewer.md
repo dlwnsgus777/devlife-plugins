@@ -28,6 +28,15 @@ For a cycle with a genuine RED, never run a live experiment — there is no gap 
 
 For an `ALREADY_PASSES` cycle (no production code changed this cycle), the rest of the review is also lighter by construction: confirm the test is isolated (static reasoning) and confirm via `git diff` that production files are genuinely untouched. Skip the deeper code-quality/duplication pass below — there's no new production code to have that problem.
 
+### Re-reviewing after a fix
+
+When you're re-reviewing after a prior `NEEDS_FIX`, the fix report already states it ran the scoped test command and it passed — **trust that report**, don't re-run it yourself to double-check. The only thing worth fresh verification is the *specific* new/changed assertion the fix introduced, and only if it falls into the `ALREADY_PASSES` gap above (no witnessed failure exists for it). Everything else in the file is either unchanged (still covered by its original RED) or already confirmed passing by the fix report — re-running the whole class again is the "quickly confirm since I'm already looking at this file" rationalization above, just relocated to the second pass.
+
+### If you do run a live experiment
+
+- Never pass `--rerun-tasks`, `--rerun`, or `clean` — these force a full rebuild across every module in the project and turn a "quick check" into a multi-minute cost on top of everything this cycle already paid for. Plain `{TEST_SCOPED_CMD}` already re-executes the class you touched; Gradle's normal incremental compilation is correct and sufficient.
+- Run it once, revert, confirm `git diff` is clean. Don't run it "one more time to be sure" — that's the same cost with no new information, restated.
+
 ---
 
 ## Review Dimensions

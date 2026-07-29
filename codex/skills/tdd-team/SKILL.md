@@ -40,8 +40,8 @@ Orchestrate a 3-phase Red-Green-Refactor TDD cycle using sequential sub-agent di
 What legitimately scales down with change size and risk is everything *around* that isolation:
 - **Cycle granularity** — batch related scenarios that share one implementation change into a single task instead of one full RED→GREEN→REFACTOR→REVIEW per test method (see Step 4's batching guidance).
 - **REFACTOR** — already skips itself when GREEN's output is clean; don't force it to run when there's nothing to improve.
-- **CYCLE REVIEWER depth** — static reasoning by default; reserve live mutation experiments for genuine doubt (see cycle-reviewer.md's Verification Depth section).
-- **Final Review scope** — touched classes only, not the full suite, unless the change has wide blast radius (see Final Review below).
+- **CYCLE REVIEWER depth** — static reasoning by default; reserve live mutation experiments for genuine doubt, and never `--rerun-tasks`/`--rerun`/`clean` even then (see cycle-reviewer.md's Verification Depth section).
+- **Final Review scope** — touched classes only, not the full suite, unless the change has wide blast radius (see Final Review below). Both the cycle reviewer and the final reviewer are handed the test result the orchestrator (or GREEN/fix agent) already produced — they read and reason, they don't re-run it themselves absent a specific, concrete doubt.
 
 ## Setup
 
@@ -213,7 +213,7 @@ Task: {task description}
 
 ### Cycle Reviewer Dispatch
 
-After REFACTOR completes, dispatch an independent reviewer sub-agent.
+After REFACTOR completes, dispatch an independent reviewer sub-agent, **passing it GREEN's (or the fix agent's) reported test result** so it has no reason to re-run what was just run and reported.
 
 1. Discover the available multi-agent tool with `tool_search`.
 2. Spawn a reviewer sub-agent with the prompt below.
@@ -228,13 +228,15 @@ Task: {task description}
 Domain Invariants:
 {invariants}
 
+Test run just completed: tests_passed={N}, tests_failed=0 (from GREEN_RESULT / fix report)
+
 Diff:
 {test code + implementation code written in this cycle}
 ```
 
 **Handle reviewer verdict:**
 - `APPROVED` → log progress, proceed to next task
-- `NEEDS_FIX` → dispatch a Codex fix sub-agent for Critical/Important findings, then re-run cycle reviewer. If no Codex sub-agent tool is available, fix locally.
+- `NEEDS_FIX` → dispatch a Codex fix sub-agent for Critical/Important findings, then re-run cycle reviewer, again passing the fix agent's reported test result. If no Codex sub-agent tool is available, fix locally.
   - Minor findings: log and continue
 
 Follow project feedback gates between stages and cycles. If no feedback gate is required, continue through the task list without asking between cycles.
@@ -251,7 +253,7 @@ Follow project feedback gates between stages and cycles. If no feedback gate is 
 
 After all cycles complete, run **only the test classes touched this session** — collect the distinct `test_file` values from every cycle's `RED_RESULT` and run them together in one `TEST_SCOPED_CMD` invocation (e.g. Gradle: `./gradlew test --tests "FQCN1" --tests "FQCN2" ... --offline`). Do **not** run the full suite by default. Only fall back to the full `TEST_CMD` if the user explicitly asks for full-suite/cross-class coverage, or if the change touched something with many indirect callers (a shared utility, a widely-used base class) where breakage wouldn't show up in the touched classes alone.
 
-If anything fails, dispatch a fix sub-agent before proceeding. Then dispatch an independent final reviewer sub-agent.
+If anything fails, dispatch a fix sub-agent before proceeding. Then dispatch an independent final reviewer sub-agent, **passing it the scoped test run's result** (pass/fail counts, which classes) so it has no reason to re-run what you just ran yourself.
 
 1. Discover the available multi-agent tool with `tool_search`.
 2. Spawn a reviewer sub-agent with the prompt below.
@@ -266,6 +268,8 @@ Confirmed task list:
 
 Domain Invariants:
 {invariants}
+
+Test run just completed by the orchestrator: {TEST_SCOPED_CMD invocation} → {N} passed, 0 failed
 
 Branch diff:
 {full diff of all changes in this session}

@@ -2,9 +2,19 @@
 
 You are an independent reviewer — no context from the implementer. This is the last gate before the work is done.
 
-**Inputs:** the confirmed task list and domain invariants from Setup, full branch diff
+**Inputs:** the confirmed task list and domain invariants from Setup, full branch diff, and the test result the orchestrator already produced by running the touched classes
 
 **Severity:** Critical (must fix) / Important (must fix) / Minor (log only)
+
+---
+
+## Verification Depth — Trust the Reported Run, Don't Repeat It
+
+The orchestrator already ran the scoped test command for every class touched this session, immediately before dispatching you, and its pass/fail result is in your prompt. That run **is** your evidence that the suite is green — re-running it yourself (with or without `--rerun-tasks`/`--rerun`/`clean`) produces no new information, only a second multi-minute Gradle invocation across every module in the project.
+
+Default to reading: trace the diff against the task list and invariants, and reason about coverage the same way you would read any code review. Only execute something yourself if you find a *specific* concrete doubt a static read can't resolve — e.g. the diff references a fixture or helper method that isn't shown and you can't tell if it compiles, or two findings seem to contradict each other in a way only running the code would settle. In that narrow case, run the plain `{TEST_SCOPED_CMD}` for just the class in question — never `--rerun-tasks`/`--rerun`/`clean`, and never the full suite (that decision belongs to the orchestrator, per the main skill's Final Review scope rule).
+
+"I want to be sure" / "it's quick to double check" / "let me confirm before approving" are not reasons — the orchestrator's report already is the confirmation. Spend your time on the dimensions below, not on re-proving what's already proven.
 
 ---
 
