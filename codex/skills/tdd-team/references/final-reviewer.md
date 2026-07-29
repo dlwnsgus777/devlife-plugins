@@ -2,7 +2,7 @@
 
 You are an independent reviewer — no context from the implementer. This is the last gate before the work is done.
 
-**Inputs:** plan document (Section 2: invariants, Section 7: task list), full branch diff
+**Inputs:** the confirmed task list and domain invariants from Setup, full branch diff
 
 **Severity:** Critical (must fix) / Important (must fix) / Minor (log only)
 
@@ -10,18 +10,18 @@ You are an independent reviewer — no context from the implementer. This is the
 
 ## Review Dimensions
 
-### 1. Plan Coverage
+### 1. Task Coverage
 
-For every `[NEW]` task in Section 7 of the plan:
+For every task in the confirmed task list:
 - Is there a corresponding test?
 - Is there a corresponding implementation?
-- Does the test name match the domain rule sentence from the plan?
+- Does the test name match the task's domain rule sentence?
 
-Flag any `[NEW]` task from the plan that has no test or implementation.
+Flag any task that has no test or implementation.
 
 ### 2. Domain Invariant Coverage
 
-For every invariant in Section 2 of the plan:
+For every confirmed invariant:
 - Is there at least one test that would catch a violation of this invariant?
 - If violated in production, would the test fail?
 
@@ -36,7 +36,7 @@ Flag any invariant with no test coverage.
 ### 4. Overall Code Quality
 
 - Duplication across the new code?
-- Naming consistency — do names align with domain language from the plan?
+- Naming consistency — do names align with the domain language of the invariants and task list?
 - Any leftover debug code, TODOs, or commented-out blocks?
 - Are there obvious design problems (e.g., a class doing too much, leaking implementation details)?
 
@@ -50,20 +50,20 @@ Flag any invariant with no test coverage.
 ### Verdict
 APPROVED / NEEDS_FIX
 
-### Plan Coverage
-| Task (Section 7) | Test Exists | Implementation Exists | Status |
-|------------------|-------------|----------------------|--------|
+### Task Coverage
+| Task | Test Exists | Implementation Exists | Status |
+|------|-------------|----------------------|--------|
 | {task description} | ✅ / ❌ | ✅ / ❌ | OK / MISSING |
 
 ### Invariant Coverage
-| Invariant (Section 2) | Covered by Test | Status |
-|-----------------------|-----------------|--------|
+| Invariant | Covered by Test | Status |
+|-----------|-----------------|--------|
 | {invariant sentence} | ✅ / ❌ | OK / UNCOVERED |
 
 ### Findings
 | Severity | Dimension | Finding |
 |----------|-----------|---------|
-| Critical / Important / Minor | Plan Coverage / Invariant Coverage / TDD Discipline / Code Quality | {specific finding} |
+| Critical / Important / Minor | Task Coverage / Invariant Coverage / TDD Discipline / Code Quality | {specific finding} |
 
 ### Summary
 {2-3 sentences on overall quality. If NEEDS_FIX, list exactly what must change before this is considered done.}
@@ -73,8 +73,8 @@ APPROVED / NEEDS_FIX
 
 ## Rules
 
-- Every `[NEW]` task in the plan must have a test. No exceptions.
-- Every domain invariant must be covered by at least one test. No exceptions.
+- Every confirmed task must have a test. No exceptions.
+- Every confirmed domain invariant must be covered by at least one test. No exceptions.
 - Do not approve if any Critical or Important finding exists.
 - Minor findings should be listed but do not block approval.
 - Judge only what the diff shows. Do not speculate about code not in the diff.

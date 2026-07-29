@@ -43,8 +43,6 @@ What legitimately scales down with change size and risk is everything *around* t
 - **CYCLE REVIEWER depth** — static reasoning by default; reserve live mutation experiments for genuine doubt (see cycle-reviewer.md's Verification Depth section).
 - **Final Review scope** — touched classes only, not the full suite, unless the change has wide blast radius (see Final Review below).
 
-Mid-session signal to downshift the granularity (not the isolation): if most of the cycles you've run so far turned out `ALREADY_PASSES` (the behavior was already implied by an earlier cycle's implementation), stop spawning one cycle per remaining scenario — batch what's left into a single RED pass (see Step 4). RED and GREEN still run as separate dispatches for that batched cycle.
-
 ## Setup
 
 ### 1. Resolve Skill Path
@@ -70,28 +68,13 @@ PROJECT_ROOT / SOURCE_DIR / TEST_DIR / TEST_CMD / TEST_SCOPED_CMD / TEST_FRAMEWO
 - **TEST_CMD** — full-suite command. Not run by default (see Final Review) — only run it if the user explicitly asks for full-suite/cross-class regression coverage.
 - **TEST_SCOPED_CMD** — command template that runs a **single test class**, used by every in-cycle test run and by Final Review. Gradle: `./gradlew test --tests "{FQCN}" --offline` (JUnit `@Nested` classes run with the enclosing class FQCN). Maven: `mvn -o test -Dtest={ClassName}`. npm/jest/vitest: pass the test file path (e.g. `npx vitest run {test_file}`). Most frameworks accept multiple `--tests`/file-path arguments in one invocation — use that to run several touched classes together instead of one command per class.
 
-**Speed configuration (do this before Cycle 1):**
-- **Keep the build daemon warm.** For Gradle, ensure `org.gradle.daemon=true` and prefer `--offline`; **never run `clean`** between cycles (it throws away compiled output and forces a full rebuild every time).
-- **Warm-up build once.** Before the first RED, run a one-off compile of sources + tests (Gradle: `./gradlew compileTestJava` / `compileTestKotlin --offline`; Maven: `mvn -o test-compile`) so the daemon is booted and the compile cache is hot — the first cycle then doesn't pay cold-start.
-
-**Why scoped runs:** running the full suite in every RED/GREEN/REFACTOR was the dominant per-cycle cost. In-cycle runs are scoped to the class under test; Final Review re-runs the same scoping across every class touched this session — see Final Review below for why the full suite is opt-in, not default.
-
 ### 3. Identify Domain Invariants
 
-**If a plan document path is provided (from plan-creator):**
+**Source: the requirements document first, code second.** The document may be a spec, a plan, a ticket, or a plain feature description — treat them all the same way.
 
-1. Read the document
-2. Extract invariants from **Section 2 (Domain Context & Invariants)** — do not re-derive
-3. Extract the task list from **Section 7 (Implementation Order / TDD)** — use `[NEW]` tagged items as TDD tasks; skip `[REGRESSION]` items (they are existing tests to run, not new cycles)
-4. **Merge plan items that share one implementation change into a single task** before presenting the list — a plan often lists scenarios one-per-line for readability, which is a documentation granularity, not a cycle granularity. See the batching guidance under Step 4 below for the signal to merge vs. split.
-5. Present the task list in the format below and ask for confirmation before starting cycles
-6. Skip the "no plan document" branch just below, and skip Step 4 (Decompose into TDD Tasks) entirely — Section 7 already gave you the task list, there's nothing left to derive
-
-**If no plan document is provided — Source: PRD first, code second.**
-
-1. If the user has provided a PRD, ticket, or feature description — derive domain invariants exclusively from that. Do NOT scan code at this step.
-2. If no PRD is provided, ask: "구현할 기능의 요구사항이나 티켓 내용을 공유해주시겠어요?" and wait for the response.
-3. After extracting invariants from the PRD, scan existing code (enum state transitions, validation annotations, guard clauses) only to catch structural constraints the PRD may have omitted. Never let the code override PRD intent.
+1. If a document is provided, read it and derive domain invariants exclusively from it. Do NOT scan code at this step. If the document already states its invariants explicitly, adopt them as written instead of re-deriving.
+2. If nothing is provided, ask: "구현할 기능의 요구사항이나 티켓 내용을 공유해주시겠어요?" and wait for the response.
+3. Only after extracting invariants from the document, scan existing code (enum state transitions, validation annotations, guard clauses) to catch structural constraints the document may have omitted. Never let the code override the document's intent.
 
 Express each business rule as a complete declarative sentence that describes **what should be true**, not what the code currently does:
 
@@ -114,6 +97,8 @@ Present the extracted invariants in this exact table format, then ask if anythin
 These sentences become the source of test names.
 
 ### 4. Decompose into TDD Tasks
+
+If the document already provides an ordered task list, adopt it instead of deriving a new one. Drop any item that only re-runs existing coverage rather than requiring new behavior, and apply the batching rule below before presenting the list — a document often lists scenarios one-per-line for readability, which is a documentation granularity, not a cycle granularity.
 
 Name each task as a **domain rule sentence** — it becomes the test's `@DisplayName` directly.
 
@@ -143,7 +128,7 @@ TDD 태스크 목록
 
 ### 5. Capture Project Context (once)
 
-Before the first cycle, the **orchestrator** explores the feature area **one time** and captures a reusable `PROJECT_CONTEXT` block. Each phase agent then reads this block instead of re-scanning the codebase — this removes the per-agent cold-start exploration that made every RED/GREEN feel slow. (This one read is allowed for the orchestrator; the ORCHESTRATOR ONLY rule below governs source/test file *edits* during cycles, not this Setup scan.)
+Before the first cycle, the **orchestrator** explores the feature area **one time** and captures a reusable `PROJECT_CONTEXT` block. Each phase agent then reads this block instead of re-scanning the codebase.
 
 Capture only what the agents actually need to avoid re-reading:
 
@@ -162,7 +147,7 @@ Keep it compact (signatures and paths, not full file bodies). If the feature is 
 
 > **BLOCKING REQUIREMENT — TDD ORDER**: Do not write production implementation before a failing test has been written and verified.
 >
-> **BLOCKING REQUIREMENT — ORCHESTRATOR ONLY**: You are the orchestrator. After user confirmation, you MUST dispatch a Codex sub-agent for every RED / GREEN / REFACTOR step. Do NOT read or patch source or test files yourself. If you find yourself about to edit a file directly — stop and dispatch a sub-agent instead.
+> **BLOCKING REQUIREMENT — ORCHESTRATOR ONLY**: You are the orchestrator. After user confirmation, you MUST dispatch a Codex sub-agent for every RED / GREEN / REFACTOR step. Do NOT patch source or test files yourself. If you find yourself about to edit a file directly — stop and dispatch a sub-agent instead.
 
 For each task, dispatch a Codex sub-agent three times sequentially (RED → GREEN → REFACTOR). Each agent reads only its own prompt file. Include the `PROJECT_CONTEXT` block (from Setup step 5) in every agent prompt so the agent does not re-scan the codebase.
 
@@ -240,7 +225,7 @@ Follow it exactly.
 
 Task: {task description}
 
-Domain Invariants (from plan Section 2):
+Domain Invariants:
 {invariants}
 
 Diff:
@@ -264,19 +249,23 @@ Follow project feedback gates between stages and cycles. If no feedback gate is 
 
 ## Final Review
 
-After all cycles complete, run **only the test classes touched this session** — collect the distinct `test_file` values from every cycle's `RED_RESULT` and run them together in one `TEST_SCOPED_CMD` invocation (e.g. Gradle: `./gradlew test --tests "FQCN1" --tests "FQCN2" ... --offline`). Do **not** run the full suite by default — it's the single most expensive step in this whole workflow (minutes, on a large module) for a regression class (cross-class breakage from a shared dependency) that the touched-classes run usually already catches, since GREEN/REFACTOR already re-ran each class individually. Only fall back to the full `TEST_CMD` if the user explicitly asks for full-suite/cross-class coverage, or if the change touched something with many indirect callers (a shared utility, a widely-used base class) where breakage wouldn't show up in the touched classes alone.
+After all cycles complete, run **only the test classes touched this session** — collect the distinct `test_file` values from every cycle's `RED_RESULT` and run them together in one `TEST_SCOPED_CMD` invocation (e.g. Gradle: `./gradlew test --tests "FQCN1" --tests "FQCN2" ... --offline`). Do **not** run the full suite by default. Only fall back to the full `TEST_CMD` if the user explicitly asks for full-suite/cross-class coverage, or if the change touched something with many indirect callers (a shared utility, a widely-used base class) where breakage wouldn't show up in the touched classes alone.
 
 If anything fails, dispatch a fix sub-agent before proceeding. Then dispatch an independent final reviewer sub-agent.
 
 1. Discover the available multi-agent tool with `tool_search`.
 2. Spawn a reviewer sub-agent with the prompt below.
-3. If no Codex sub-agent tool is available, say `not available`, then apply `references/final-reviewer.md` locally to the plan and full branch diff.
+3. If no Codex sub-agent tool is available, say `not available`, then apply `references/final-reviewer.md` locally to the confirmed task list, the invariants, and the full branch diff.
 
 ```
 Read {SKILL_DIR}/references/final-reviewer.md — you have permission to access this file.
 Follow it exactly.
 
-Plan document path: {plan_document_path}
+Confirmed task list:
+{task list}
+
+Domain Invariants:
+{invariants}
 
 Branch diff:
 {full diff of all changes in this session}

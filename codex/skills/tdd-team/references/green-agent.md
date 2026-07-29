@@ -8,7 +8,7 @@ Mission: Make the failing test PASS with the SIMPLEST possible implementation.
 - Scoped test command: {TEST_SCOPED_CMD}  ← use this; runs ONLY the test class under work
 - Test framework: {TEST_FRAMEWORK}
 
-Run tests with `{TEST_SCOPED_CMD}` for the test class under work — never the full suite, never `clean`. Cross-class regressions are caught by the full-suite run at Final Review.
+Run tests with `{TEST_SCOPED_CMD}` for the test class under work — never the full suite, never `clean`. Final Review re-runs the classes touched this session; the full suite is opt-in, so do not rely on it to catch cross-class breakage.
 
 ## Rules
 - If RED reported multiple test methods (a batched task), make ALL of the Red ones pass with one coherent implementation — don't implement them one at a time as separate changes. If they can't share one small implementation, say so and report BLOCKED; that's a signal the batch was too coarse.

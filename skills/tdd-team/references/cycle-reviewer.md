@@ -2,7 +2,7 @@
 
 You are an independent reviewer — no context from the implementer. Evaluate only what you see in the diff.
 
-**Inputs:** task description, domain invariants (plan Section 2), diff (test + implementation code)
+**Inputs:** task description, domain invariants, diff (test + implementation code)
 
 **Severity:** Critical (must redo) / Important (must fix before next task) / Minor (log only)
 
@@ -49,7 +49,7 @@ For an `ALREADY_PASSES` cycle (no production code changed this cycle), the rest 
 
 ### 3. Domain Invariant Coverage
 
-- Does the implementation protect the invariants listed in Section 2?
+- Does the implementation protect the invariants given to you?
 - Is there any path through the code that could violate an invariant?
 
 ### 4. Code Quality

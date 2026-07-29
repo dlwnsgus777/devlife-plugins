@@ -8,7 +8,7 @@ Mission: Write a FAILING test for the given task, then verify it fails.
 - Scoped test command: {TEST_SCOPED_CMD}  ← use this; runs ONLY the test class under work
 - Test framework: {TEST_FRAMEWORK}
 
-Run tests with `{TEST_SCOPED_CMD}` for the test class you are working on — never the full suite. Never run `clean`. The full suite runs once at Final Review, not here.
+Run tests with `{TEST_SCOPED_CMD}` for the test class you are working on — never the full suite. Never run `clean`. Final Review re-runs the classes touched this session; the full suite is opt-in, not automatic.
 
 ## Iron Law
 NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
@@ -37,6 +37,7 @@ If you think any of these — STOP. All are Red Flags:
 - Verifies mock call count instead of real behavior
 - Tests implementation details (breaks on refactor)
 - Huge test setup → signal of a design problem
+- Copy-pasted methods that differ only in input values → parameterize instead
 
 ## When Stuck
 
@@ -50,25 +51,26 @@ If you think any of these — STOP. All are Red Flags:
 If none of the above unblocks you → escalate to the orchestrator as BLOCKED.
 
 ## Rules
-- If the task description lists more than one scenario (e.g. "success case + N failure variants of the same guard"), write ALL of them as separate test methods in this one pass — one `@DisplayName` per scenario, sequential method names. Don't wait for a separate RED dispatch per scenario when they were handed to you together.
+- If the task description lists more than one scenario, cover ALL of them in this one pass — one `@DisplayName` per scenario, sequential method names. Don't wait for a separate RED dispatch per scenario when they were handed to you together.
+- **Same rule, different data → ONE `@ParameterizedTest`** with a case per input, not N copies of the same method; give each case its own display name via the `name` template. **Different rules → separate methods, always.** If you can't express the cases as inputs to one assertion, they aren't the same rule — split them.
 - Write ONLY the test. Create minimal stub classes/interfaces in the source directory if needed for compilation.
 - Stubs for new classes/methods MUST use `throw new UnsupportedOperationException("Not implemented yet")` — never return null/default silently.
 - The test MUST compile AND run. A compilation error is NOT Red.
 - Keep tests small and focused — one behavior per test
 - **Name tests using the domain rule sentence from the task description** via `@DisplayName`. Method names must be sequential (`test01`, `test02`, …) — never use descriptive camelCase for method names.
   Example: `@DisplayName("결제 완료된 주문은 취소할 수 없다") void test01()`
-- When a test class covers multiple logical groups (e.g., happy path vs. exception cases, or multiple domain concepts), organize tests into `@Nested` inner classes. Each inner class gets its own `@DisplayName` that names the group, and its own sequential `test01`, `test02`, … numbering.
+- When a test class covers multiple logical groups (e.g., happy path vs. exception cases, or multiple domain concepts), organize tests into `@Nested` inner classes. Each inner class gets its own `@DisplayName` that names the group, and its own sequential `test01`, `test02`, … numbering. **Inner class identifiers must be English** — the domain sentence belongs in `@DisplayName`, not in the class name.
   ```java
   @Nested
   @DisplayName("주문 취소")
-  class 주문취소 {
+  class OrderCancellation {
       @Test @DisplayName("결제 완료된 주문은 취소할 수 없다") void test01() { ... }
-      @Test @DisplayName("배송 중인 주문은 취소할 수 없다") void test02() { ... }
+      @Test @DisplayName("주문을 취소하면 재고가 복원된다") void test02() { ... }
   }
 
   @Nested
   @DisplayName("주문 금액 변경")
-  class 주문금액변경 {
+  class OrderAmountChange {
       @Test @DisplayName("승인 전 주문은 금액을 변경할 수 있다") void test01() { ... }
   }
   ```

@@ -8,7 +8,7 @@ Mission: Improve code quality while keeping ALL tests passing.
 - Scoped test command: {TEST_SCOPED_CMD}  ← use this; runs ONLY the test class under work
 - Test framework: {TEST_FRAMEWORK}
 
-Run tests with `{TEST_SCOPED_CMD}` for the test class under work — never the full suite, never `clean`. Cross-class regressions are caught by the full-suite run at Final Review.
+Run tests with `{TEST_SCOPED_CMD}` for the test class under work — never the full suite, never `clean`. Final Review re-runs the classes touched this session; the full suite is opt-in, so do not rely on it to catch cross-class breakage.
 
 ## Skip Condition
 Before doing anything, quickly assess the GREEN output:

@@ -16,6 +16,7 @@
 
 | Skill | Version | Change |
 |-------|---------|--------|
+| `tdd-team` | `1.4.0` | 중복 서술 4곳 제거 — `Right-Size`의 mid-session 다운시프트 문단(Step 4와 동일), Setup 2 `Speed configuration` 블록(`--offline`·`clean` 금지는 이미 명령 템플릿과 phase 프롬프트에 있고, 웜업 빌드는 비용 절감이 아닌 이동), Setup 5 콜드스타트 설명, Final Review의 전체 스위트 비용 근거. 지시와 예외 조건은 모두 유지.<br><br>이 과정에서 드러난 정합성 오류 2건 수정 — ⑴ ORCHESTRATOR ONLY 규칙의 `Read` 금지가 Setup 5의 오케스트레이터 1회 탐색과 충돌해 제거(`Edit`/`Write`만 금지). ⑵ `red/green/refactor-agent.md`가 "전체 스위트는 Final Review에서 돈다"고 안내했으나 실제로는 스코프 실행이 기본 — "전체 스위트는 옵트인이므로 교차 클래스 파손 탐지를 여기에 의존하지 말 것"으로 교정 (minor 사유).<br><br>`red-agent.md` 규칙 보강 — 같은 규칙·다른 데이터는 `@ParameterizedTest` 하나로(다른 규칙은 항상 별도 메서드), `@Nested` 내부 클래스 식별자 영어화.<br><br>plan-creator 결합 제거 — 리뷰어들이 계획 문서의 `Section 2`/`Section 7`/`[NEW]` 태그를 조회하도록 되어 있어, SKILL.md가 공식 지원하는 "문서 없이 PRD로 시작" 경로에서 final reviewer의 관점 1번과 하드 규칙 2개가 통째로 무력화됐음. 리뷰어 입력을 문서 경로에서 **확정된 태스크 목록·불변성**으로 교체하고, Step 3은 특정 스킬 산출물이 아닌 요구사항 문서 일반(스펙·계획서·티켓·PRD)을 받도록 일반화. 문서에 불변성·태스크 목록이 이미 있으면 재도출 없이 채택. `SKILL.md`·`references/`(skills/codex/global)·docs·README 동기화 |
 | `tdd-team` | `1.3.0` | 참조되지 않는 `references/agent-prompts.md` 제거 (skills/codex) — 프롬프트가 phase별 5개 파일로 분리된 뒤에도 갱신만 계속되던 고아 파일로, 어떤 SKILL.md도 읽지 않는데 제거된 옛 커밋 지시(`git add && git commit`)가 남아 최신 `refactor-agent.md`의 커밋 금지 규칙과 모순 상태였음. 같은 버전의 나머지 변경은 글로벌 스킬 병합 동기화라 CHANGELOG 기록 대상 아님 |
 
 ---
