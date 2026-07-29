@@ -40,7 +40,7 @@ TDD 실행 워크플로우. 서브에이전트 기반 Red/Green/Refactor 사이�
 
 | Skill | Version | Description |
 |-------|---------|-------------|
-| `tdd-team` | `1.6.0` | 3에이전트 TDD 사이클 (Red/Green/Refactor) — Cycle Reviewer·Final Reviewer·FIX 에이전트 포함, RED/GREEN 격리는 변경 크기와 무관하게 유지하되 주변 의식은 축소(시나리오 배치, Final Review는 세션에서 건드린 클래스만·전체 스위트는 옵트인, Cycle Reviewer는 기본 정적 추론), 에이전트 커밋 금지, 사이클 중엔 대상 테스트 클래스만 실행, Setup에서 프로젝트 컨텍스트 1회 캡처 |
+| `tdd-team` | `1.7.0` | 3에이전트 TDD 사이클 (Red/Green/Refactor) — Cycle Reviewer·Final Reviewer·FIX 에이전트 포함, 역할별 모델 선택(기본 상속·Final Reviewer는 최상위), RED/GREEN 격리는 변경 크기와 무관하게 유지하되 주변 의식은 축소(시나리오 배치, Final Review는 세션에서 건드린 클래스만·전체 스위트는 옵트인, Cycle Reviewer는 기본 정적 추론), 에이전트 커밋 금지, 사이클 중엔 대상 테스트 클래스만 실행, Setup에서 프로젝트 컨텍스트 1회 캡처 |
 | `test-driven-development` | `1.0.0` | Java/Spring Boot TDD 원칙 가이드 — Red/Green/Refactor 단계별 규칙, Iron Law, Fixture 패턴 |
 
 ---

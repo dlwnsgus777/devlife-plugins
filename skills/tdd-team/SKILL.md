@@ -42,6 +42,21 @@ What legitimately scales down with change size and risk is everything *around* t
 - **CYCLE REVIEWER depth** — static reasoning by default; reserve live mutation experiments for genuine doubt, and never `--rerun-tasks`/`--rerun`/`clean` even then (see cycle-reviewer.md's Verification Depth section).
 - **Final Review scope** — touched classes only, not the full suite, unless the change has wide blast radius (see Final Review below). Both the cycle reviewer and the final reviewer are handed the test result the orchestrator (or GREEN/fix agent) already produced — they read and reason, they don't re-run it themselves absent a specific, concrete doubt.
 
+## Model Selection
+
+Every `Agent()` call below takes a `model` field. An omitted `model` inherits the session's default model — for most roles here that default is the right, safe choice, so **omit it unless the guidance below gives you a concrete reason to override.** Don't downgrade reflexively just because a task looks small: **turn count beats token price** — a model that's undersized for the task takes more turns to get there (re-reading files it should have understood the first time, retrying failed edits, going back and forth with the test command), and that extra wall-clock and context cost routinely outweighs whatever the cheaper tier saved. Reserve a downgrade for tasks that are genuinely mechanical, and always reserve the upgrade for the one role that most needs it:
+
+| Role | Default | When to override |
+|------|---------|-------------------|
+| RED | omit (inherit) | Designing a good failing test from a domain-rule sentence is a judgment call, not transcription — it needs the session's normal capability. |
+| GREEN | omit (inherit) | Only drop to `model: "haiku"` when the task is genuinely narrow — a single small method, the target shape already spelled out in the plan's code snippet or the task description, nothing to design. If GREEN comes back `BLOCKED` on a cheap tier, that's the signal to retry at the default rather than push harder on the same tier. |
+| REFACTOR | omit (inherit) | Already skips itself on clean output (see Skip Condition) — the cases where it actually runs are exactly the ones needing real judgment. |
+| CYCLE REVIEWER | omit (inherit) | This is the check that catches vacuous tests and invariant gaps — the two things this skill has actually caught findings on. Don't cheapen it. |
+| FIX agent | omit (inherit); `model: "haiku"` only for a mechanical fix | The findings list already says exactly what to change and where — when it's a rename, a one-line guard, a reference swap, cheap tier is enough. A fix that requires re-deriving *why* something is wrong, or touches more than the named lines, stays at the default. |
+| FINAL REVIEWER | **`model: "opus"`** | This is the last gate on the whole session's work, checking task coverage and invariant coverage across every cycle at once — dispatch it on the most capable available model, not whatever the session happened to be running. |
+
+If a role's agent reports `BLOCKED` after being dispatched at a downgraded tier, re-dispatch that same call at the default tier before trying anything else — don't spend a second attempt at the same undersized tier.
+
 ## Setup
 
 ### 1. Resolve Skill Path
@@ -161,6 +176,23 @@ Each worker prompt must include:
 - The previous phase result block where applicable
 - A warning that other agents or the user may have edited the workspace and unrelated changes must not be reverted
 
+The environment block has one fixed shape, built once from Setup step 2 and reused verbatim in every prompt below (RED/GREEN/REFACTOR/CYCLE REVIEW/FIX/FINAL REVIEW alike — cycle reviewers and the final reviewer need `{TEST_SCOPED_CMD}` too, for the narrow case where their Verification Depth section calls for running it):
+
+```
+## Environment
+- Project root: {PROJECT_ROOT}
+- Source directory: {SOURCE_DIR}
+- Test directory: {TEST_DIR}
+- Scoped test command: {TEST_SCOPED_CMD}
+- Test framework: {TEST_FRAMEWORK}
+```
+
+The workspace warning is one fixed line, also reused verbatim everywhere:
+
+```
+Other agents or the user may have changed files in this workspace since your context was prepared. If you notice changes you didn't make, do not revert them — they are someone else's in-progress work, not a stray edit to clean up.
+```
+
 If the Agent tool is not available, say `not available`, then execute the same phase locally:
 1. Read the relevant reference file for the phase.
 2. Follow that phase's workflow locally.
@@ -170,6 +202,7 @@ If the Agent tool is not available, say `not available`, then execute the same p
 ```
 Agent({
   subagent_type: "general-purpose",
+  model: {per Model Selection — omit unless the task is a rare exception},
   description: "RED: {task description}",
   prompt: """
 Read {SKILL_DIR}/references/red-agent.md — you have permission to access this file.
@@ -177,7 +210,11 @@ Follow it exactly.
 
 Task: {task description}
 
+{ENVIRONMENT block}
+
 {PROJECT_CONTEXT block}
+
+{workspace warning line}
 """
 })
 ```
@@ -186,6 +223,7 @@ Task: {task description}
 ```
 Agent({
   subagent_type: "general-purpose",
+  model: {per Model Selection — omit, or "haiku" only for a genuinely narrow task},
   description: "GREEN: {task description}",
   prompt: """
 Read {SKILL_DIR}/references/green-agent.md — you have permission to access this file.
@@ -193,9 +231,13 @@ Follow it exactly.
 
 Task: {task description}
 
+{ENVIRONMENT block}
+
 {PROJECT_CONTEXT block}
 
 {RED_RESULT block}
+
+{workspace warning line}
 """
 })
 ```
@@ -204,6 +246,7 @@ Task: {task description}
 ```
 Agent({
   subagent_type: "general-purpose",
+  model: {per Model Selection — omit},
   description: "REFACTOR: {task description}",
   prompt: """
 Read {SKILL_DIR}/references/refactor-agent.md — you have permission to access this file.
@@ -211,9 +254,13 @@ Follow it exactly.
 
 Task: {task description}
 
+{ENVIRONMENT block}
+
 {PROJECT_CONTEXT block}
 
 {GREEN_RESULT block}
+
+{workspace warning line}
 """
 })
 ```
@@ -235,12 +282,15 @@ After REFACTOR completes, dispatch an independent reviewer subagent, **passing i
 ```
 Agent({
   subagent_type: "general-purpose",
+  model: {per Model Selection — omit},
   description: "CYCLE REVIEW: {task description}",
   prompt: """
 Read {SKILL_DIR}/references/cycle-reviewer.md — you have permission to access this file.
 Follow it exactly.
 
 Task: {task description}
+
+{ENVIRONMENT block}
 
 Domain Invariants:
 {invariants}
@@ -249,6 +299,8 @@ Test run just completed: tests_passed={N}, tests_failed=0 (from GREEN_RESULT / f
 
 Diff:
 {test code + implementation code written in this cycle}
+
+{workspace warning line}
 """
 })
 ```
@@ -267,6 +319,7 @@ Used by both the cycle reviewer and the final reviewer verdicts, and by a failin
 ```
 Agent({
   subagent_type: "general-purpose",
+  model: {per Model Selection — omit, or "haiku" only for a mechanical fix},
   description: "FIX: {short summary of findings}",
   prompt: """
 Read {SKILL_DIR}/references/fix-agent.md — you have permission to access this file.
@@ -275,7 +328,11 @@ Follow it exactly.
 Findings to fix (Critical/Important only):
 {findings list — each naming a file, a behavior, and what must change}
 
+{ENVIRONMENT block}
+
 {PROJECT_CONTEXT block}
+
+{workspace warning line}
 """
 })
 ```
@@ -299,6 +356,7 @@ If anything fails, dispatch a fix agent (see Fix Agent Dispatch) before proceedi
 ```
 Agent({
   subagent_type: "general-purpose",
+  model: "opus",
   description: "FINAL REVIEW",
   prompt: """
 Read {SKILL_DIR}/references/final-reviewer.md — you have permission to access this file.
@@ -307,6 +365,8 @@ Follow it exactly.
 Confirmed task list:
 {task list}
 
+{ENVIRONMENT block}
+
 Domain Invariants:
 {invariants}
 
@@ -314,6 +374,8 @@ Test run just completed by the orchestrator: {TEST_SCOPED_CMD invocation} → {N
 
 Branch diff:
 {full diff of all changes in this session}
+
+{workspace warning line}
 """
 })
 ```

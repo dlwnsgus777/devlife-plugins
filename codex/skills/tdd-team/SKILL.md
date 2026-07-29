@@ -43,6 +43,23 @@ What legitimately scales down with change size and risk is everything *around* t
 - **CYCLE REVIEWER depth** — static reasoning by default; reserve live mutation experiments for genuine doubt, and never `--rerun-tasks`/`--rerun`/`clean` even then (see cycle-reviewer.md's Verification Depth section).
 - **Final Review scope** — touched classes only, not the full suite, unless the change has wide blast radius (see Final Review below). Both the cycle reviewer and the final reviewer are handed the test result the orchestrator (or GREEN/fix agent) already produced — they read and reason, they don't re-run it themselves absent a specific, concrete doubt.
 
+## Model Selection
+
+If the Codex sub-agent tool you discovered exposes a model or reasoning-effort parameter, set it per the table below. If it exposes no such parameter, dispatch every role on the session default and skip this section entirely — do not invent a parameter the tool does not accept.
+
+Where the parameter does exist, **inherit the session default unless the guidance below gives you a concrete reason to override.** Don't downgrade reflexively just because a task looks small: **turn count beats token price** — a model that's undersized for the task takes more turns to get there (re-reading files it should have understood the first time, retrying failed edits, going back and forth with the test command), and that extra wall-clock and context cost routinely outweighs whatever the cheaper tier saved. Reserve a downgrade for tasks that are genuinely mechanical, and always reserve the upgrade for the one role that most needs it:
+
+| Role | Default | When to override |
+|------|---------|-------------------|
+| RED | inherit | Designing a good failing test from a domain-rule sentence is a judgment call, not transcription — it needs the session's normal capability. |
+| GREEN | inherit | Only drop to the cheapest available tier when the task is genuinely narrow — a single small method, the target shape already spelled out in the plan's code snippet or the task description, nothing to design. If GREEN comes back `BLOCKED` on a cheap tier, that's the signal to retry at the default rather than push harder on the same tier. |
+| REFACTOR | inherit | Already skips itself on clean output (see Skip Condition) — the cases where it actually runs are exactly the ones needing real judgment. |
+| CYCLE REVIEWER | inherit | This is the check that catches vacuous tests and invariant gaps — the two things this skill has actually caught findings on. Don't cheapen it. |
+| FIX agent | inherit; cheapest available tier only for a mechanical fix | The findings list already says exactly what to change and where — when it's a rename, a one-line guard, a reference swap, cheap tier is enough. A fix that requires re-deriving *why* something is wrong, or touches more than the named lines, stays at the default. |
+| FINAL REVIEWER | **the most capable model available** | This is the last gate on the whole session's work, checking task coverage and invariant coverage across every cycle at once — dispatch it on the most capable available model, not whatever the session happened to be running. |
+
+If a role's agent reports `BLOCKED` after being dispatched at a downgraded tier, re-dispatch that same call at the default tier before trying anything else — don't spend a second attempt at the same undersized tier.
+
 ## Setup
 
 ### 1. Resolve Skill Path
@@ -154,7 +171,7 @@ For each task, dispatch a Codex sub-agent three times sequentially (RED → GREE
 
 ### Codex Sub-Agent Pattern
 
-Discover the available multi-agent tool with `tool_search`, then spawn one worker per phase sequentially.
+Discover the available multi-agent tool with `tool_search`, then spawn one worker per phase sequentially — inheriting the session model for RED/GREEN/REFACTOR unless Model Selection gives you a reason to override.
 Each worker prompt must include:
 - The phase reference file path
 - The task description
@@ -162,6 +179,23 @@ Each worker prompt must include:
 - The `PROJECT_CONTEXT` block from Setup step 5 (so the agent does not re-scan the codebase)
 - The previous phase result block where applicable
 - A warning that other agents or the user may have edited the workspace and unrelated changes must not be reverted
+
+The environment block has one fixed shape, built once from Setup step 2 and reused verbatim in every prompt below (RED/GREEN/REFACTOR/CYCLE REVIEW/FIX/FINAL REVIEW alike — cycle reviewers and the final reviewer need `{TEST_SCOPED_CMD}` too, for the narrow case where their Verification Depth section calls for running it):
+
+```
+## Environment
+- Project root: {PROJECT_ROOT}
+- Source directory: {SOURCE_DIR}
+- Test directory: {TEST_DIR}
+- Scoped test command: {TEST_SCOPED_CMD}
+- Test framework: {TEST_FRAMEWORK}
+```
+
+The workspace warning is one fixed line, also reused verbatim everywhere:
+
+```
+Other agents or the user may have changed files in this workspace since your context was prepared. If you notice changes you didn't make, do not revert them — they are someone else's in-progress work, not a stray edit to clean up.
+```
 
 If no Codex sub-agent tool is available, say `not available`, then execute the same phase locally:
 1. Read the relevant reference file for the phase.
@@ -175,7 +209,11 @@ Follow it exactly.
 
 Task: {task description}
 
+{ENVIRONMENT block}
+
 {PROJECT_CONTEXT block}
+
+{workspace warning line}
 ```
 
 **GREEN** (append only the RED_RESULT block — not RED's full output):
@@ -185,9 +223,13 @@ Follow it exactly.
 
 Task: {task description}
 
+{ENVIRONMENT block}
+
 {PROJECT_CONTEXT block}
 
 {RED_RESULT block}
+
+{workspace warning line}
 ```
 
 **REFACTOR** (append only the GREEN_RESULT block — not GREEN's full output):
@@ -197,9 +239,13 @@ Follow it exactly.
 
 Task: {task description}
 
+{ENVIRONMENT block}
+
 {PROJECT_CONTEXT block}
 
 {GREEN_RESULT block}
+
+{workspace warning line}
 ```
 
 ### Cycle Flow
@@ -217,7 +263,7 @@ Task: {task description}
 After REFACTOR completes, dispatch an independent reviewer sub-agent, **passing it GREEN's (or the fix agent's) reported test result** so it has no reason to re-run what was just run and reported.
 
 1. Discover the available multi-agent tool with `tool_search`.
-2. Spawn a reviewer sub-agent with the prompt below.
+2. Spawn a reviewer sub-agent with the prompt below, inheriting the session model (see Model Selection — don't cheapen this role).
 3. If no Codex sub-agent tool is available, say `not available`, then apply `references/cycle-reviewer.md` locally to the cycle diff.
 
 ```
@@ -226,6 +272,8 @@ Follow it exactly.
 
 Task: {task description}
 
+{ENVIRONMENT block}
+
 Domain Invariants:
 {invariants}
 
@@ -233,6 +281,8 @@ Test run just completed: tests_passed={N}, tests_failed=0 (from GREEN_RESULT / f
 
 Diff:
 {test code + implementation code written in this cycle}
+
+{workspace warning line}
 ```
 
 **Handle reviewer verdict:**
@@ -247,7 +297,7 @@ Follow project feedback gates between stages and cycles. If no feedback gate is 
 Used by both the cycle reviewer and the final reviewer verdicts, and by a failing Final Review test run. Hand the agent the findings list itself — not the review report in full, and not the document they came from.
 
 1. Discover the available multi-agent tool with `tool_search`.
-2. Spawn a fix sub-agent with the prompt below.
+2. Spawn a fix sub-agent with the prompt below, inheriting the session model — or the cheapest available tier when the fix is purely mechanical (see Model Selection).
 3. If no Codex sub-agent tool is available, say `not available`, then apply `references/fix-agent.md` locally to the same findings.
 
 ```
@@ -257,7 +307,11 @@ Follow it exactly.
 Findings to fix (Critical/Important only):
 {findings list — each naming a file, a behavior, and what must change}
 
+{ENVIRONMENT block}
+
 {PROJECT_CONTEXT block}
+
+{workspace warning line}
 ```
 
 Capture the returned `FIX_RESULT` block — its `tests_passed`/`tests_failed` counts are what you pass to the reviewer on the re-run, so the reviewer has no reason to run the tests again.
@@ -277,7 +331,7 @@ After all cycles complete, run **only the test classes touched this session** �
 If anything fails, dispatch a fix sub-agent (see Fix Sub-Agent Dispatch) before proceeding. Then dispatch an independent final reviewer sub-agent, **passing it the scoped test run's result** (pass/fail counts, which classes) so it has no reason to re-run what you just ran yourself.
 
 1. Discover the available multi-agent tool with `tool_search`.
-2. Spawn a reviewer sub-agent with the prompt below.
+2. Spawn a reviewer sub-agent with the prompt below, on **the most capable model available** (see Model Selection — this is the last gate on the session's work).
 3. If no Codex sub-agent tool is available, say `not available`, then apply `references/final-reviewer.md` locally to the confirmed task list, the invariants, and the full branch diff.
 
 ```
@@ -287,6 +341,8 @@ Follow it exactly.
 Confirmed task list:
 {task list}
 
+{ENVIRONMENT block}
+
 Domain Invariants:
 {invariants}
 
@@ -294,6 +350,8 @@ Test run just completed by the orchestrator: {TEST_SCOPED_CMD invocation} → {N
 
 Branch diff:
 {full diff of all changes in this session}
+
+{workspace warning line}
 ```
 
 **Handle final reviewer verdict:**
