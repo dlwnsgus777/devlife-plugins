@@ -24,6 +24,9 @@ Apply named techniques from Martin Fowler's *Refactoring* catalog — not ad-hoc
 | Duplicate logic in production or test code | Extract Method / Remove duplication (DRY) |
 | Unclear or misleading names | Rename Variable / Rename Method |
 | Method exceeds ~10 lines without clear reason | Extract Method |
+| Method does more than one thing | Extract Method — split into single-purpose methods |
+| Method uses another class's data/methods more than its own (Feature Envy) | Move Method to the class it envies |
+| Method mixes high-level and low-level logic instead of descending one level of abstraction at a time | Extract Method (Compose Method) |
 | Poor domain modeling (primitive obsession, missing abstraction) | Introduce Parameter Object / Replace Conditional with Polymorphism |
 | Low test readability | Extract test helper methods, clean up assertion style |
 
