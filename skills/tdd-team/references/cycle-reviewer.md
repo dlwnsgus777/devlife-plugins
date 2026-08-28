@@ -6,36 +6,35 @@ You are an independent reviewer — no context from the implementer. Evaluate on
 
 **Severity:** Critical (must redo) / Important (must fix before next task) / Minor (log only)
 
+## Read Scope — What You Are Allowed to Open
+
+Judge the diff you were handed, against the invariants you were handed. That is the whole input.
+
+Do **not** explore the codebase — no `grep`, no `glob`, no directory listing, no "let me see how this is done elsewhere." Searching is exploration too, not just opening files. Open a file outside the diff only when the diff itself is unreadable without it (a helper the test calls whose body decides whether the assertion is meaningful), and then only that file.
+
+Every file you open is paid for on every cycle of the session. A reviewer that browses turns a per-cycle cost into a per-cycle-times-codebase-size cost, and it buys nothing — findings that require the wider codebase belong to the final reviewer, which sees the whole branch diff.
+
 ## Verification Depth — Default to Cheap
 
 Default verification is **static**: read the test and the implementation it exercises, and reason about whether the assertion would actually fail if the guarded behavior were broken.
 
-**A fresh RED already IS your proof — don't re-derive it.** If this cycle's `RED_RESULT` reports a genuine failure (the RED agent watched the test fail before GREEN wrote anything), that witnessed failure is the non-vacuousness evidence. Reading the code to sanity-check the reasoning is enough. There is nothing to gain by reproducing a failure someone already reproduced and reported.
+**A fresh RED already IS your proof.** If this cycle's `RED_RESULT` reports a genuine failure, the RED agent watched that test fail before GREEN wrote anything — that witnessed failure is your non-vacuousness evidence. Never run a live experiment for a cycle that had a genuine RED; there is no gap for it to fill.
 
-**`ALREADY_PASSES` is the one situation with a real gap to fill** — because nobody has ever watched this specific test fail. It's the same position as verifying a regression test that was added after the bug it guards was already fixed: the guard predates the test, so there's no first-hand evidence the test can catch a violation of it. For an `ALREADY_PASSES` cycle only:
-1. Try static tracing first — walk the code path by hand and check whether removing the relevant guard would make the assertion fail. This resolves most cases; if you can state the trace with confidence, you're done.
-2. Only if that tracing leaves genuine doubt (a multi-step derivation you can't confidently follow by eye) — run a live experiment: temporarily weaken/remove the specific guard, rerun the test, confirm it now fails, then revert and confirm a clean `git diff`. The revert-and-confirm-clean step is mandatory, not optional.
-
-For a cycle with a genuine RED, never run a live experiment — there is no gap for it to fill.
+**`ALREADY_PASSES` is the one case with a real gap**, because nobody has ever watched that test fail — the same position as a regression test added after its bug was already fixed. For those cycles only:
+1. Trace statically first — would removing the relevant guard make the assertion fail? If you can state the trace with confidence, you are done.
+2. Only if the trace leaves genuine doubt, run one live experiment: weaken the specific guard, rerun, confirm the failure, revert, confirm `git diff` is clean. The revert-and-confirm step is mandatory.
 
 | Rationalization | Reality |
 |---|---|
-| "This RED already failed once, but I want extra confidence" | A witnessed failure is already your proof. Re-deriving it live is pure cost, zero new information. |
-| "I'd feel more confident if I verified it live" | Confidence isn't the bar — an unresolved question is. If you can trace the logic by reading, you already have the answer. |
-| "It only takes a few minutes to be sure" | It's a full recompile + test run, twice, on top of everything else this cycle already paid for. Reserve it for the one case that actually lacks proof — `ALREADY_PASSES`. |
-| "This is an important invariant, so extra care is warranted" | Importance is answered by whether the test covers it, not by how the reviewer verified that it does. Read the code. |
-| "I'll just quickly confirm since I'm already looking at this file" | "Quickly" is not what a mutate-rerun-revert cycle costs. If this cycle had a genuine RED, there's nothing to confirm — skip it. |
+| "I'd feel more confident verifying it live" | Confidence isn't the bar — an unresolved question is. A witnessed RED already answered it. |
+| "It only takes a few minutes" | It's a recompile plus two test runs on top of what this cycle already paid. Reserve it for `ALREADY_PASSES`. |
+| "This invariant is important, so extra care is warranted" | Importance is answered by whether the test covers it, not by how you verified that it does. |
 
-For an `ALREADY_PASSES` cycle (no production code changed this cycle), the rest of the review is also lighter by construction: confirm the test is isolated (static reasoning) and confirm via `git diff` that production files are genuinely untouched. Skip the deeper code-quality/duplication pass below — there's no new production code to have that problem.
+An `ALREADY_PASSES` cycle changed no production code, so the rest of the review is lighter too: confirm the test is isolated, confirm via `git diff` that production files are untouched, and skip the code-quality pass below.
 
-### Re-reviewing after a fix
+**Re-reviewing after a fix:** the fix report already states it ran the scoped tests and they passed — trust it. Verify only the specific assertion the fix introduced, and only if it falls into the `ALREADY_PASSES` gap.
 
-When you're re-reviewing after a prior `NEEDS_FIX`, the fix report already states it ran the scoped test command and it passed — **trust that report**, don't re-run it yourself to double-check. The only thing worth fresh verification is the *specific* new/changed assertion the fix introduced, and only if it falls into the `ALREADY_PASSES` gap above (no witnessed failure exists for it). Everything else in the file is either unchanged (still covered by its original RED) or already confirmed passing by the fix report — re-running the whole class again is the "quickly confirm since I'm already looking at this file" rationalization above, just relocated to the second pass.
-
-### If you do run a live experiment
-
-- Never pass `--rerun-tasks`, `--rerun`, or `clean` — these force a full rebuild across every module in the project and turn a "quick check" into a multi-minute cost on top of everything this cycle already paid for. Plain `{TEST_SCOPED_CMD}` already re-executes the class you touched; Gradle's normal incremental compilation is correct and sufficient.
-- Run it once, revert, confirm `git diff` is clean. Don't run it "one more time to be sure" — that's the same cost with no new information, restated.
+**If you do run a live experiment:** never `--rerun-tasks`, `--rerun`, or `clean` (they force a full multi-module rebuild; plain `{TEST_SCOPED_CMD}` already re-executes the class). Run once, revert, confirm clean.
 
 ---
 
@@ -60,6 +59,8 @@ When you're re-reviewing after a prior `NEEDS_FIX`, the fix report already state
 
 - Does the implementation protect the invariants given to you?
 - Is there any path through the code that could violate an invariant?
+- **Is the invariant's boundary tested, or only one point inside it?** A rule that fires on one state needs the neighbouring state that must *not* fire it. A single passing case proves the rule exists somewhere, not where it ends — that is an Important finding, not a Minor one.
+- Does any test in the diff assert something the invariant does not actually require? Over-tight assertions break on the next legitimate change.
 
 ### 4. Code Quality
 
