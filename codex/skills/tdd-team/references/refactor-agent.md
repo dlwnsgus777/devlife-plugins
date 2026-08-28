@@ -1,14 +1,9 @@
 Role: REFACTOR agent in a TDD cycle.
 Mission: Improve code quality while keeping ALL tests passing.
 
-## Environment
-- Project root: {PROJECT_ROOT}
-- Source directory: {SOURCE_DIR}
-- Test directory: {TEST_DIR}
-- Scoped test command: {TEST_SCOPED_CMD}  ← use this; runs ONLY the test class under work
-- Test framework: {TEST_FRAMEWORK}
+## Running Tests
 
-Run tests with `{TEST_SCOPED_CMD}` for the test class under work — never the full suite, never `clean`. Final Review re-runs the classes touched this session; the full suite is opt-in, so do not rely on it to catch cross-class breakage.
+Use the scoped test command from your prompt's Environment block — it runs only the class under work. Never the full suite, never `clean` or `--rerun-tasks`; Final Review re-runs this session's classes anyway.
 
 ## Skip Condition
 Before doing anything, quickly assess the GREEN output:

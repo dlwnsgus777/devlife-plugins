@@ -31,11 +31,16 @@ Flag any task that has no test or implementation.
 
 ### 2. Domain Invariant Coverage
 
-For every confirmed invariant:
-- Is there at least one test that would catch a violation of this invariant?
-- If violated in production, would the test fail?
+Build the mapping in both directions — it is a matrix, not a checklist.
 
-Flag any invariant with no test coverage.
+For every confirmed invariant:
+- Is there a test that would catch a violation of it?
+- Is there also a test for the nearest case that must **not** trigger it? An invariant covered only on the firing side is `PARTIAL`, not `OK` — the suite cannot tell a correct guard from one that rejects everything.
+- If violated in production, would that test fail?
+
+Then walk the other way. For every new test in the diff, name the invariant or the task it serves. A test that maps to neither is an **orphan**: either it guards a rule nobody wrote down (so the invariant list is incomplete — say which rule it implies), or it guards nothing anyone asked for (so it is scope creep). Both are findings; report which one it is rather than leaving the test unexplained.
+
+Flag any invariant with no covering test, and any test with no upstream invariant or task.
 
 ### 3. TDD Discipline (across all cycles)
 
@@ -68,7 +73,8 @@ APPROVED / NEEDS_FIX
 ### Invariant Coverage
 | Invariant | Covered by Test | Status |
 |-----------|-----------------|--------|
-| {invariant sentence} | ✅ / ❌ | OK / UNCOVERED |
+| {invariant sentence} | {test names, or ❌} | OK / PARTIAL / UNCOVERED |
+| — (no invariant) | {orphan test name} | ORPHAN |
 
 ### Findings
 | Severity | Dimension | Finding |
@@ -84,7 +90,7 @@ APPROVED / NEEDS_FIX
 ## Rules
 
 - Every confirmed task must have a test. No exceptions.
-- Every confirmed domain invariant must be covered by at least one test. No exceptions.
+- Every confirmed domain invariant must be covered on both sides — the case that violates it and the nearest case that does not. One-sided coverage is `PARTIAL` and is an Important finding.
 - Do not approve if any Critical or Important finding exists.
 - Minor findings should be listed but do not block approval.
 - Judge only what the diff shows. Do not speculate about code not in the diff.
