@@ -40,7 +40,7 @@ TDD 실행 워크플로우. 서브에이전트 기반 Red/Green/Refactor 사이�
 
 | Skill | Version | Description |
 |-------|---------|-------------|
-| `tdd-team` | `1.9.0` | 3에이전트 TDD 사이클 (Red/Green/Refactor) — Cycle Reviewer·Final Reviewer·FIX 에이전트 포함, 역할별 모델 선택(기본 상속·Final Reviewer는 최상위), RED/GREEN 격리는 변경 크기와 무관하게 유지하되 주변 의식은 축소(시나리오 배치, Final Review는 세션에서 건드린 클래스만·전체 스위트는 옵트인, Cycle Reviewer는 기본 정적 추론), 에이전트 커밋 금지, 사이클 중엔 대상 테스트 클래스만 실행, Setup에서 프로젝트 컨텍스트 1회 캡처, REFACTOR 체크 조건에 Feature Envy·단일 책임 위반·추상화 레벨 혼재 추가, 모든 재시도에 예산 부여(BLOCKED 축소 재시도 1회·결과 블록 재디스패치 1회·수정 2라운드)와 3사이클 연속 NEEDS_FIX 시 서킷 브레이커, 커버리지 하한(불변성마다 어기는/지키는 경계 양쪽 + 클래스당 해피패스, 상한 아님)과 한쪽만 검증 시 `PARTIAL` 지적, 1번 사이클만 게이트 후 진행 방식 1회 질의, 태스크 4개 이상이면 세션 원장 기록 |
+| `tdd-team` | `1.10.0` | 3에이전트 TDD 사이클 (Red/Green/Refactor) — Cycle Reviewer·Final Reviewer·FIX 에이전트 포함, 역할별 모델 선택(기본 상속·Final Reviewer는 최상위), RED/GREEN 격리는 변경 크기와 무관하게 유지하되 주변 의식은 축소(시나리오 배치, Final Review는 세션에서 건드린 클래스만·전체 스위트는 옵트인, Cycle Reviewer는 기본 정적 추론), 에이전트 커밋 금지, 사이클 중엔 대상 테스트 클래스만 실행, Setup에서 프로젝트 컨텍스트 1회 캡처(구현 대상 파일·목표가 아닌 것·기존 코드의 함정을 경계로 포함해 결함 답습과 범위 이탈 차단), REFACTOR 체크 조건에 Feature Envy·단일 책임 위반·추상화 레벨 혼재 추가, 모든 재시도에 예산 부여(BLOCKED 축소 재시도 1회·결과 블록 재디스패치 1회·수정 2라운드)와 3사이클 연속 NEEDS_FIX 시 서킷 브레이커, 커버리지 하한(불변성마다 어기는/지키는 경계 양쪽 + 클래스당 해피패스, 상한 아님)과 한쪽만 검증 시 `PARTIAL` 지적, 1번 사이클만 게이트 후 진행 방식 1회 질의, 태스크 4개 이상이면 세션 원장 기록 |
 | `test-driven-development` | `1.0.0` | Java/Spring Boot TDD 원칙 가이드 — Red/Green/Refactor 단계별 규칙, Iron Law, Fixture 패턴 |
 
 ---
