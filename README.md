@@ -27,7 +27,7 @@ TDD, 기획 문서화, 브랜치 리뷰, 계획 수립, 멀티 에이전트 협�
 | `devlife-brainstorming` | `1.10.0` | 아이디어 → 승인된 설계 spec 전환 — what/why + Architecture/Domain Model/Components/Data Flow/Error Handling/Testing 등 커버, DDD 렌즈(bounded context/aggregate/invariant/domain event/ubiquitous language)로 기존 도메인 확인, 우려 지점을 계속 표면화하고 명시적 지시가 있을 때만 문서 작성·plan-creator 핸드오프, 스펙 문서는 고정 템플릿 없이 자유 구성하되 필수 항목은 반드시 커버, 복잡도에 따라 깊이 조절 |
 | `spec-creator` | `1.1.0` | 대규모 기능 기술 명세 작성 — 도메인 컨텍스트·불변성·하위 태스크 S/M/L 분해 포함 |
 | `prd-creator` | `1.0.0` | PRD 문서 작성 — 에픽 단위 기능을 plan-creator용 독립 하위 태스크로 분해 |
-| `plan-creator` | `1.5.0` | 태스크 구현 계획 문서 작성 — API 설계·비즈니스 로직·TDD 순서 포함, Explore 서브에이전트 코드 탐색, 작업 성격에 따른 깊이 3단계(Minimal/Standard/Comprehensive) 판정 후 확인 및 깊이별 탐색 카테고리 선택(카테고리당 상위 8개 상한), 답변 모순 검사(범위·리스크·기술·일정), 불변성에 ID·출처 태그 부여해 tdd-team까지 추적, 자체 검증 6항목 결과 보고 및 미해결 시 핸드오프 차단, 도메인 변화 지점 추상화 제안(two-case rule로 억지 추상화 차단), 계획 문서는 `docs/plan/`에 저장 |
+| `plan-creator` | `1.6.0` | 태스크 구현 계획 문서 작성 — API 설계·비즈니스 로직·TDD 순서 포함, Explore 서브에이전트 코드 탐색, 작업 성격에 따른 깊이 3단계(Minimal/Standard/Comprehensive) 판정 후 확인 및 깊이별 탐색 카테고리 선택(카테고리당 상위 8개 상한), 답변 모순 검사(범위·리스크·기술·일정), 불변성에 ID·출처 태그 부여해 tdd-team까지 추적, 자체 검증 6항목 결과 보고 및 미해결 시 핸드오프 차단, 도메인 변화 지점 추상화 제안(two-case rule로 억지 추상화 차단), 함정 스캔으로 기존 구현의 알려진 결함을 `→ 신규는` 대안과 함께 섹션 3에 기록(재사용 스캔의 역방향), 기존 구현과 병행하는 신규 플로우는 격리를 양방향 불변성으로 명시, 계획 문서는 `docs/plan/`에 저장 |
 | `pdf-to-spec` | `1.0.0` | PDF 텍스트 추출(PDFKit + Vision OCR) → spec-creator 워크플로우 자동 실행 |
 
 ---
@@ -40,7 +40,7 @@ TDD 실행 워크플로우. 서브에이전트 기반 Red/Green/Refactor 사이�
 
 | Skill | Version | Description |
 |-------|---------|-------------|
-| `tdd-team` | `1.9.0` | 3에이전트 TDD 사이클 (Red/Green/Refactor) — Cycle Reviewer·Final Reviewer·FIX 에이전트 포함, 역할별 모델 선택(기본 상속·Final Reviewer는 최상위), RED/GREEN 격리는 변경 크기와 무관하게 유지하되 주변 의식은 축소(시나리오 배치, Final Review는 세션에서 건드린 클래스만·전체 스위트는 옵트인, Cycle Reviewer는 기본 정적 추론), 에이전트 커밋 금지, 사이클 중엔 대상 테스트 클래스만 실행, Setup에서 프로젝트 컨텍스트 1회 캡처, REFACTOR 체크 조건에 Feature Envy·단일 책임 위반·추상화 레벨 혼재 추가, 모든 재시도에 예산 부여(BLOCKED 축소 재시도 1회·결과 블록 재디스패치 1회·수정 2라운드)와 3사이클 연속 NEEDS_FIX 시 서킷 브레이커, 커버리지 하한(불변성마다 어기는/지키는 경계 양쪽 + 클래스당 해피패스, 상한 아님)과 한쪽만 검증 시 `PARTIAL` 지적, 1번 사이클만 게이트 후 진행 방식 1회 질의, 태스크 4개 이상이면 세션 원장 기록 |
+| `tdd-team` | `1.10.0` | 3에이전트 TDD 사이클 (Red/Green/Refactor) — Cycle Reviewer·Final Reviewer·FIX 에이전트 포함, 역할별 모델 선택(기본 상속·Final Reviewer는 최상위), RED/GREEN 격리는 변경 크기와 무관하게 유지하되 주변 의식은 축소(시나리오 배치, Final Review는 세션에서 건드린 클래스만·전체 스위트는 옵트인, Cycle Reviewer는 기본 정적 추론), 에이전트 커밋 금지, 사이클 중엔 대상 테스트 클래스만 실행, Setup에서 프로젝트 컨텍스트 1회 캡처(구현 대상 파일·목표가 아닌 것·기존 코드의 함정을 경계로 포함해 결함 답습과 범위 이탈 차단), REFACTOR 체크 조건에 Feature Envy·단일 책임 위반·추상화 레벨 혼재 추가, 모든 재시도에 예산 부여(BLOCKED 축소 재시도 1회·결과 블록 재디스패치 1회·수정 2라운드)와 3사이클 연속 NEEDS_FIX 시 서킷 브레이커, 커버리지 하한(불변성마다 어기는/지키는 경계 양쪽 + 클래스당 해피패스, 상한 아님)과 한쪽만 검증 시 `PARTIAL` 지적, 1번 사이클만 게이트 후 진행 방식 1회 질의, 태스크 4개 이상이면 세션 원장 기록 |
 | `test-driven-development` | `1.0.0` | Java/Spring Boot TDD 원칙 가이드 — Red/Green/Refactor 단계별 규칙, Iron Law, Fixture 패턴 |
 
 ---

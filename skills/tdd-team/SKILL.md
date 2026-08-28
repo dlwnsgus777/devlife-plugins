@@ -168,9 +168,16 @@ Capture only what the agents actually need to avoid re-reading:
 - Fixture pattern: {Fixture builder location & usage, repository.save helper pattern}
 - Relevant existing types: {ClassName → key public method signatures} for classes this feature touches
 - Domain anchors: {aggregate/entity files + invariants that apply here}
+- In-scope files: {actual paths this session may modify — anything else is out of bounds}
+- Out of scope: {what this task deliberately does not change}
+- Known pitfalls — do NOT copy: {defect in existing code} → {what to do instead}
 ```
 
 Keep it compact (signatures and paths, not full file bodies). If the feature is brand-new with no nearby code, state "관련 기존 코드 없음" and list only the target package.
+
+**The last three lines are boundaries, not background.** Every phase agent runs in its own context and infers conventions from whatever code it reads, which is exactly how a known defect gets reproduced and how an edit lands in a file nobody meant to touch. Source them from the plan document — 「구현 대상 파일」, 「목표가 아닌 것」, and 「기존 코드의 함정」 respectively. If the plan has no pitfall section, spend one pass on the reference implementation the feature imitates before the first cycle; a defect found in cycle 3 has already been copied twice.
+
+A pitfall entry without its `→ what to do instead` half is worse than omitting it — the agent knows to avoid something and invents its own replacement. If a section has nothing, write `해당 없음` rather than dropping the line, so a later reader can tell it was considered.
 
 ### 6. Open a Session Ledger (4+ tasks only)
 

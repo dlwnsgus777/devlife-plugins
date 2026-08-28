@@ -26,9 +26,9 @@ Do this before any code discovery — it decides how much of the rest of this sk
 
 | Depth | Fits | Step 1 discovery | Step 2 | Template sections |
 |-------|------|------------------|--------|-------------------|
-| **Minimal** | Bug fix, behavior-preserving refactor, single-file change | Target file + direct callers; no variation-point scan | 2–4 questions, one round | Skip 3 (API), 4 (business logic), 6 (considerations) |
+| **Minimal** | Bug fix, behavior-preserving refactor, single-file change | Target file + direct callers; no variation-point scan | 2–4 questions, one round | Skip 4 (API), 5 (business logic), 7 (considerations) |
 | **Standard** | New feature, extending an existing one | Feature domain | 5–8 questions | All, minus what truly doesn't apply |
-| **Comprehensive** | New module, new bounded context, cross-cutting change | Feature domain + read every touched aggregate | 8–12 questions, probe failure modes and scale | All, plus risk notes in Section 6 |
+| **Comprehensive** | New module, new bounded context, cross-cutting change | Feature domain + read every touched aggregate | 8–12 questions, probe failure modes and scale | All, plus risk notes in Section 7 |
 
 Step 1's category table says which discovery categories each depth requests.
 
@@ -56,9 +56,11 @@ Request only the categories the depth calls for:
 | 5 | Related exception classes and where they're thrown | | ● | ● |
 | 6 | Validation annotations / guard clauses hinting at business constraints | | ● | ● |
 | 7 | Existing tests that already verify behavior this requirement touches | ● | ● | ● |
+| 8 | **Known defects in the existing implementation this requirement will reference** — paging/offset math, boundary values (date & time precision), joins that can't use an index, duplicated conditions, branches that silently drop a filter. For each: what the code does *and* why it's wrong. | | ● | ● |
 
 Two further cuts:
 - At **Minimal**, the scope is the target file and its direct callers — not the domain. Say so in the prompt instead of naming a domain.
+- **8** is where the plan earns its keep on brownfield-adjacent work; at **Minimal** the target defect is already the task, so skip it.
 - Skip **6** when a spec document already fixed the invariants (see Document Input). Re-deriving them from guard clauses redoes work the spec settled, and lands them as weaker `[코드추론]` evidence besides.
 
 Explorer prompt:
@@ -72,6 +74,8 @@ Explorer prompt:
 After discovery, directly read only the 2–3 most relevant files to identify business invariants (guard clauses, state transitions, validation annotations).
 
 **Reusable code scan**: From the Explore results, identify existing services, utilities, and exception classes that already handle overlapping concerns. In particular, if "find-by-id + throw" patterns are encapsulated in a ReadService, inject that service rather than wiring a repository directly — reflect this in the code snippets.
+
+**Pitfall scan — the inverse of the reuse scan.** The reuse scan asks what to lean on; this one asks what **not to copy**. An agent reads existing code as this project's answer and reproduces its defects verbatim, so a defect you noticed but didn't write down will ship again. From the Explore category 8 results plus the 2–3 files you read, keep only defects the new code would actually inherit by imitation — a flaw in an unrelated corner of the codebase is not this plan's business. Each one needs a `→ 신규는` decision, not just a diagnosis. Nothing qualifies → `해당 없음`.
 
 **Existing code modification** (brownfield only, per Step 0): identify the change targets and judge whether their current structure makes the new requirement hard to add — that judgment decides whether Section 0 is included.
 
@@ -149,7 +153,7 @@ Write **business invariants** as complete declarative sentences: "If X, then Y m
 > Bad: `No amount change after approval`
 > Good: `The amount of an approved contract can never be changed under any circumstances. Allowing this causes settlement discrepancies and audit failures.`
 
-Give each invariant a stable **ID** (`INV-001`, …) and an **출처** tag. Section 7 then references the ID instead of restating the sentence, and tdd-team can carry the same IDs into its invariant table and its final coverage check — so "every invariant has a test" becomes a lookup rather than a judgment call.
+Give each invariant a stable **ID** (`INV-001`, …) and an **출처** tag. Section 8 then references the ID instead of restating the sentence, and tdd-team can carry the same IDs into its invariant table and its final coverage check — so "every invariant has a test" becomes a lookup rather than a judgment call.
 
 | 출처 | Means | Review weight |
 |------|-------|---------------|
@@ -157,9 +161,21 @@ Give each invariant a stable **ID** (`INV-001`, …) and an **출처** tag. Sect
 | `[사용자확인]` | Answered by the user in Step 2 | Low |
 | `[코드추론]` | Read off a guard clause or enum, motivation not confirmed | **Highest — flag these for the user explicitly** |
 
+**Isolation invariants.** When the feature runs alongside an existing parallel implementation — its own tables, its own flow, the legacy one still live — write the separation as invariants in both directions: the new path must not touch the old store, *and* the old path must not pull in the new one. Structural separation (different tables) is an argument for why it holds, not evidence that it does; a shared query or a chained side effect breaks it just the same. These land as invariants rather than prose because tdd-team inherits the IDs and tests each one on both sides, so writing them here is what makes them verified rather than asserted.
+
 Also extract invariants from code discovered in Step 1 — enum state transitions, validation annotations, and guard clauses are all domain rules in disguise. But they land as `[코드추론]`: code shows the constraint exists, not why it exists or what it protects. Never promote one to `[사용자확인]` without an actual answer.
 
-#### TDD Test DisplayNames (Section 7)
+#### 기존 코드의 함정 (Section 3)
+
+Write one subsection per defect from Step 1's pitfall scan. A diagnosis alone is worse than nothing — it tells the agent something is wrong and leaves it to invent a replacement, which is how you get a third variant of the same bug. Every entry ends with **`→ 신규는`** naming the concrete alternative.
+
+Show the failure as data where you can: a small condition/current/expected table beats a paragraph, because it is the shape the test will take later.
+
+Then decide, per entry, whether the existing defect is fixed in this ticket or split out — and say why. Silence here reads as "fix it", and an agent widening scope into legacy code is exactly what Section 0's commit separation exists to prevent.
+
+No referenced implementation, or no defects found → `해당 없음`. A padded pitfall section trains the reader to skim the real ones.
+
+#### TDD Test DisplayNames (Section 8)
 
 When listing test cases in the implementation order, name each test using a **domain rule sentence**, not a class or method name.
 
@@ -169,36 +185,36 @@ When listing test cases in the implementation order, name each test using a **do
 
 The template is structured for Spring Boot API feature planning. Non-obvious section requirements:
 - **0. 코드 구조 정비**: Only when modifying existing code. `0-1. Tidy First` — behavior-preserving cleanup (Extract Method, Guard Clause, …). `0-2. 추상화 제안` — entries passing the two-case rule; it is a design decision, so leave 적용 여부 as pending until Step 4 approves it. Commit order: `refactor` → `feat`.
-- **5. Implementation Files**: File table, then add a **"코드 스니핏" subsection** — class declaration, field stubs, key method signatures. For `private final` dependencies, prefer injecting existing services found in Step 1.
-- **7. Implementation Order**: When modifying existing code, split into Tidy First → Behavior Change phases with separate commits, and tag every entry `[NEW]` or `[REGRESSION]`. An approved `0-2` abstraction is extracted in the Tidy First phase from the cases that already exist (`refactor`), and the new case follows in the behavior-change phase.
+- **6. Implementation Files**: File table, then add a **"코드 스니핏" subsection** — class declaration, field stubs, key method signatures. For `private final` dependencies, prefer injecting existing services found in Step 1.
+- **8. Implementation Order**: When modifying existing code, split into Tidy First → Behavior Change phases with separate commits, and tag every entry `[NEW]` or `[REGRESSION]`. An approved `0-2` abstraction is extracted in the Tidy First phase from the cases that already exist (`refactor`), and the new case follows in the behavior-change phase.
 
 ### Step 3.5: Self-Review
 
 After writing the document, run these six checks and fix what you can inline — no need to re-review after fixing.
 
-**1. Spec coverage** (when a spec document was provided): does every requirement and invariant have a matching implementation entry in Section 7? Add whatever is missing.
+**1. Spec coverage** (when a spec document was provided): does every requirement and invariant have a matching implementation entry in Section 8? Add whatever is missing.
 
 **2. Placeholder scan**: fix these patterns immediately.
 - "TBD", "TODO", "추후 확인", "별도 확인 필요"
 - "적절한 예외 처리 추가" / "유효성 검증 추가" with no concrete content
 - A step that only says "구현한다" with no code snippet
 
-**3. DisplayName check**: are the test names in Section 7 domain rule sentences rather than method names?
+**3. DisplayName check**: are the test names in Section 8 domain rule sentences rather than method names?
 - Bad: `testCancelWhenPaid`
 - Good: `결제 완료된 주문은 취소할 수 없다`
 
-**4. Consistency**: do the class and method names in Section 5 match the code snippets in Section 7?
+**4. Consistency**: do the class and method names in Section 6 match the code snippets in Section 8?
 
 **5. Abstraction justification**: does every `0-2` entry have 2+ cases and a domain reason? Delete the ones that don't — `해당 없음` beats a padded table.
 
-**6. Invariant coverage**: does every `INV-xxx` appear in at least one Section 7 entry, and does every Section 7 test trace back to an invariant or an explicit requirement? A test with no upstream is either an unwritten invariant or scope creep — resolve which.
+**6. Invariant coverage**: does every `INV-xxx` appear in at least one Section 8 entry, and does every Section 8 test trace back to an invariant or an explicit requirement? A test with no upstream is either an unwritten invariant or scope creep — resolve which.
 
 **Report the result, don't just fix silently.** Show the outcome as part of Step 4 so the user sees what was checked:
 
 ```
 자체 검증: 6개 항목 중 5개 통과
-- FAIL 2번 (플레이스홀더): 섹션 4-2의 "예외 처리 추가" → 구체 문구로 교체함
-- FAIL 6번 (불변성 커버리지): INV-003을 검증하는 테스트가 섹션 7에 없음 — 확인 필요
+- FAIL 2번 (플레이스홀더): 섹션 5-2의 "예외 처리 추가" → 구체 문구로 교체함
+- FAIL 6번 (불변성 커버리지): INV-005를 검증하는 테스트가 섹션 8에 없음 — 확인 필요
 ```
 
 A check you fixed is reported as fixed. **A check you could not fix without a decision blocks the handoff**: do not proceed to Step 5 until it is resolved, and say so in Step 4 rather than passing an incomplete plan to tdd-team.
