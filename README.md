@@ -27,7 +27,7 @@ TDD, 기획 문서화, 브랜치 리뷰, 계획 수립, 멀티 에이전트 협�
 | `devlife-brainstorming` | `1.10.0` | 아이디어 → 승인된 설계 spec 전환 — what/why + Architecture/Domain Model/Components/Data Flow/Error Handling/Testing 등 커버, DDD 렌즈(bounded context/aggregate/invariant/domain event/ubiquitous language)로 기존 도메인 확인, 우려 지점을 계속 표면화하고 명시적 지시가 있을 때만 문서 작성·plan-creator 핸드오프, 스펙 문서는 고정 템플릿 없이 자유 구성하되 필수 항목은 반드시 커버, 복잡도에 따라 깊이 조절 |
 | `spec-creator` | `1.1.0` | 대규모 기능 기술 명세 작성 — 도메인 컨텍스트·불변성·하위 태스크 S/M/L 분해 포함 |
 | `prd-creator` | `1.0.0` | PRD 문서 작성 — 에픽 단위 기능을 plan-creator용 독립 하위 태스크로 분해 |
-| `plan-creator` | `1.6.0` | 태스크 구현 계획 문서 작성 — API 설계·비즈니스 로직·TDD 순서 포함, Explore 서브에이전트 코드 탐색, 작업 성격에 따른 깊이 3단계(Minimal/Standard/Comprehensive) 판정 후 확인 및 깊이별 탐색 카테고리 선택(카테고리당 상위 8개 상한), 답변 모순 검사(범위·리스크·기술·일정), 불변성에 ID·출처 태그 부여해 tdd-team까지 추적, 자체 검증 6항목 결과 보고 및 미해결 시 핸드오프 차단, 도메인 변화 지점 추상화 제안(two-case rule로 억지 추상화 차단), 함정 스캔으로 기존 구현의 알려진 결함을 `→ 신규는` 대안과 함께 섹션 3에 기록(재사용 스캔의 역방향), 기존 구현과 병행하는 신규 플로우는 격리를 양방향 불변성으로 명시, 계획 문서는 `docs/plan/`에 저장 |
+| `plan-creator` | `1.7.0` | 태스크 구현 계획 문서 작성 — API 설계·비즈니스 로직·TDD 순서 포함, Explore 서브에이전트 코드 탐색, 작업 성격에 따른 깊이 3단계(Minimal/Standard/Comprehensive) 판정 후 확인 및 깊이별 탐색 카테고리 선택(카테고리당 상위 8개 상한), 답변 모순 검사(범위·리스크·기술·일정), 불변성에 ID·출처 태그 부여해 tdd-team까지 추적, 자체 검증 6항목 결과 보고 및 미해결 시 핸드오프 차단, 도메인 변화 지점 추상화 제안(two-case rule로 억지 추상화 차단), 함정 스캔으로 기존 구현의 알려진 결함을 `→ 신규는` 대안과 함께 섹션 3에 기록(재사용 스캔의 역방향), 기존 구현과 병행하는 신규 플로우는 격리를 양방향 불변성으로 명시, 섹션 6에 코드 스니핏 자리를 템플릿 슬롯으로 고정(메서드 본문까지 포함 — 호출 순서·불변성 가드 절·예외·반환 형태), 계획 문서는 `docs/plan/`에 저장 |
 | `pdf-to-spec` | `1.0.0` | PDF 텍스트 추출(PDFKit + Vision OCR) → spec-creator 워크플로우 자동 실행 |
 
 ---

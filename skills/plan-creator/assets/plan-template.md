@@ -171,6 +171,38 @@ Authorization: Bearer {token}
 - [변경 내용] 또는 "변경 없음 — 기존 서비스 재활용"
   - `[ServiceClass.method()]` ← [용도]
 
+### 코드 스니핏
+
+> 클래스 선언·필드에 더해 **메서드 본문까지 적는다 — 본문이 이 섹션의 핵심이다.**
+> 호출 순서, 불변성을 지키는 가드 절, 예외, 반환 형태가 본문에서 드러나야 한다.
+> 완성된 구현이 아니라 골격이다 — 로깅·트랜잭션 설정·방어적 null 체크는 생략하되,
+> 요구사항을 다시 읽지 않고 바로 코딩을 시작할 수 있을 만큼 구체적으로 쓴다.
+> 불변성을 강제하는 가드 절에는 `INV-xxx`를 주석으로 단다.
+> 의존성은 리포지토리 직접 주입보다 탐색에서 찾은 기존 서비스를 우선한다.
+> 클래스명·메서드명은 위 파일 테이블, 섹션 8 구현 항목과 일치해야 한다. 대상 클래스가 여러 개면 블록을 반복한다.
+
+```java
+@Service
+@RequiredArgsConstructor
+public class [ClassName] {
+
+    private final [ExistingReadService] [readService];  // 재사용 — 조회 + 미존재 시 예외
+
+    public [ResponseType] [methodName]([RequestType] request) {
+        [Entity] [entity] = [readService].getById(request.get[Entity]Id());
+
+        // INV-001: [불변성 문장]
+        if ([위반 조건]) {
+            throw new [DomainException]([에러 코드]);
+        }
+
+        [entity].[도메인 메서드]([인자]);
+
+        return [ResponseType].from([entity]);
+    }
+}
+```
+
 ---
 
 ## 7. 주요 고려사항 & 질문
