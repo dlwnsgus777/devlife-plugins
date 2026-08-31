@@ -111,7 +111,7 @@ task-{feature}.md
 ├── 3. 기존 코드의 함정 (답습 금지)   ← 없으면 "해당 없음"
 ├── 4. API Design        ← 엔드포인트별 Request/Response 예시
 ├── 5. Business Logic
-├── 6. Implementation Files + 코드 스니핏
+├── 6. Implementation Files + 코드 스니핏  ← 메서드 본문까지 포함
 ├── 7. Considerations & Questions
 ├── 8. Implementation Order (TDD 순서, INV-ID 참조)
 └── 9. Acceptance Criteria

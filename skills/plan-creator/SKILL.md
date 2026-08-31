@@ -185,7 +185,7 @@ When listing test cases in the implementation order, name each test using a **do
 
 The template is structured for Spring Boot API feature planning. Non-obvious section requirements:
 - **0. 코드 구조 정비**: Only when modifying existing code. `0-1. Tidy First` — behavior-preserving cleanup (Extract Method, Guard Clause, …). `0-2. 추상화 제안` — entries passing the two-case rule; it is a design decision, so leave 적용 여부 as pending until Step 4 approves it. Commit order: `refactor` → `feat`.
-- **6. Implementation Files**: File table, then add a **"코드 스니핏" subsection** — class declaration, field stubs, key method signatures. For `private final` dependencies, prefer injecting existing services found in Step 1.
+- **6. Implementation Files**: File table, then fill in the template's **`코드 스니핏` subsection** — class declaration, `private final` fields, and **method bodies**. The body is the point: call order, the guard clause enforcing each invariant (tagged with its `INV-xxx`), exceptions, and the return shape. Skeleton, not finished code — skip logging, transaction config, and defensive null checks, but make it concrete enough to start coding without re-reading the requirements. For dependencies, prefer injecting existing services found in Step 1 over wiring a repository directly.
 - **8. Implementation Order**: When modifying existing code, split into Tidy First → Behavior Change phases with separate commits, and tag every entry `[NEW]` or `[REGRESSION]`. An approved `0-2` abstraction is extracted in the Tidy First phase from the cases that already exist (`refactor`), and the new case follows in the behavior-change phase.
 
 ### Step 3.5: Self-Review
@@ -197,13 +197,14 @@ After writing the document, run these six checks and fix what you can inline —
 **2. Placeholder scan**: fix these patterns immediately.
 - "TBD", "TODO", "추후 확인", "별도 확인 필요"
 - "적절한 예외 처리 추가" / "유효성 검증 추가" with no concrete content
-- A step that only says "구현한다" with no code snippet
+- A Section 8 entry that only says "구현한다" without naming the class and method it implements
+- A Section 6 snippet whose method body is empty or a `// TODO` — a body with no logic is a placeholder
 
 **3. DisplayName check**: are the test names in Section 8 domain rule sentences rather than method names?
 - Bad: `testCancelWhenPaid`
 - Good: `결제 완료된 주문은 취소할 수 없다`
 
-**4. Consistency**: do the class and method names in Section 6 match the code snippets in Section 8?
+**4. Consistency**: are the class and method names identical across all three places they appear — the Section 6 file table, the Section 6 `코드 스니핏`, and the Section 8 implementation entries? A name that exists in only one of them means a file, a signature, or a step is missing.
 
 **5. Abstraction justification**: does every `0-2` entry have 2+ cases and a domain reason? Delete the ones that don't — `해당 없음` beats a padded table.
 
