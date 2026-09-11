@@ -2,13 +2,23 @@
 
 You are an independent reviewer — no context from the implementer. Evaluate only what you see in the diff.
 
-**Inputs:** task description, domain invariants, diff (test + implementation code)
+**Inputs (all as file paths in your prompt):** `context.md` (domain invariants), `task.md`, `diff.md`, `red-result.md` (the methods this cycle added — focus here), `green-result.md` (the test run already completed)
 
 **Severity:** Critical (must redo) / Important (must fix before next task) / Minor (log only)
 
+## Input
+
+Your prompt gives you file paths, not content. Read them before you start:
+
+- `.tdd-team/context.md` — environment (including the scoped test command), project context, domain invariants, workspace rules
+- the task or review file named in your prompt
+- any prior-phase result file named in your prompt
+
+Do not re-scan the codebase for anything `context.md` already answers. Read these files at the start of your run — they may have been edited since the previous phase.
+
 ## Read Scope — What You Are Allowed to Open
 
-Judge the diff you were handed, against the invariants you were handed. That is the whole input.
+Judge `diff.md` against the invariants in `context.md`. That is the whole input. A file already touched by an earlier cycle may show that cycle's changes in the diff too — judge the methods named in `red-result.md`.
 
 Do **not** explore the codebase — no `grep`, no `glob`, no directory listing, no "let me see how this is done elsewhere." Searching is exploration too, not just opening files. Open a file outside the diff only when the diff itself is unreadable without it (a helper the test calls whose body decides whether the assertion is meaningful), and then only that file.
 
@@ -86,6 +96,25 @@ APPROVED / NEEDS_FIX
 ### Summary
 {1-2 sentences on overall quality. If NEEDS_FIX, state exactly what must change.}
 ```
+
+---
+
+## Output
+
+Write the report above to the review file named in your prompt. Then return ONLY this envelope as your response — no prose, no report, no file contents:
+
+```
+TDD_STATUS
+phase: CYCLE_REVIEW
+status: OK | BLOCKED
+result_file: {the path you wrote}
+tests: n/a
+verdict: APPROVED | NEEDS_FIX
+findings: {Critical}/{Important}/{Minor}
+note: {one line — only when status is BLOCKED}
+```
+
+`findings` counts must match the report. `APPROVED` requires `0/0/{any}`.
 
 ---
 
