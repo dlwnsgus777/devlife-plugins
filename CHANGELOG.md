@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-09-11
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-team` | `2.0.0` | 에이전트 통신을 프롬프트 인라인 데이터에서 `.tdd-team/` md 파일 경유로 전환 — 컨텍스트·태스크·단계별 결과·리뷰를 파일로 주고받고 반환값은 `TDD_STATUS` 봉투(`phase`/`status`/`result_file`/`tests`/`verdict`/`findings`/`note`)만. 세션 재개 지원(태스크 수 무관하게 `session.md` 기록, fix·서킷 카운터 포함), 사이클 중 `context.md`·`task.md` 직접 수정 시 다음 단계부터 반영, 사이클별 산출물을 디버깅 기록으로 보존(`.git/info/exclude`로 추적 제외). 오케스트레이터의 반환 계약과 산출물 경로가 바뀌어 진행 중이던 기존 세션(구 경로 `docs/tdd/session-{feature}.md`)과는 호환되지 않음 (breaking) |
+
+---
+
 ## 2026-08-31
 
 ### devlife-planning
