@@ -59,7 +59,20 @@ Never spend a third dispatch on the same call.
 
 ## Setup
 
-### 1. Resolve Skill Path
+### 0. Resume or Start Fresh
+
+Before anything else, check for `.tdd-team/session.md` in the project root.
+
+If it exists, read it and ask:
+
+> "이전 TDD 세션 기록이 있습니다: {완료}/{전체} 태스크 완료, 마지막 단계 {last_phase}. 이어서 진행할까요, 새로 시작할까요?"
+
+- **이어서** → adopt `.tdd-team/context.md` and `.tdd-team/session.md` as-is. Skip Setup steps 2–6 entirely; they have already run. Resume from the first row whose `status` is not `DONE`, at the phase after its `last_phase`, and restore `feedback_mode`, `consecutive_needs_fix`, and `fix_rounds_this_cycle` from the file. Restoring those three counters is the point of resuming: starting them at zero re-runs a fix round the previous session already spent.
+- **새로 시작** → rename the old directory to `.tdd-team.{YYYYMMDD-HHMMSS}` and run Setup normally. Never delete it — it is the previous session's debugging record.
+
+If it does not exist, continue to step 1.
+
+### 1. Resolve Skill Path and Artifact Directory
 
 This SKILL.md was loaded from a known absolute path. Capture its parent directory as `SKILL_DIR`. Each phase agent's prompt file lives under `{SKILL_DIR}/references/` and is read directly by that phase's `Agent` call — there is no separate aggregate prompts file to load here.
 
@@ -71,6 +84,22 @@ This SKILL.md was loaded from a known absolute path. Capture its parent director
 {SKILL_DIR}/references/final-reviewer.md
 {SKILL_DIR}/references/fix-agent.md
 ```
+
+Then establish the artifact directory. Every file this session produces lives here, and every agent reads its inputs from here.
+
+- `TDD_DIR` = `{PROJECT_ROOT}/.tdd-team`
+- `TASK_DIR` = `{TDD_DIR}/task-{NN}` — `NN` is the task number, zero-padded to two digits
+
+Create `TDD_DIR`, then exclude it from git tracking:
+
+```bash
+mkdir -p .tdd-team
+git rev-parse --git-dir >/dev/null 2>&1 \
+  && ! grep -qxF '.tdd-team/' "$(git rev-parse --git-dir)/info/exclude" 2>/dev/null \
+  && echo '.tdd-team/' >> "$(git rev-parse --git-dir)/info/exclude"
+```
+
+Use `.git/info/exclude`, never `.gitignore` — `.gitignore` is a tracked file in the user's repository, and this skill does not author commits there.
 
 ### 2. Detect Environment
 
@@ -155,13 +184,22 @@ TDD 태스크 목록
   └─────┴─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 5. Capture Project Context (once)
+### 5. Write the Session Context File
 
-Before the first cycle, the **orchestrator** explores the feature area **one time** and captures a reusable `PROJECT_CONTEXT` block. Each phase agent then reads this block instead of re-scanning the codebase.
+Before the first cycle, the **orchestrator** explores the feature area **one time** and writes `{TDD_DIR}/context.md`. Every phase agent reads this file instead of re-scanning the codebase, and instead of receiving the same blocks inline on every dispatch.
 
-Capture only what the agents actually need to avoid re-reading:
+The file has four sections, in this order:
 
 ```
+# TDD Session Context
+
+## Environment
+- Project root: {PROJECT_ROOT}
+- Source directory: {SOURCE_DIR}
+- Test directory: {TEST_DIR}
+- Scoped test command: {TEST_SCOPED_CMD}
+- Test framework: {TEST_FRAMEWORK}
+
 ## Project Context (captured once — do NOT re-explore the codebase)
 - Package / directory layout: {where the feature's source & test packages live}
 - Test conventions: {JUnit version, assertion library/style, // arrange·act·assert, @Nested usage}
@@ -171,6 +209,13 @@ Capture only what the agents actually need to avoid re-reading:
 - In-scope files: {actual paths this session may modify — anything else is out of bounds}
 - Out of scope: {what this task deliberately does not change}
 - Known pitfalls — do NOT copy: {defect in existing code} → {what to do instead}
+
+## Domain Invariants
+{numbered list from step 3, IDs verbatim}
+
+## Workspace Rules
+Others may have edited this workspace since this file was written. Never revert a change you didn't make — it is someone else's work in progress.
+Do not commit. The orchestrator and the user own the commit history.
 ```
 
 Keep it compact (signatures and paths, not full file bodies). If the feature is brand-new with no nearby code, state "관련 기존 코드 없음" and list only the target package.
@@ -179,23 +224,40 @@ Keep it compact (signatures and paths, not full file bodies). If the feature is 
 
 A pitfall entry without its `→ what to do instead` half is worse than omitting it — the agent knows to avoid something and invents its own replacement. If a section has nothing, write `해당 없음` rather than dropping the line, so a later reader can tell it was considered.
 
-### 6. Open a Session Ledger (4+ tasks only)
+Never inline these sections into an agent prompt. Pass the path. The user may edit `context.md` between cycles, and an inlined copy would silently ignore their edit.
 
-If the confirmed task list has **4 or more tasks**, write `docs/tdd/session-{feature}.md` before the first cycle so an interrupted or compacted session can resume without re-deriving Setup:
+### 6. Write the Session File
+
+Write `{TDD_DIR}/session.md` before the first cycle — **always, regardless of task count.** Resume depends on this file, and resume must not be contingent on how large the session happens to be.
 
 ```
 # TDD Session: {feature}
-Test command: {TEST_SCOPED_CMD}
-Invariants: {numbered list from step 3}
+skill_dir: {SKILL_DIR}
+test_command: {TEST_SCOPED_CMD}
+feedback_mode: per-cycle | auto
+consecutive_needs_fix: 0
+fix_rounds_this_cycle: 0
 
-| # | Task | Status | Test class | Fix rounds |
-|---|------|--------|-----------|-----------|
-| 1 | {domain rule sentence} | pending | - | 0 |
+| # | task | status | last_phase |
+|---|------|--------|------------|
+| 1 | {domain rule sentence} | PENDING | - |
+| 2 | {domain rule sentence} | PENDING | - |
 ```
 
-Update the row after each cycle's reviewer verdict — one line edit, nothing else. For 3 tasks or fewer, skip this: the list fits in the conversation and the file costs more than it saves.
+`status` is `PENDING` | `IN_PROGRESS` | `DONE`. `last_phase` records the last phase that returned `status: OK`, e.g. `GREEN` or `CYCLE_REVIEW:APPROVED`.
 
-**On resume**, read this file first. Adopt its task list and invariants as-is and continue from the first non-`done` row — do NOT re-run Setup steps 3–4.
+Update the row after every phase — one line edit, nothing else. Update `feedback_mode` when the user answers the cadence question, and the two counters whenever they change. An un-updated counter is the one failure mode that makes resume worse than starting over.
+
+Then write one `{TASK_DIR}/task.md` per task:
+
+```
+# Task {NN}: {domain rule sentence}
+invariants: {INV-001, INV-004}
+test_class: {FQCN, or "미정 — RED가 결정"}
+scenarios:
+- {scenario sentence}
+- {scenario sentence}
+```
 
 ## TDD Cycle Execution
 
