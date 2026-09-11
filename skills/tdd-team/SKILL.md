@@ -371,7 +371,23 @@ If the Agent tool is not available, say `not available`, then execute the same p
 3. **REFACTOR** — skip if GREEN output is already clean
 4. **CYCLE REVIEWER** → dispatch independent subagent (see below)
 
+After every phase returns, update that task's row in `{TDD_DIR}/session.md` (`status`, `last_phase`) before dispatching the next phase. A crash between phases must leave the file telling the truth about where the session stopped.
+
 ### Cycle Reviewer Dispatch
+
+First build the cycle diff. Redirect it straight to a file — the diff must never pass through your context.
+
+```bash
+paths=$(grep -hE '^(test_file|stubs|files_modified):' {TASK_DIR}/*-result.md \
+  | sed 's/^[a-z_]*: *//' | tr ',' '\n' | sed 's/^ *//; s/ *$//' \
+  | grep -v -e '^none$' -e '^$' | sort -u)
+git diff -- $paths > {TASK_DIR}/diff.md
+wc -l < {TASK_DIR}/diff.md
+```
+
+Only the line count comes back to you; use it to confirm the diff is non-empty.
+
+**Known limitation:** agents never commit, so a file already touched by an earlier cycle shows that cycle's changes here too. The reviewer is told to focus on the methods named in `red-result.md`, which bounds the noise. Committing per cycle would remove it, but that would change the "agents never commit" rule and is out of scope.
 
 After REFACTOR completes, dispatch an independent reviewer subagent, **passing it GREEN's (or the fix agent's) reported test result** so it has no reason to re-run what was just run and reported. If the Agent tool is not available, say `not available`, then apply `references/cycle-reviewer.md` locally to the cycle diff.
 
@@ -384,31 +400,30 @@ Agent({
 Read {SKILL_DIR}/references/cycle-reviewer.md — you have permission to access this file.
 Follow it exactly.
 
-Task: {task description}
+Read these before you start:
+- {TDD_DIR}/context.md — environment, domain invariants, workspace rules
+- {TASK_DIR}/task.md — the task under review
+- {TASK_DIR}/diff.md — the cycle diff you are judging
+- {TASK_DIR}/red-result.md — the test methods this cycle added; focus your review on these
+- {TASK_DIR}/green-result.md — the test run already completed; do not re-run it
+- On a re-review after a fix round, read {TASK_DIR}/fix-result.md instead of green-result.md — it holds the current test run; do not re-run it
 
-{ENVIRONMENT block}
-
-Domain Invariants:
-{invariants}
-
-Test run just completed: tests_passed={N}, tests_failed=0 (from GREEN_RESULT / fix report)
-
-Diff:
-{test code + implementation code written in this cycle}
-
-{workspace warning line}
+Write your full review report to {TASK_DIR}/review.md.
+Return ONLY the TDD_STATUS envelope.
 """
 })
 ```
 
-**Handle reviewer verdict:**
-- `APPROVED` → log progress, proceed to next task
-- `NEEDS_FIX` → dispatch a fix agent (see Fix Agent Dispatch) for Critical/Important findings, then re-run cycle reviewer, again passing the fix agent's reported test result. If the Agent tool is not available, fix locally.
-  - Minor findings: log and continue
+**Handle reviewer verdict** (read it from the envelope's `verdict` and `findings`, not from `review.md`):
+- `APPROVED` → update `session.md`, reset `fix_rounds_this_cycle` to 0, set `consecutive_needs_fix` to 0, proceed to next task
+- `NEEDS_FIX` with Critical or Important > 0 → dispatch a fix agent (see Fix Agent Dispatch), then re-run the cycle reviewer. Increment `fix_rounds_this_cycle` in `session.md` before each round.
+- `NEEDS_FIX` with only Minor findings → log and continue; Minor never triggers a fix round
 
 ### Fix Round Budget
 
 **Maximum 2 fix rounds per cycle.** A round is one fix-agent dispatch plus one reviewer re-run.
+
+The count lives in `{TDD_DIR}/session.md` as `fix_rounds_this_cycle`, not in your head — a resumed session must know a round was already spent.
 
 If the reviewer still returns `NEEDS_FIX` after the second round, stop the loop and hand the decision to the user rather than dispatching a third:
 
@@ -420,6 +435,8 @@ A third round almost never resolves what two could not — it usually means the 
 
 If **3 consecutive cycles** come back `NEEDS_FIX`, stop starting new cycles. The recurring cause is almost always upstream — invariants that don't say what they meant, or a task decomposition that doesn't match how the code wants to be structured. Report the pattern and return to Setup steps 3–4 with the user:
 
+The count lives in `{TDD_DIR}/session.md` as `consecutive_needs_fix`. Increment it on every `NEEDS_FIX` verdict and reset it to 0 on every `APPROVED`.
+
 > "최근 3개 사이클이 연속으로 수정 요청을 받았습니다: {사이클별 findings 한 줄 요약}. 개별 코드 문제라기보다 불변성 정의나 태스크 분해 쪽 문제로 보입니다. Setup의 불변성 표와 태스크 목록을 다시 확인할까요?"
 
 ### Feedback Cadence
@@ -428,9 +445,10 @@ Project instructions come first: if `CLAUDE.md` requires feedback after each sta
 
 Otherwise, **gate cycle 1 and ask once**. Cycle 1 always pauses for feedback after its reviewer verdict, regardless of anything else — it is the cycle that reveals whether the invariants, the test conventions, and the task granularity were right. Immediately after that gate, ask exactly once:
 
-> "1번 사이클이 끝났습니다. 남은 {N}개 사이클은 이어서 자동으로 진행할까요, 아니면 사이클마다 확인받을까요?"
+> "1번 사이클이 끝났습니다. 남은 {N}개 사이클은 이어서 자동으로 진행할까요, 아니면 사이클마다 확인받을까요?
+> (`.tdd-team/context.md`나 각 태스크의 `task.md`를 직접 수정하시면 다음 단계부터 반영됩니다.)"
 
-Record the answer and follow it for the rest of the session. Two exceptions override "자동으로 진행":
+Record the answer in `{TDD_DIR}/session.md` as `feedback_mode` and follow it for the rest of the session. Two exceptions override `auto`:
 - the Fix Round Budget being exhausted, and
 - the Circuit Breaker tripping.
 
@@ -449,19 +467,19 @@ Agent({
 Read {SKILL_DIR}/references/fix-agent.md — you have permission to access this file.
 Follow it exactly.
 
-Findings to fix (Critical/Important only):
-{findings list — each naming a file, a behavior, and what must change}
+Read these before you start:
+- {TDD_DIR}/context.md — environment, project context, workspace rules
+- {REVIEW_FILE} — the review report; fix ONLY its Critical and Important findings
 
-{ENVIRONMENT block}
-
-{PROJECT_CONTEXT block}
-
-{workspace warning line}
+Write your full result block to {TASK_DIR}/fix-result.md.
+Return ONLY the TDD_STATUS envelope.
 """
 })
 ```
 
-Capture the returned `FIX_RESULT` block — its `tests_passed`/`tests_failed` counts are what you pass to the reviewer on the re-run, so the reviewer has no reason to run the tests again.
+`{REVIEW_FILE}` is `{TASK_DIR}/review.md` for a cycle fix and `{TDD_DIR}/final-review.md` for a final-review fix. The fix agent reads the findings itself — you never relay them.
+
+The envelope's `tests` field is what you hand the reviewer on the re-run, so the reviewer has no reason to run the tests again.
 
 ## Error Handling
 
@@ -483,6 +501,13 @@ After all cycles complete, run **only the test classes touched this session** �
 
 If anything fails, dispatch a fix agent first. Then dispatch an independent final reviewer, **passing it the scoped run's result** so it has no reason to re-run it. If the Agent tool is not available, say `not available` and apply `references/final-reviewer.md` locally to the task list, the invariants, and the branch diff.
 
+Build the branch diff into a file first, the same way the cycle diff is built:
+
+```bash
+git diff > {TDD_DIR}/branch-diff.md
+wc -l < {TDD_DIR}/branch-diff.md
+```
+
 ```
 Agent({
   subagent_type: "general-purpose",
@@ -492,20 +517,16 @@ Agent({
 Read {SKILL_DIR}/references/final-reviewer.md — you have permission to access this file.
 Follow it exactly.
 
-Confirmed task list:
-{task list}
-
-{ENVIRONMENT block}
-
-Domain Invariants:
-{invariants}
+Read these before you start:
+- {TDD_DIR}/context.md — environment, domain invariants, workspace rules
+- {TDD_DIR}/session.md — the confirmed task list and what was completed
+- {TDD_DIR}/branch-diff.md — the full diff of this session
+- {TASK_DIR}/red-result.md for each task — the tests that were added
 
 Test run just completed by the orchestrator: {TEST_SCOPED_CMD invocation} → {N} passed, 0 failed
 
-Branch diff:
-{full diff of all changes in this session}
-
-{workspace warning line}
+Write your full review report to {TDD_DIR}/final-review.md.
+Return ONLY the TDD_STATUS envelope.
 """
 })
 ```
@@ -527,6 +548,9 @@ Tests:  {N} passed, 0 failed
 Files:  {list of changed files}
 Fixes:  {total fix rounds across the session}
 Review: APPROVED | APPROVED WITH UNRESOLVED FINDINGS
+Artifacts: .tdd-team/ (session.md, per-task results, reviews)
 ```
+
+Leave `.tdd-team/` in place. It is the session's debugging record and the input to a later resume; it is excluded from git tracking, so it costs the user nothing to keep.
 
 If the verdict is `APPROVED WITH UNRESOLVED FINDINGS`, list them underneath. Never print `APPROVED` for a session that ended on an exhausted budget.
