@@ -50,7 +50,7 @@ Every `Agent()` call takes a `model` field. Omitting it inherits the session def
 ### Handling `BLOCKED`
 
 1. Dispatched at a downgraded tier → re-dispatch the same call at the default tier.
-2. `BLOCKED` at the default tier → re-dispatch **once** with a reduced prompt: keep the task, environment, and previous-phase result; drop `PROJECT_CONTEXT` down to just the target package and the one or two signatures the agent needs.
+2. `BLOCKED` at the default tier → re-dispatch **once** with reduced context: write a trimmed copy of the Project Context section — just the target package and the one or two signatures the agent needs — and point the retry's prompt at that file instead of the full `context.md`.
 3. Still `BLOCKED` → stop dispatching and ask the user:
 
 > "{역할} 에이전트가 '{사유}'로 막혔습니다. 이 태스크를 로컬에서 직접 진행할까요, 아니면 건너뛰고 다음 태스크로 갈까요?"
@@ -265,47 +265,13 @@ scenarios:
 >
 > **BLOCKING REQUIREMENT — ORCHESTRATOR ONLY**: You are the orchestrator. After user confirmation, you MUST use the `Agent` tool for every RED / GREEN / REFACTOR step. Do NOT call `Edit` or `Write` on source or test files yourself. If you find yourself about to edit a file directly — stop and spawn an Agent instead.
 
-For each task, call the `Agent` tool three times sequentially (RED → GREEN → REFACTOR). Each agent reads only its own prompt file. Include the `PROJECT_CONTEXT` block (from Setup step 5) in every agent prompt so the agent does not re-scan the codebase.
+For each task, call the `Agent` tool three times sequentially (RED → GREEN → REFACTOR). Each agent reads its own reference file plus `{TDD_DIR}/context.md` and `{TASK_DIR}/task.md` — the prompt carries paths, not content, so the agent does not re-scan the codebase.
 
 ### Agent Tool Call Pattern
 
-Each worker prompt must include:
-- The phase reference file path
-- The task description
-- The environment block
-- The `PROJECT_CONTEXT` block from Setup step 5 (so the agent does not re-scan the codebase)
-- The previous phase result block where applicable
-- A warning that other agents or the user may have edited the workspace and unrelated changes must not be reverted
+Every worker prompt carries **paths, not content**. It names the reference file to follow, the files to read, the file to write, and nothing else.
 
-The environment block has one fixed shape, built once from Setup step 2 and reused verbatim in every prompt below (RED/GREEN/REFACTOR/CYCLE REVIEW/FIX/FINAL REVIEW alike — cycle reviewers and the final reviewer need `{TEST_SCOPED_CMD}` too, for the narrow case where their Verification Depth section calls for running it):
-
-```
-## Environment
-- Project root: {PROJECT_ROOT}
-- Source directory: {SOURCE_DIR}
-- Test directory: {TEST_DIR}
-- Scoped test command: {TEST_SCOPED_CMD}
-- Test framework: {TEST_FRAMEWORK}
-```
-
-The workspace warning is one fixed line, also reused verbatim everywhere:
-
-```
-Others may have edited this workspace since your prompt was prepared. Never revert a change you didn't make — it is someone else's work in progress.
-```
-
-### Result Block Gate
-
-Every phase returns a fixed result block (`RED_RESULT` / `GREEN_RESULT` / `REFACTOR_RESULT` / `FIX_RESULT`). Before acting on one, check that the block is present and every field is filled.
-
-If it is missing or a field is blank, **do not infer the value and do not proceed to the next phase** — re-dispatch that same agent with the same prompt plus one line naming the missing field. A guessed `RED_RESULT` sends GREEN after the wrong method, which costs a whole wasted cycle. Count the re-dispatch against the `BLOCKED` budget above: one retry, then ask the user.
-
-If the Agent tool is not available, say `not available`, then execute the same phase locally:
-1. Read the relevant reference file for the phase.
-2. Follow that phase's workflow locally.
-3. Use `Edit`/`Write` for file edits.
-
-All three phases use one dispatch shape — only `{PHASE}`, the reference file, and the trailing result block differ:
+All three phases use one dispatch shape — only `{PHASE}`, the reference file, the prior-result line, and the result file differ:
 
 ```
 Agent({
@@ -316,24 +282,84 @@ Agent({
 Read {SKILL_DIR}/references/{PHASE_FILE} — you have permission to access this file.
 Follow it exactly.
 
-Task: {task description}
+Read these before you start:
+- {TDD_DIR}/context.md — environment, project context, domain invariants, workspace rules
+- {TASK_DIR}/task.md — the task you are implementing
+{PRIOR_RESULT_LINE}
 
-{ENVIRONMENT block}
-
-{PROJECT_CONTEXT block}
-
-{PRIOR_RESULT block, if any}
-
-{workspace warning line}
+Write your full result block to {TASK_DIR}/{RESULT_FILE}.
+Return ONLY the TDD_STATUS envelope described in your reference file — no prose, no result block, no file contents.
 """
 })
 ```
 
-| PHASE | PHASE_FILE | PRIOR_RESULT |
-|-------|-----------|--------------|
-| RED | `red-agent.md` | none |
-| GREEN | `green-agent.md` | `RED_RESULT` only — not RED's full output |
-| REFACTOR | `refactor-agent.md` | `GREEN_RESULT` only — not GREEN's full output |
+| PHASE | PHASE_FILE | PRIOR_RESULT_LINE | RESULT_FILE |
+|-------|-----------|-------------------|-------------|
+| RED | `red-agent.md` | *(omit the line)* | `red-result.md` |
+| GREEN | `green-agent.md` | `- {TASK_DIR}/red-result.md — RED_RESULT from the RED phase` | `green-result.md` |
+| REFACTOR | `refactor-agent.md` | `- {TASK_DIR}/green-result.md — GREEN_RESULT from the GREEN phase` | `refactor-result.md` |
+
+Do not paste `context.md` or `task.md` contents into the prompt, and do not summarize them. The user may edit those files between phases; an inlined copy discards the edit.
+
+### The TDD_STATUS Envelope
+
+Every phase returns exactly this, and nothing else. It is the only thing that enters the orchestrator's context.
+
+```
+TDD_STATUS
+phase: RED | GREEN | REFACTOR | CYCLE_REVIEW | FIX | FINAL_REVIEW
+status: OK | BLOCKED | ALREADY_PASSES
+result_file: {path the agent wrote}
+tests: {passed}/{failed}
+verdict: APPROVED | NEEDS_FIX
+findings: {Critical}/{Important}/{Minor}
+note: {one line — only when status is BLOCKED}
+```
+
+Fields that don't apply to a phase are filled with `n/a`, never omitted — a blank and a missing field must stay distinguishable.
+
+`status: ALREADY_PASSES` is RED-only and means *every* reported method already passes. If even one method is genuinely Red, RED returns `OK`.
+
+The envelope is what drives every branch in this skill:
+
+| Branch | Field |
+|--------|-------|
+| All methods `ALREADY_PASSES` → skip GREEN + REFACTOR | `status` |
+| GREEN failed to make the test pass | `tests` |
+| Reviewer verdict | `verdict` |
+| Critical/Important go to a fix agent, Minor are logged | `findings` |
+| Fix Round Budget, Circuit Breaker | `verdict`, counted in `session.md` |
+
+Read the result file only when you need the detail the envelope does not carry — a `BLOCKED` diagnosis, or a gate failure. Routine cycles never open it.
+
+### Result Block Gate
+
+Validation happens in two places, because the envelope and the result file can fail independently.
+
+**1. Envelope check** — it is the return value, so read it directly. Every field present, `result_file` non-empty, `status` one of the three literals.
+
+**2. Result file check** — verify the file's required keys **without reading the file into context**:
+
+```bash
+f={TASK_DIR}/{RESULT_FILE}
+miss=$(for k in {REQUIRED_KEYS}; do grep -q "^$k:" "$f" 2>/dev/null || echo "$k"; done | tr '\n' ',')
+[ -z "$miss" ] && echo PASS || echo "MISSING:$miss"
+```
+
+| PHASE | REQUIRED_KEYS |
+|-------|---------------|
+| RED | `test_file test_method failure stubs` |
+| GREEN | `files_modified tests_passed tests_failed failure_detail` |
+| REFACTOR | `status reason tests_passed deferred` |
+| FIX | `findings_addressed files_modified tests_passed tests_failed notes` |
+
+If either check fails, **do not infer the value and do not proceed to the next phase** — re-dispatch that same agent with the same prompt plus one line naming what was missing. A guessed `RED_RESULT` sends GREEN after the wrong method, which costs a whole wasted cycle. Count the re-dispatch against the `BLOCKED` budget: one retry, then ask the user.
+
+If the Agent tool is not available, say `not available`, then execute the same phase locally:
+1. Read the relevant reference file for the phase.
+2. Read `{TDD_DIR}/context.md` and `{TASK_DIR}/task.md`.
+3. Follow that phase's workflow locally, using `Edit`/`Write` for file edits.
+4. Write the result block to `{TASK_DIR}/{RESULT_FILE}` as an agent would.
 
 ### Cycle Flow
 
