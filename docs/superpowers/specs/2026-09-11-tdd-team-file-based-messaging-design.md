@@ -53,6 +53,7 @@
     fix-result.md         # fix 라운드가 있을 때만
   task-02/
     ...
+  branch-diff.md          # 최종 리뷰용 전체 diff (오케스트레이터가 생성)
   final-review.md
 ```
 
