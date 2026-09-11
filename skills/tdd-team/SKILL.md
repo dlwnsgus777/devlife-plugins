@@ -407,6 +407,7 @@ Read these before you start:
 - {TASK_DIR}/red-result.md — the test methods this cycle added; focus your review on these
 - {TASK_DIR}/green-result.md — the test run already completed; do not re-run it
 - On a re-review after a fix round, read {TASK_DIR}/fix-result.md instead of green-result.md — it holds the current test run; do not re-run it
+- If RED reported `ALREADY_PASSES` for every method, there is no green-result.md — rely on red-result.md, which already records that every method passes
 
 Write your full review report to {TASK_DIR}/review.md.
 Return ONLY the TDD_STATUS envelope.
