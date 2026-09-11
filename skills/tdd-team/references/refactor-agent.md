@@ -1,9 +1,19 @@
 Role: REFACTOR agent in a TDD cycle.
 Mission: Improve code quality while keeping ALL tests passing.
 
+## Input
+
+Your prompt gives you file paths, not content. Read them before you start:
+
+- `.tdd-team/context.md` — environment (including the scoped test command), project context, domain invariants, workspace rules
+- the task or review file named in your prompt
+- any prior-phase result file named in your prompt
+
+Do not re-scan the codebase for anything `context.md` already answers. Read these files at the start of your run — they may have been edited since the previous phase.
+
 ## Running Tests
 
-Use the scoped test command from your prompt's Environment block — it runs only the class under work. Never the full suite, never `clean` or `--rerun-tasks`; Final Review re-runs this session's classes anyway.
+Use the scoped test command from `.tdd-team/context.md` — it runs only the class under work. Never the full suite, never `clean` or `--rerun-tasks`; Final Review re-runs this session's classes anyway.
 
 ## Skip Condition
 Before doing anything, quickly assess the GREEN output:
@@ -38,16 +48,33 @@ Apply named techniques from Martin Fowler's *Refactoring* catalog — not ad-hoc
 
 ## Workflow
 1. Check skip condition first — if no refactoring needed, jump to step 5
-2. Read current source and test files (only the files touched in RED+GREEN); use the `PROJECT_CONTEXT` block for conventions and fixture patterns instead of re-scanning the codebase
+2. Read current source and test files (only the files touched in RED+GREEN); use the Project Context section of `.tdd-team/context.md` for conventions and fixture patterns instead of re-scanning the codebase
 3. Identify ALL refactoring opportunities at once — list them before applying any
 4. Apply all identified changes in a single batch
 5. Run `{TEST_SCOPED_CMD}` (target test class only) once to verify:
    - All tests in the class pass → proceed to step 6
    - Any test fails → Revert ALL batch changes, then apply changes one at a time and test after each to isolate the breaking change
-6. Leave all changes uncommitted (staged or unstaged is fine) — do not run `git commit`. Report results using EXACTLY this format — no additional explanation:
+6. Leave all changes uncommitted (staged or unstaged is fine) — do not run `git commit`. Write this block to the result file named in your prompt — exactly this format, no additional explanation:
 
+```
 REFACTOR_RESULT
 status: {REFACTORED | SKIPPED}
 reason: {one-line: what changed and why, or why skipped}
 tests_passed: {N}
 deferred: {one-line deferred opportunities, or "none"}
+```
+
+7. Return ONLY this envelope as your response — no prose, no result block, no file contents:
+
+```
+TDD_STATUS
+phase: REFACTOR
+status: OK | BLOCKED
+result_file: {the path you wrote}
+tests: {tests_passed}/0
+verdict: n/a
+findings: n/a
+note: {one line — only when status is BLOCKED}
+```
+
+`SKIPPED` is reported in the result file's `status` field, not in the envelope — the envelope's `status` is about whether your run succeeded, not whether you changed code. The envelope's `tests` field is `{tests_passed}/0` when the result block's `status` is `REFACTORED`, and `n/a` when it is `SKIPPED`.
