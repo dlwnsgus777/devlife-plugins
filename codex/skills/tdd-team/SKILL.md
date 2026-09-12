@@ -380,10 +380,15 @@ paths=$(grep -hE '^(test_file|stubs|files_modified):' {TASK_DIR}/*-result.md \
   | sed 's/^[a-z_]*: *//' | tr ',' '\n' | sed 's/^ *//; s/ *$//' \
   | grep -v -e '^none$' -e '^$' | sort -u)
 git diff -- $paths > {TASK_DIR}/diff.md
+for f in $paths; do
+  git ls-files --error-unmatch "$f" >/dev/null 2>&1 || git diff --no-index /dev/null "$f" >> {TASK_DIR}/diff.md
+done
 wc -l < {TASK_DIR}/diff.md
 ```
 
-Only the line count comes back to you; use it to confirm the diff is non-empty.
+The `for` loop appends the files that are new this cycle — RED's test class and stubs are untracked, and plain `git diff` reports nothing for them, so without it the reviewer would be handed a diff with the test missing. `git diff --no-index` exits non-zero whenever it finds differences; here that is the normal outcome, not a command failure to react to.
+
+Only the line count comes back to you; use it to confirm the diff is non-empty. A count of zero means nothing changed at all — outside an `ALREADY_PASSES` cycle that is a defect worth stopping for, not a reviewable state, so stop and ask rather than dispatching the reviewer.
 
 **Known limitation:** agents never commit, so a file already touched by an earlier cycle shows that cycle's changes here too. The reviewer is told to focus on the methods named in `red-result.md`, which bounds the noise. Committing per cycle would remove it, but that would change the "agents never commit" rule and is out of scope.
 
@@ -498,8 +503,13 @@ Build the branch diff into a file first, the same way the cycle diff is built:
 
 ```bash
 git diff > {TDD_DIR}/branch-diff.md
+git ls-files --others --exclude-standard -- {SOURCE_DIR} {TEST_DIR} | while read -r f; do
+  git diff --no-index /dev/null "$f" >> {TDD_DIR}/branch-diff.md
+done
 wc -l < {TDD_DIR}/branch-diff.md
 ```
+
+The second command appends every file created this session — new test classes and new production classes are untracked, and `git diff` alone would omit them, leaving the final reviewer to conclude each task shipped without a test. `--exclude-standard` already honours `.git/info/exclude`, so `{TDD_DIR}` itself is skipped; scoping to `{SOURCE_DIR}` and `{TEST_DIR}` keeps unrelated untracked files in the user's repo out. `git diff --no-index` exits non-zero when it finds differences, which is the expected outcome here.
 
 1. Discover the available multi-agent tool with `tool_search`.
 2. Spawn a reviewer sub-agent with the prompt below, on **the most capable model available** (see Model Selection — this is the last gate on the session's work).
