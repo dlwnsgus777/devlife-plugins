@@ -50,7 +50,7 @@ Every `Agent()` call takes a `model` field. Omitting it inherits the session def
 ### Handling `BLOCKED`
 
 1. Dispatched at a downgraded tier → re-dispatch the same call at the default tier.
-2. `BLOCKED` at the default tier → re-dispatch **once** with reduced context: write a trimmed copy of the Project Context section — just the target package and the one or two signatures the agent needs — and point the retry's prompt at that file instead of the full `context.md`.
+2. `BLOCKED` at the default tier → re-dispatch **once** with reduced context: write a trimmed copy of the Project Context section — just the target package and the one or two signatures the agent needs — to `{TASK_DIR}/context-trimmed.md`, and point the retry's prompt at that file instead of the full `context.md`.
 3. Still `BLOCKED` → stop dispatching and ask the user:
 
 > "{역할} 에이전트가 '{사유}'로 막혔습니다. 이 태스크를 로컬에서 직접 진행할까요, 아니면 건너뛰고 다음 태스크로 갈까요?"
@@ -61,14 +61,14 @@ Never spend a third dispatch on the same call.
 
 ### 0. Resume or Start Fresh
 
-Before anything else, check for `.tdd-team/session.md` in the project root.
+Before anything else, check for `.tdd-team/session.md` in the project root — that exact path and no other. A `session.md` sitting inside a `.tdd-team/archive-*/` directory belongs to an already-archived session and never triggers resume.
 
 If it exists, read it and ask:
 
 > "이전 TDD 세션 기록이 있습니다: {완료}/{전체} 태스크 완료, 마지막 단계 {last_phase}. 이어서 진행할까요, 새로 시작할까요?"
 
-- **이어서** → adopt `.tdd-team/context.md` and `.tdd-team/session.md` as-is. Skip Setup steps 2–6 entirely; they have already run. Resume from the first row whose `status` is not `DONE`, at the phase after its `last_phase`, and restore `feedback_mode`, `consecutive_needs_fix`, and `fix_rounds_this_cycle` from the file. Restoring those three counters is the point of resuming: starting them at zero re-runs a fix round the previous session already spent.
-- **새로 시작** → rename the old directory to `.tdd-team.{YYYYMMDD-HHMMSS}` and run Setup normally. Never delete it — it is the previous session's debugging record.
+- **이어서** → adopt `.tdd-team/context.md` and `.tdd-team/session.md` as-is. Skip Setup steps 2–6 entirely; they have already run. Resume from the first row whose `status` is not `DONE`, at the phase after its `last_phase`, and restore `feedback_mode`, `consecutive_needs_fix`, `fix_rounds_this_cycle`, and `fix_rounds_total` from the file. Restoring those counters is the point of resuming: starting them at zero re-runs a fix round the previous session already spent. If `feedback_mode` reads `unset`, the cadence question was never asked — gate the cycle you resume into and ask it after that cycle's reviewer verdict, exactly as cycle 1 would.
+- **새로 시작** → archive the old session **inside** the excluded tree, not beside it: create `.tdd-team/archive-{YYYYMMDD-HHMMSS}/` and move everything currently in `.tdd-team/` into it, leaving any earlier `archive-*` directories where they are. `.tdd-team/` itself stays, holding nothing but its archives, and Setup steps 5–6 write the new session's `context.md` and `session.md` into it. Then run Setup normally. Never delete an archive — it is the previous session's debugging record. A sibling `.tdd-team.{YYYYMMDD-HHMMSS}` would escape the `.tdd-team/` exclude entry and leave untracked clutter in the user's repo; archiving inside keeps one exclude entry covering everything this skill ever writes.
 
 If it does not exist, continue to step 1.
 
@@ -89,6 +89,8 @@ Then establish the artifact directory. Every file this session produces lives he
 
 - `TDD_DIR` = `{PROJECT_ROOT}/.tdd-team`
 - `TASK_DIR` = `{TDD_DIR}/task-{NN}` — `NN` is the task number, zero-padded to two digits
+
+The skill runs from the project root, so `.tdd-team/` resolves against the working directory — which is why the `mkdir` below needs no variable and why Setup 0 could already check `.tdd-team/session.md`. `PROJECT_ROOT` is captured later, in Setup 2, for the agents' benefit: they need the absolute path written into `context.md`.
 
 Create `TDD_DIR`, then exclude it from git tracking:
 
@@ -234,9 +236,10 @@ Write `{TDD_DIR}/session.md` before the first cycle — **always, regardless of 
 # TDD Session: {feature}
 skill_dir: {SKILL_DIR}
 test_command: {TEST_SCOPED_CMD}
-feedback_mode: per-cycle | auto
+feedback_mode: unset
 consecutive_needs_fix: 0
 fix_rounds_this_cycle: 0
+fix_rounds_total: 0
 
 | # | task | status | last_phase |
 |---|------|--------|------------|
@@ -246,7 +249,9 @@ fix_rounds_this_cycle: 0
 
 `status` is `PENDING` | `IN_PROGRESS` | `DONE`. `last_phase` records the last phase that returned `status: OK`, e.g. `GREEN` or `CYCLE_REVIEW:APPROVED`.
 
-Update the row after every phase — one line edit, nothing else. Update `feedback_mode` when the user answers the cadence question, and the two counters whenever they change. An un-updated counter is the one failure mode that makes resume worse than starting over.
+`feedback_mode` is written as the literal `unset` and stays that way until the user answers the cadence question, which replaces it with `per-cycle` or `auto`. `fix_rounds_total` is the session-wide count of fix rounds, never reset — it is what Session End reports.
+
+Update the row after every phase — one line edit, nothing else. Update `feedback_mode` when the user answers the cadence question, and the three counters whenever they change. An un-updated counter is the one failure mode that makes resume worse than starting over.
 
 Then write one `{TASK_DIR}/task.md` per task:
 
@@ -297,7 +302,7 @@ Return ONLY the TDD_STATUS envelope described in your reference file — no pros
 |-------|-----------|-------------------|-------------|
 | RED | `red-agent.md` | *(omit the line)* | `red-result.md` |
 | GREEN | `green-agent.md` | `- {TASK_DIR}/red-result.md — RED_RESULT from the RED phase` | `green-result.md` |
-| REFACTOR | `refactor-agent.md` | `- {TASK_DIR}/green-result.md — GREEN_RESULT from the GREEN phase` | `refactor-result.md` |
+| REFACTOR | `refactor-agent.md` | `- {TASK_DIR}/green-result.md — GREEN_RESULT from the GREEN phase`<br>`- {TASK_DIR}/red-result.md — the test file and methods this cycle added` | `refactor-result.md` |
 
 Do not paste `context.md` or `task.md` contents into the prompt, and do not summarize them. The user may edit those files between phases; an inlined copy discards the edit.
 
@@ -422,7 +427,7 @@ Return ONLY the TDD_STATUS envelope.
 
 **Handle reviewer verdict** (read it from the envelope's `verdict` and `findings`, not from `review.md`):
 - `APPROVED` → update `session.md`, reset `fix_rounds_this_cycle` to 0, set `consecutive_needs_fix` to 0, proceed to next task
-- `NEEDS_FIX` with Critical or Important > 0 → dispatch a fix agent (see Fix Agent Dispatch), then re-run the cycle reviewer. Increment `fix_rounds_this_cycle` in `session.md` before each round.
+- `NEEDS_FIX` with Critical or Important > 0 → dispatch a fix agent (see Fix Agent Dispatch), then re-run the cycle reviewer. Increment both `fix_rounds_this_cycle` and `fix_rounds_total` in `session.md` before each round.
 - `NEEDS_FIX` with only Minor findings → log and continue; Minor never triggers a fix round
 
 ### Fix Round Budget
@@ -430,6 +435,8 @@ Return ONLY the TDD_STATUS envelope.
 **Maximum 2 fix rounds per cycle.** A round is one fix-agent dispatch plus one reviewer re-run.
 
 The count lives in `{TDD_DIR}/session.md` as `fix_rounds_this_cycle`, not in your head — a resumed session must know a round was already spent.
+
+Reset it to 0 when you start a new task, whatever ended the previous one — an `APPROVED` verdict, an exhausted budget the user chose to leave as-is, or a `NEEDS_FIX` carrying only Minor findings. Only the `APPROVED` path resets it on its own, so without this the next cycle would inherit spent rounds it never used.
 
 If the reviewer still returns `NEEDS_FIX` after the second round, stop the loop and hand the decision to the user rather than dispatching a third:
 
@@ -441,9 +448,9 @@ A third round almost never resolves what two could not — it usually means the 
 
 If **3 consecutive cycles** come back `NEEDS_FIX`, stop starting new cycles. The recurring cause is almost always upstream — invariants that don't say what they meant, or a task decomposition that doesn't match how the code wants to be structured. Report the pattern and return to Setup steps 3–4 with the user:
 
-The count lives in `{TDD_DIR}/session.md` as `consecutive_needs_fix`. Increment it on every `NEEDS_FIX` verdict and reset it to 0 on every `APPROVED`.
-
 > "최근 3개 사이클이 연속으로 수정 요청을 받았습니다: {사이클별 findings 한 줄 요약}. 개별 코드 문제라기보다 불변성 정의나 태스크 분해 쪽 문제로 보입니다. Setup의 불변성 표와 태스크 목록을 다시 확인할까요?"
+
+The count lives in `{TDD_DIR}/session.md` as `consecutive_needs_fix`. It counts **cycles, not verdicts**: increment it by exactly 1 when a cycle ends without an `APPROVED` verdict, and reset it to 0 when a cycle ends `APPROVED`. A single cycle can produce three `NEEDS_FIX` verdicts — its first review plus both fix rounds — and still counts as one. Counting verdicts would trip the breaker inside one cycle, which is not what its message claims happened.
 
 ### Feedback Cadence
 
@@ -475,15 +482,23 @@ Follow it exactly.
 
 Read these before you start:
 - {TDD_DIR}/context.md — environment, project context, workspace rules
-- {REVIEW_FILE} — the review report; fix ONLY its Critical and Important findings
+- {REVIEW_FILE} — the review report; fix ONLY its Critical and Important findings. If it holds a failing test run instead of a review, fix only the failure it records.
 
-Write your full result block to {TASK_DIR}/fix-result.md.
+Write your full result block to {FIX_RESULT_FILE}.
 Return ONLY the TDD_STATUS envelope.
 """
 })
 ```
 
-`{REVIEW_FILE}` is `{TASK_DIR}/review.md` for a cycle fix and `{TDD_DIR}/final-review.md` for a final-review fix. The fix agent reads the findings itself — you never relay them.
+`{REVIEW_FILE}` and `{FIX_RESULT_FILE}` are chosen together, by which path dispatched the fix:
+
+| Dispatched by | `{REVIEW_FILE}` | `{FIX_RESULT_FILE}` |
+|---------------|-----------------|---------------------|
+| Cycle reviewer `NEEDS_FIX` | `{TASK_DIR}/review.md` | `{TASK_DIR}/fix-result.md` |
+| Final reviewer `NEEDS_FIX` | `{TDD_DIR}/final-review.md` | `{TDD_DIR}/final-fix-result.md` |
+| Final Review test run failed | `{TDD_DIR}/test-failure.md` | `{TDD_DIR}/final-fix-result.md` |
+
+`TASK_DIR` is undefined during Final Review, so never aim a final-review fix at a task directory: `{TASK_DIR}/fix-result.md` is a cycle-reviewer input and a diff-path source, and overwriting some task's copy of it would corrupt both. The fix agent reads the findings itself — you never relay them.
 
 The envelope's `tests` field is what you hand the reviewer on the re-run, so the reviewer has no reason to run the tests again.
 
@@ -505,7 +520,9 @@ Every retry in this skill is bounded. When a budget runs out the answer is alway
 
 After all cycles complete, run **only the test classes touched this session** — the distinct `test_file` values from every `RED_RESULT`, together in one `TEST_SCOPED_CMD` invocation (Gradle: `./gradlew test --tests "FQCN1" --tests "FQCN2" … --offline`). Fall back to the full `TEST_CMD` only if the user asks for it, or if the change touched something with many indirect callers (a shared utility, a widely-used base class).
 
-If anything fails, dispatch a fix agent first. Then dispatch an independent final reviewer, **passing it the scoped run's result** so it has no reason to re-run it. If the Agent tool is not available, say `not available` and apply `references/final-reviewer.md` locally to the task list, the invariants, and the branch diff.
+If anything fails, dispatch a fix agent first. This path carries no review findings — only a failing run — so the fix agent has no input unless you give it one: redirect the failing run's output to `{TDD_DIR}/test-failure.md` and pass that path as `{REVIEW_FILE}`. Redirect it to the file rather than reading it into your context, the same way the diffs are built. Re-run the scoped tests after the fix round, and only continue once they pass.
+
+Then dispatch an independent final reviewer, **passing it the scoped run's result** so it has no reason to re-run it. If the Agent tool is not available, say `not available` and apply `references/final-reviewer.md` locally to the task list, the invariants, and the branch diff.
 
 Build the branch diff into a file first, the same way the cycle diff is built:
 
@@ -544,7 +561,7 @@ Return ONLY the TDD_STATUS envelope.
 
 **Handle final reviewer verdict:**
 - `APPROVED` → proceed to session end
-- `NEEDS_FIX` → dispatch a single fix agent (see Fix Agent Dispatch) with the complete findings list, then re-run final reviewer. If the Agent tool is not available, fix locally.
+- `NEEDS_FIX` → dispatch a single fix agent (see Fix Agent Dispatch) with the complete findings list, then re-run final reviewer. Increment `fix_rounds_total` in `session.md` before each round. If the Agent tool is not available, fix locally.
 
 The Fix Round Budget applies here too: **2 rounds maximum**. If findings remain after the second, end the session with them listed as unresolved rather than dispatching a third round, and say so plainly in the summary.
 
@@ -557,7 +574,7 @@ Print a summary:
 Cycles: {N} completed ({M} skipped GREEN — ALREADY_PASSES)
 Tests:  {N} passed, 0 failed
 Files:  {list of changed files}
-Fixes:  {total fix rounds across the session}
+Fixes:  {fix_rounds_total from session.md}
 Review: APPROVED | APPROVED WITH UNRESOLVED FINDINGS
 Artifacts: .tdd-team/ (session.md, per-task results, reviews)
 ```
