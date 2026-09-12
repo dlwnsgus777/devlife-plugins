@@ -50,7 +50,17 @@ Every `Agent()` call takes a `model` field. Omitting it inherits the session def
 ### Handling `BLOCKED`
 
 1. Dispatched at a downgraded tier → re-dispatch the same call at the default tier.
-2. `BLOCKED` at the default tier → re-dispatch **once** with reduced context: write a trimmed copy of the Project Context section — just the target package and the one or two signatures the agent needs — to `{TASK_DIR}/context-trimmed.md`, and point the retry's prompt at that file instead of the full `context.md`.
+2. `BLOCKED` at the default tier → re-dispatch **once** with reduced context: write a trimmed copy of the Project Context section — just the target package and the one or two signatures the agent needs — to `{TRIMMED_CONTEXT_FILE}`, and point the retry's prompt at that file instead of the full `context.md`.
+
+`{TRIMMED_CONTEXT_FILE}` depends on which dispatch is retrying:
+
+| Retrying | `{TRIMMED_CONTEXT_FILE}` |
+|----------|--------------------------|
+| A cycle dispatch (RED, GREEN, REFACTOR, cycle reviewer, cycle fix agent) | `{TASK_DIR}/context-trimmed.md` |
+| The final reviewer or a final-review fix agent | `{TDD_DIR}/context-trimmed.md` |
+
+`TASK_DIR` is undefined during Final Review, so never aim a reduced-context retry at a task directory.
+
 3. Still `BLOCKED` → stop dispatching and ask the user:
 
 > "{역할} 에이전트가 '{사유}'로 막혔습니다. 이 태스크를 로컬에서 직접 진행할까요, 아니면 건너뛰고 다음 태스크로 갈까요?"
@@ -515,12 +525,19 @@ Every retry in this skill is bounded. When a budget runs out the answer is alway
 | Result block missing/incomplete | See Result Block Gate | 1 re-dispatch, then ask |
 | Reviewer returns `NEEDS_FIX` | See Fix Round Budget | 2 rounds, then ask |
 | 3 cycles in a row need fixes | See Circuit Breaker | stop and revisit Setup |
+| Final Review test run fails | See Final Review | 2 rounds, then ask |
 
 ## Final Review
 
 After all cycles complete, run **only the test classes touched this session** — the distinct `test_file` values from every `RED_RESULT`, together in one `TEST_SCOPED_CMD` invocation (Gradle: `./gradlew test --tests "FQCN1" --tests "FQCN2" … --offline`). Fall back to the full `TEST_CMD` only if the user asks for it, or if the change touched something with many indirect callers (a shared utility, a widely-used base class).
 
-If anything fails, dispatch a fix agent first. This path carries no review findings — only a failing run — so the fix agent has no input unless you give it one: redirect the failing run's output to `{TDD_DIR}/test-failure.md` and pass that path as `{REVIEW_FILE}`. Redirect it to the file rather than reading it into your context, the same way the diffs are built. Re-run the scoped tests after the fix round, and only continue once they pass.
+If anything fails, dispatch a fix agent first. This path carries no review findings — only a failing run — so the fix agent has no input unless you give it one: redirect the failing run's output to `{TDD_DIR}/test-failure.md` and pass that path as `{REVIEW_FILE}`. Redirect it to the file rather than reading it into your context, the same way the diffs are built. Re-run the scoped tests after the fix round.
+
+This loop is bounded like every other retry in this skill: **2 rounds maximum**. If the scoped tests still fail after the second fix round, stop and ask the user rather than dispatching a third:
+
+> "Final Review 테스트가 2회 수정 후에도 실패합니다: {실패 내용}. 이대로 두고 다음 단계로 갈까요, 직접 손보실까요?"
+
+Only proceed to the final reviewer once the tests pass, or the user chooses to continue anyway.
 
 Then dispatch an independent final reviewer, **passing it the scoped run's result** so it has no reason to re-run it. If the Agent tool is not available, say `not available` and apply `references/final-reviewer.md` locally to the task list, the invariants, and the branch diff.
 
