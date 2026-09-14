@@ -15,6 +15,8 @@ Do not re-scan the codebase for anything `context.md` already answers. Read thes
 
 Use the scoped test command from `.tdd-team/context.md`, scoped to the class(es) the findings name. Never the full suite, never `clean` or `--rerun-tasks`; incremental compilation already picks up your changes.
 
+**Read the run's result, not its log.** Even a scoped run prints build noise, framework banners, and context-startup lines. Take the pass/fail counts, the failing test names, and — for a failure — its message plus the first stack frame that points into code from this session. Stop there. Filter the run rather than reading it whole (`| tail -40`, or grep the failure block); a full console log costs more context than the failure is worth, and every retry makes you pay it again.
+
 ## Scope Discipline
 
 - Fix **only** the findings you were handed. A finding is a specific claim about a specific file/behavior — treat it as a checklist, not an invitation to also tidy up nearby code you notice along the way.

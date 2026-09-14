@@ -44,7 +44,7 @@ An `ALREADY_PASSES` cycle changed no production code, so the rest of the review 
 
 **Re-reviewing after a fix:** the fix report already states it ran the scoped tests and they passed — trust it. Verify only the specific assertion the fix introduced, and only if it falls into the `ALREADY_PASSES` gap.
 
-**If you do run a live experiment:** never `--rerun-tasks`, `--rerun`, or `clean` (they force a full multi-module rebuild; plain `{TEST_SCOPED_CMD}` already re-executes the class). Run once, revert, confirm clean.
+**If you do run a live experiment:** never `--rerun-tasks`, `--rerun`, or `clean` (they force a full multi-module rebuild; plain `{TEST_SCOPED_CMD}` already re-executes the class). Run once, revert, confirm clean. Read only what the experiment was for — did the assertion you targeted flip? Take that line and the pass/fail counts; do not read the surrounding console log.
 
 ---
 

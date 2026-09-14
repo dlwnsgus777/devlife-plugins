@@ -15,6 +15,8 @@ Do not re-scan the codebase for anything `context.md` already answers. Read thes
 
 Use the scoped test command from `.tdd-team/context.md` — it runs only the class under work. Never the full suite, never `clean` or `--rerun-tasks`; Final Review re-runs this session's classes anyway.
 
+**Read the run's result, not its log.** Even a scoped run prints build noise, framework banners, and context-startup lines. Take the pass/fail counts, the failing test names, and — for a failure — its message plus the first stack frame that points into code from this session. Stop there. Filter the run rather than reading it whole (`| tail -40`, or grep the failure block); a full console log costs more context than the failure is worth, and every retry makes you pay it again.
+
 ## Rules
 - If RED reported multiple test methods (a batched task), make ALL of the Red ones pass with one coherent implementation — don't implement them one at a time as separate changes. If they can't share one small implementation, say so and report BLOCKED; that's a signal the batch was too coarse.
 - Write the MINIMUM code needed to make the test pass — no more, no less
