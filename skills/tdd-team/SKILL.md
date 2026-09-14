@@ -21,7 +21,7 @@ Orchestrate a 3-phase Red-Green-Refactor TDD cycle using sequential Agent calls.
 ## Execution Rules
 
 - Respect system, developer, and project `CLAUDE.md` instructions above this skill.
-- If project instructions require feedback after each stage, pause after RED, GREEN, REFACTOR, and review stages and ask for feedback before continuing.
+- If project instructions require feedback after each stage, honor them at **cycle** granularity — one pause per cycle, after the cycle reviewer's verdict. See Feedback Cadence.
 - Use sub-agents (`Agent({ subagent_type: "general-purpose", ... })`) for RED, GREEN, REFACTOR, cycle review, and final review. If the Agent tool is not available, say `not available` and fall back to local execution.
 
 ## Right-Size the Ceremony
@@ -476,9 +476,11 @@ The count lives in `{TDD_DIR}/session.md` as `consecutive_needs_fix`. It counts 
 
 ### Feedback Cadence
 
-Project instructions come first: if `CLAUDE.md` requires feedback after each stage, honor that and skip the rest of this section.
+**The cycle is the feedback unit.** A cycle is complete when its reviewer returns `APPROVED` — after whatever fix rounds it needed. That is the one point worth pausing at: the test, the implementation, the refactor, and an independent review of all three are on the table together, and anything the user wants changed is still only one cycle's worth of work. Never pause between phases within a cycle.
 
-Otherwise, **gate cycle 1 and ask once**. Cycle 1 always pauses for feedback after its reviewer verdict, regardless of anything else — it is the cycle that reveals whether the invariants, the test conventions, and the task granularity were right. Immediately after that gate, ask exactly once:
+If project instructions (`CLAUDE.md`) require feedback after each stage, honor them **here, at cycle granularity** rather than four times between phases. A pause after RED hands the user a half-written cycle with no review attached — which is not the check the instruction is asking for, and the cycle reviewer is what that mid-cycle pause would be standing in for. What per-stage instructions do change is the floor below: `per-cycle` becomes mandatory, so do not offer `auto` and do not record it.
+
+**Cycle 1 always pauses**, regardless of anything else — it is the cycle that reveals whether the invariants, the test conventions, and the task granularity were right. Immediately after that gate, ask exactly once:
 
 > "1번 사이클이 끝났습니다. 남은 {N}개 사이클은 이어서 자동으로 진행할까요, 아니면 사이클마다 확인받을까요?
 > (`.tdd-team/context.md`나 각 태스크의 `task.md`를 직접 수정하시면 다음 단계부터 반영됩니다.)"
