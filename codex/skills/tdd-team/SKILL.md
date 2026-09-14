@@ -183,7 +183,17 @@ Go above the floor whenever the domain gives a reason. The only scenarios to dro
 **Batch scenarios that share one implementation change.** A cycle should map to a unit of *implementation work*, not to a single test method. Before finalizing the task list, look for groups of scenarios that will all be satisfied by the same guard clause, the same conditional, or the same small function — e.g. the positive and negative branches of one check, or a family of role/state permutations against one lookup. Merge each such group into a single task with multiple `@DisplayName`s under it, rather than one task per scenario.
 
 > Signal you merged too coarsely: GREEN can't make all of a task's test methods pass with one small change — split it back apart.
-> Signal you split too finely: cycle N's RED comes back `ALREADY_PASSES` because cycle N-1's GREEN already covered it — merge it into whichever earlier task actually implements the shared logic, going forward.
+> Signal you split too finely: cycle N's RED comes back `ALREADY_PASSES` because cycle N-1's GREEN already covered it — merge it into whichever earlier task actually implements the shared logic, going forward. This is a backstop, not the control: the check above should have caught it, so when it fires, re-run that check over every task still ahead of you.
+
+**Before presenting the list, name the change behind every task.** For each row, write one line to yourself: *what production code change takes this task's tests from failing to passing?* The answer decides whether it is a cycle at all:
+
+- **A concrete change** — a guard clause, a new method, a branch → it is a cycle.
+- **"Nothing — it already works"** → not a cycle, coverage. Move its scenarios into whichever task builds the logic they exercise, as extra test methods.
+- **"An earlier task already makes it pass"** → not a cycle either. Merge it into that task.
+
+These lines are a filter, not an artifact — do not write them into `task.md` or anywhere else. Present only the tasks that survive.
+
+Run this before you present, because it is the only control that works before money is spent. The `ALREADY_PASSES` signal below fires *after* a cycle has already burned a RED dispatch, a reviewer, and a test run on work that could not have been Red. In a measured session, two such cycles took 41% of the total agent time.
 
 Present the task list in this format, then get user confirmation before starting:
 
