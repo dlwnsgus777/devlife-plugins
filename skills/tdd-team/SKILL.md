@@ -118,11 +118,12 @@ Use `.git/info/exclude`, never `.gitignore` — `.gitignore` is a tracked file i
 Check for build files (`build.gradle.kts`, `pom.xml`, `package.json`, etc.) and determine the test command. Capture:
 
 ```
-PROJECT_ROOT / SOURCE_DIR / TEST_DIR / TEST_CMD / TEST_SCOPED_CMD / TEST_FRAMEWORK
+PROJECT_ROOT / SOURCE_DIR / TEST_DIR / TEST_CMD / TEST_SCOPED_CMD / TEST_COMPILE_CMD / TEST_FRAMEWORK
 ```
 
 - **TEST_CMD** — full-suite command. Not run by default (see Final Review) — only run it if the user explicitly asks for full-suite/cross-class regression coverage.
 - **TEST_SCOPED_CMD** — command template that runs a **single test class**, used by every in-cycle test run and by Final Review. Gradle: `./gradlew test --tests "{FQCN}" --offline` (JUnit `@Nested` classes run with the enclosing class FQCN). Maven: `mvn -o test -Dtest={ClassName}`. npm/jest/vitest: pass the test file path (e.g. `npx vitest run {test_file}`). Most frameworks accept multiple `--tests`/file-path arguments in one invocation — use that to run several touched classes together instead of one command per class.
+- **TEST_COMPILE_CMD** — compiles the test sources without executing anything. RED uses it to clear compile errors before paying for a real run, since a fresh test class fails to compile far more often than it fails to fail. Gradle: `./gradlew compileTestJava --offline` (Kotlin: `compileTestKotlin`). Maven: `mvn -o test-compile`. For TypeScript: `npx tsc --noEmit`. If the stack has no separate compile step (plain JS, Python), set it to `none` and RED skips straight to the run.
 
 ### 3. Identify Domain Invariants
 
@@ -220,6 +221,7 @@ The file has four sections, in this order:
 - Source directory: {SOURCE_DIR}
 - Test directory: {TEST_DIR}
 - Scoped test command: {TEST_SCOPED_CMD}
+- Test compile command: {TEST_COMPILE_CMD}
 - Test framework: {TEST_FRAMEWORK}
 
 ## Project Context (captured once — do NOT re-explore the codebase)
