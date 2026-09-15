@@ -28,11 +28,11 @@ Orchestrate a 3-phase Red-Green-Refactor TDD cycle using sequential Agent calls.
 
 **Never cut RED/GREEN isolation, regardless of change size.** It is structural, not risk-based: one mind writing both the test and the implementation gravitates to happy-path-only coverage, because the test ends up describing what you already intended to build instead of pressure-testing the requirement. A tiny change is as vulnerable to that as a large one. RED always runs blind to how GREEN will implement it, and GREEN always runs as a separate dispatch, on every cycle.
 
-What scales down with change size is everything *around* that isolation:
+What scales down with change size, and is yours to scale:
 - **Cycle granularity** — batch scenarios that share one implementation change into a single task (Step 4).
-- **REFACTOR** — skips itself when GREEN's output is clean.
-- **CYCLE REVIEWER depth** — static reasoning by default; live experiments only for `ALREADY_PASSES` (see cycle-reviewer.md).
-- **Final Review scope** — touched classes only unless the change has wide blast radius. Both reviewers are handed the test result the orchestrator (or GREEN/fix agent) already produced; they read and reason rather than re-running it.
+- **Final Review scope** — touched classes only unless the change has wide blast radius (see Final Review).
+
+**Everything inside an agent is that agent's own call.** REFACTOR decides whether to skip, the cycle reviewer decides how deep to go, and both reviewers decide what to trust from the test result you hand them — each rule lives in that agent's reference file, and none of them is yours to re-derive. You dispatch and read the envelope. Never re-dispatch an agent because you would have judged differently: a `SKIPPED` REFACTOR or a reviewer that only read the diff is the designed outcome, not a shortfall.
 
 ## Model Selection
 
@@ -157,7 +157,7 @@ These sentences become the source of test names.
 
 If the document already provides an ordered task list, adopt it instead of deriving a new one. Items tagged `[REGRESSION]` (an existing test already covers that behavior) are not cycles — list them once as "기존 커버리지로 확인" and run them as part of Final Review instead of giving each its own RED. Only `[NEW]` items become cycles. Apply the coverage floor and batching rule below before presenting the list — a document often lists scenarios one-per-line for readability, which is a documentation granularity, not a cycle granularity.
 
-Name each task as a **domain rule sentence** — it becomes the test's `@DisplayName` directly.
+Name each task as a **domain rule sentence** — RED turns it into the test's `@DisplayName`. How it names methods, groups them, or splits a sentence across cases is `red-agent.md`'s business; you owe it the sentence and nothing more.
 
 **Coverage floor — a floor, never a cap.** Every invariant from Setup step 3 needs enough tests to pin its **boundary**, not one test somewhere inside it. An invariant is a rule; a single test only samples one point of a rule and proves nothing about where it starts and stops. For each invariant, the floor is:
 
@@ -171,12 +171,7 @@ Under TDD this is not a coverage preference. **An edge case with no test is not 
 
 Go above the floor whenever the domain gives a reason. The only scenarios to drop are ones that test the language, the framework, or a plain accessor — never a boundary of a domain rule. When you drop something, say which and why as you present the list.
 
-**This does not cost cycles.** A rule's boundary cases share the same guard clause, so they belong to one task, not several — the batching rule below is what controls cost, and RED will express same-rule-different-input cases as a single `@ParameterizedTest`. More test methods in a cycle is nearly free; more cycles is what is expensive.
-
-```
-# Bad: add(1, 2) returns 3
-# Good: 두 정수를 더하면 합계를 반환한다
-```
+**This does not cost cycles.** A rule's boundary cases share the same guard clause, so they belong to one task, not several — the batching rule below is what controls cost, and RED collapses same-rule-different-input cases on its own. More test methods in a cycle is nearly free; more cycles is what is expensive.
 
 **Batch scenarios that share one implementation change.** A cycle should map to a unit of *implementation work*, not to a single test method. Before finalizing the task list, look for groups of scenarios that will all be satisfied by the same guard clause, the same conditional, or the same small function — e.g. the positive and negative branches of one check, or a family of role/state permutations against one lookup. Merge each such group into a single task with multiple `@DisplayName`s under it, rather than one task per scenario.
 
@@ -532,14 +527,14 @@ Every retry in this skill is bounded. When a budget runs out the answer is alway
 
 | Situation | Action | Budget |
 |-----------|--------|--------|
-| Build fails in RED | RED fixes stubs, re-verifies | handled inside RED |
 | GREEN can't pass the test | Re-dispatch GREEN with a different approach | 2 attempts, then `BLOCKED` |
-| REFACTOR breaks tests | Revert, apply changes one at a time | handled inside REFACTOR |
 | Agent reports `BLOCKED` | See Handling `BLOCKED` | 1 reduced-context retry, then ask |
 | Result block missing/incomplete | See Result Block Gate | 1 re-dispatch, then ask |
 | Reviewer returns `NEEDS_FIX` | See Fix Round Budget | 2 rounds, then ask |
 | 3 cycles in a row need fixes | See Circuit Breaker | stop and revisit Setup |
 | Final Review test run fails | See Final Review | 2 rounds, then ask |
+
+Two failure modes are deliberately absent from this table: a build failure inside RED, and a test that REFACTOR breaks. You budget neither — each agent resolves its own, per its reference file, and you learn of it only if the agent gives up and returns `BLOCKED`.
 
 ## Final Review
 
