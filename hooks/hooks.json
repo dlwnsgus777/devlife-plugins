@@ -1,0 +1,17 @@
+{
+  "description": "Skips the permission prompt for the md files tdd-team's agents use to communicate, under .tdd-team/.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/allow-tdd-artifact.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

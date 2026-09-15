@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-09-15
+
+### devlife-tdd
+
+| Plugin | Version | Change |
+|--------|---------|--------|
+| `devlife` | `1.1.0` | `PreToolUse` 훅 `allow-tdd-artifact` 추가 — `tdd-team` 에이전트 간 소통용 `.tdd-team/**/*.md` 아티팩트의 권한 프롬프트를 생략한다. 기존에는 설치자가 각자 `settings.json`에 허용 규칙을 넣어야 했음. 훅 스크립트가 경로를 직접 검사하므로 그 외 경로는 평소 권한 흐름을 그대로 탄다. |
+
+---
+
 ## 2026-09-11
 
 ### devlife-tdd
