@@ -52,6 +52,20 @@ Where the parameter does exist, **inherit the session default unless the table g
 
 ### Handling `BLOCKED`
 
+A blocked agent is reporting one of two different problems, and they need opposite responses. Read `blocked_reason` before you do anything.
+
+**`MISSING_FACT` — the agent needs something `context.md` does not contain.**
+
+Resolve it yourself and hand it back. You have the whole workspace and your tool calls return in seconds; the agent has one package and would have to reason its way to the same answer. Measured on a real session: a schema this orchestrator can dump in seconds cost a sub-agent thirty minutes to reconstruct — and it reconstructed it wrong.
+
+1. Get the fact — query the database, read the file, check whether the bean actually exists.
+2. Append it to `{TDD_DIR}/context.md`, under the section it belongs to. Every later dispatch inherits it, so the same gap is never paid twice.
+3. Re-dispatch the same call with the **same, un-trimmed** context. Nothing was too big; something was missing.
+
+Never answer `MISSING_FACT` by trimming context — that removes more of what the agent just said it lacks, which is why an agent that expects a trimmed retry learns to go digging instead of reporting. This round counts against no budget: it is the cheap path working as designed, not a retry. If you cannot resolve the fact yourself, ask the user — never re-dispatch and never let the agent go find it.
+
+**`OVERWHELMED` — the agent has what it needs and still cannot proceed.**
+
 1. Dispatched at a downgraded tier → re-dispatch the same call at the default tier.
 2. `BLOCKED` at the default tier → re-dispatch **once** with reduced context: write a trimmed copy of the Project Context section — just the target package and the one or two signatures the agent needs — to `{TRIMMED_CONTEXT_FILE}`, and point the retry's prompt at that file instead of the full `context.md`.
 
@@ -207,7 +221,7 @@ TDD 태스크 목록
 
 ### 5. Write the Session Context File
 
-Before the first cycle, the **orchestrator** explores the feature area **one time** and writes `{TDD_DIR}/context.md`. Every phase agent reads this file instead of re-scanning the codebase, and instead of receiving the same blocks inline on every dispatch.
+Before the first cycle, the **orchestrator** explores the feature area **one time** and writes `{TDD_DIR}/context.md`. **Write only what you verified in this session.** Dump the schema you are about to describe, open the class whose signature you are about to quote, and check that a bean exists before telling an agent to inject it — a fact you recalled instead of confirming is the most expensive line in this file, because a wrong or partial one is discovered later by an agent that cannot cheaply correct it. Every phase agent reads this file instead of re-scanning the codebase, and instead of receiving the same blocks inline on every dispatch.
 
 The file has four sections, in this order:
 
@@ -309,6 +323,9 @@ Read these before you start:
 - {TASK_DIR}/task.md — the task you are implementing
 {PRIOR_RESULT_LINE}
 
+Scope fence: stay inside the files and package named in the documents above. Do not open anything outside them.
+If you need something those documents do not give you, do NOT go looking for it — return BLOCKED with `blocked_reason: MISSING_FACT` and name the single fact you need. The orchestrator resolves it in seconds and re-dispatches you with it; searching for it yourself is the slowest path available to you.
+
 Write your full result block to {TASK_DIR}/{RESULT_FILE}.
 Return ONLY the TDD_STATUS envelope described in your reference file — no prose, no result block, no file contents.
 ```
@@ -333,7 +350,8 @@ result_file: {path the agent wrote}
 tests: {passed}/{failed}
 verdict: APPROVED | NEEDS_FIX
 findings: {Critical}/{Important}/{Minor}
-note: {one line — only when status is BLOCKED}
+blocked_reason: MISSING_FACT | OVERWHELMED | n/a
+note: {one line — only when status is BLOCKED. For MISSING_FACT, name the one fact you need and nothing else.}
 ```
 
 Fields that don't apply to a phase are filled with `n/a`, never omitted — a blank and a missing field must stay distinguishable.
@@ -349,6 +367,7 @@ The envelope is what drives every branch in this skill:
 | Reviewer verdict | `verdict` |
 | Critical/Important go to a fix agent, Minor are logged | `findings` |
 | Fix Round Budget, Circuit Breaker | `verdict`, counted in `session.md` |
+| A blocked agent is missing a fact vs. has too much context | `blocked_reason` |
 
 Read the result file only when you need the detail the envelope does not carry — a `BLOCKED` diagnosis, or a gate failure. Routine cycles never open it.
 
@@ -496,6 +515,9 @@ Follow it exactly.
 Read these before you start:
 - {TDD_DIR}/context.md — environment, project context, workspace rules
 - {REVIEW_FILE} — the review report; fix ONLY its Critical and Important findings. If it holds a failing test run instead of a review, fix only the failure it records.
+
+Scope fence: stay inside the files and package named in the documents above. Do not open anything outside them.
+If you need something those documents do not give you, do NOT go looking for it — return BLOCKED with `blocked_reason: MISSING_FACT` and name the single fact you need. The orchestrator resolves it in seconds and re-dispatches you with it; searching for it yourself is the slowest path available to you.
 
 Write your full result block to {FIX_RESULT_FILE}.
 Return ONLY the TDD_STATUS envelope.
