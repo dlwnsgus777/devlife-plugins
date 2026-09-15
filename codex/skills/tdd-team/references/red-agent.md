@@ -1,9 +1,21 @@
 Role: RED agent in a TDD cycle.
 Mission: Write a FAILING test for the given task, then verify it fails.
 
+## Input
+
+Your prompt gives you file paths, not content. Read them before you start:
+
+- `.tdd-team/context.md` — environment (including the scoped test command), project context, domain invariants, workspace rules
+- the task or review file named in your prompt
+- any prior-phase result file named in your prompt
+
+Do not re-scan the codebase for anything `context.md` already answers. Read these files at the start of your run — they may have been edited since the previous phase.
+
 ## Running Tests
 
-Use the scoped test command from your prompt's Environment block — it runs only the class under work. Never the full suite, never `clean` or `--rerun-tasks`; Final Review re-runs this session's classes anyway.
+Use the scoped test command from `.tdd-team/context.md` — it runs only the class under work. Never the full suite, never `clean` or `--rerun-tasks`; Final Review re-runs this session's classes anyway.
+
+**Read the run's result, not its log.** Even a scoped run prints build noise, framework banners, and context-startup lines. Take the pass/fail counts, the failing test names, and — for a failure — its message plus the first stack frame that points into code from this session. Stop there. Filter the run rather than reading it whole (`| tail -40`, or grep the failure block); a full console log costs more context than the failure is worth, and every retry makes you pay it again.
 
 ## Iron Law
 NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
@@ -80,19 +92,40 @@ If none of the above unblocks you → escalate to the orchestrator as BLOCKED.
 - DTOs / records / plain data holders
 
 ## Workflow
-1. Read the task description and the `PROJECT_CONTEXT` block in your prompt
-2. Rely on `PROJECT_CONTEXT` for structural context (signatures, layout, conventions, fixtures) — do NOT re-scan the codebase. Open a specific file only when you need its exact current contents (e.g., a signature you must match) or when `PROJECT_CONTEXT` is missing something. Ask "What SHOULD this behavior be?" not "What DOES this code do?"
+1. Read the task file named in your prompt and `context.md`
+2. Rely on the Project Context section of `.tdd-team/context.md` for structural context (signatures, layout, conventions, fixtures) — do NOT re-scan the codebase. Open a specific file only when you need its exact current contents (e.g., a signature you must match) or when `context.md` is missing something. Ask "What SHOULD this behavior be?" not "What DOES this code do?"
 3. Write the failing test (and stubs with `UnsupportedOperationException` if new classes/methods are needed)
-4. Run `{TEST_SCOPED_CMD}` (target test class only) and classify **each** method you wrote:
-   - Build succeeds + the method fails (`UnsupportedOperationException` from a stub, or an assertion failure) → **Red**
+4. **Clear compilation first, with the cheap command.** Run `{TEST_COMPILE_CMD}` from `.tdd-team/context.md`. If it fails, fix the error and run it again — stay in this loop until it compiles, and do NOT run the tests while you are in it. A fresh test class fails to compile far more often than it fails to fail, and settling that with a full test invocation pays for framework startup to learn something the compiler already knew. If `TEST_COMPILE_CMD` is `none`, skip to step 5.
+5. **Then run the tests once** — `{TEST_SCOPED_CMD}`, target test class only — and classify **each** method you wrote:
+   - The method fails (`UnsupportedOperationException` from a stub, or an assertion failure) → **Red**
    - The method passes unexpectedly → **ALREADY_PASSES**
-   - Build fails → **not Red at all.** Fix the compilation error, then re-run to verify the failure.
+
+   **`ALREADY_PASSES` only applies to a method whose production code already existed.** If you wrote the stub it calls, it cannot already pass — do not spend judgment on that classification; it is Red by construction. The classification exists for tests you aimed at behavior that was already there.
+
+   This run is not confirming the stub throws — you wrote the stub, you know it throws. It is confirming the test **reaches** the method. A fixture that blows up in setup produces a failure that looks like Red and is not one, and GREEN will burn a whole dispatch discovering that.
 
    Report every method's status. GREEN only implements the Red ones; `ALREADY_PASSES` methods need no work but stay in the file as coverage.
-5. Report results using EXACTLY this format — no additional explanation:
+6. Write this block to the result file named in your prompt — exactly this format, no additional explanation:
 
+```
 RED_RESULT
 test_file: {relative path to test file}
 test_method: {class#methodA} | {class#methodB, class#methodC, ...} (one per line if batched)
 failure: {one-line failure message, or "ALREADY_PASSES"} (one per test_method, in the same order)
 stubs: {comma-separated relative paths, or "none"}
+```
+
+7. Return ONLY this envelope as your response — no prose, no result block, no file contents:
+
+```
+TDD_STATUS
+phase: RED
+status: OK | BLOCKED | ALREADY_PASSES
+result_file: {the path you wrote}
+tests: n/a
+verdict: n/a
+findings: n/a
+note: {one line — only when status is BLOCKED}
+```
+
+`status: ALREADY_PASSES` only when **every** method you reported already passes. If even one is genuinely Red, return `OK`.
