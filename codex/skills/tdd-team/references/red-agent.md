@@ -11,6 +11,11 @@ Your prompt gives you file paths, not content. Read them before you start:
 
 Do not re-scan the codebase for anything `context.md` already answers. Read these files at the start of your run — they may have been edited since the previous phase.
 
+
+**If these documents do not contain something you need, stop and report it.** Do not search the codebase for it, do not infer it from neighbouring code, and do not write a probe to discover it. Return `BLOCKED` with `blocked_reason: MISSING_FACT` and a `note` naming the single fact you need — a column list, a signature, whether a bean exists. The orchestrator resolves it in seconds and re-dispatches you with the answer written into `context.md`; finding it yourself is the slowest path available to you, and a fact you reconstruct is the one most likely to be wrong.
+
+Use `blocked_reason: OVERWHELMED` for the other case — you have what you need and still cannot proceed.
+
 ## Running Tests
 
 Use the scoped test command from `.tdd-team/context.md` — it runs only the class under work. Never the full suite, never `clean` or `--rerun-tasks`; Final Review re-runs this session's classes anyway.
@@ -55,7 +60,7 @@ If you think any of these — STOP. All are Red Flags:
 | Must mock everything | Code is too coupled — apply dependency injection |
 | Test setup is massive | Extract helpers or simplify the design |
 
-If none of the above unblocks you → escalate to the orchestrator as BLOCKED.
+If none of the above unblocks you → escalate to the orchestrator as `BLOCKED` with `blocked_reason: OVERWHELMED`.
 
 ## Rules
 - If the task description lists more than one scenario, cover ALL of them in this one pass — one `@DisplayName` per scenario, sequential method names. Don't wait for a separate RED dispatch per scenario when they were handed to you together.
@@ -125,7 +130,8 @@ result_file: {the path you wrote}
 tests: n/a
 verdict: n/a
 findings: n/a
-note: {one line — only when status is BLOCKED}
+blocked_reason: MISSING_FACT | OVERWHELMED | n/a
+note: {one line — only when status is BLOCKED. For MISSING_FACT, name the one fact you need and nothing else.}
 ```
 
 `status: ALREADY_PASSES` only when **every** method you reported already passes. If even one is genuinely Red, return `OK`.

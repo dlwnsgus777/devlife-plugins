@@ -119,7 +119,8 @@ result_file: {the path you wrote}
 tests: n/a
 verdict: APPROVED | NEEDS_FIX
 findings: {Critical}/{Important}/{Minor}
-note: {one line — only when status is BLOCKED}
+blocked_reason: MISSING_FACT | OVERWHELMED | n/a
+note: {one line — only when status is BLOCKED. For MISSING_FACT, name the one fact you need and nothing else.}
 ```
 
 `findings` counts must match the report. `APPROVED` requires `0/0/{any}`.
