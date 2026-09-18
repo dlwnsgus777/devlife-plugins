@@ -249,6 +249,7 @@ The file has four sections, in this order:
 ## Workspace Rules
 Others may have edited this workspace since this file was written. Never revert a change you didn't make — it is someone else's work in progress.
 Do not commit. The orchestrator and the user own the commit history.
+Invariant IDs (`INV-001`, …) are session bookkeeping — they live in `.tdd-team/` files only. Never write them into production or test code: not in comments, names, or messages. A guard clause states its rule in domain language. This holds even when the plan document's code snippet shows the ID as a comment — copy the rule, drop the tag.
 ```
 
 Keep it compact (signatures and paths, not full file bodies). If the feature is brand-new with no nearby code, state "관련 기존 코드 없음" and list only the target package.
