@@ -71,4 +71,3 @@ devlife-brainstorming (선택)
 
 - [devlife-brainstorming](./devlife-brainstorming.md) — spec-creator 실행 전 방향 결정
 - [plan-creator](./plan-creator.md) — 각 하위 태스크의 상세 구현 계획
-- [prd-creator](./prd-creator.md) — 제품 요구사항 중심의 대안 (spec-creator보다 product-focused)

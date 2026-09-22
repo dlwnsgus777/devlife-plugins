@@ -8,7 +8,7 @@ API 설계, 비즈니스 로직, 구현 파일 목록, TDD 테스트 순서까�
 - 새 기능이나 버그 픽스 구현을 시작하기 전
 - API 설계, 비즈니스 로직 흐름을 미리 정리하고 싶을 때
 - TDD로 개발할 테스트 케이스 목록이 필요할 때
-- `prd-creator`로 만든 하위 태스크를 구체화할 때
+- `spec-creator`로 분해한 하위 태스크를 구체화할 때
 
 ## 트리거 문구
 
@@ -146,4 +146,3 @@ devlife-brainstorming
 
 - [spec-creator](./spec-creator.md) — plan-creator 실행 전 Spec 문서 작성
 - [tdd-team](./tdd-team.md) — 계획 문서를 입력으로 TDD 사이클 실행
-- [prd-creator](./prd-creator.md) — spec-creator 대안 (product-focused)
