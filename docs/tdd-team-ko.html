@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TDD Team — 스킬 명세</title>
+<style>
+  :root{
+    --paper:#E8ECEE;
+    --surface:#FFFFFF;
+    --surface-2:#F3F5F6;
+    --ink:#16212B;
+    --ink-soft:#586773;
+    --ink-faint:#8A98A3;
+    --rule:#D3DADE;
+    --rule-soft:#E2E7EA;
+    --red:#B42B22;
+    --green:#15703E;
+    --blue:#24568C;
+    --amber:#8A5A0B;
+    --panel:#101C26;
+    --panel-ink:#D7E0E6;
+    --panel-faint:#7F8F9B;
+    --measure:70ch;
+    --rail:224px;
+    --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,"Cascadia Mono",Consolas,"D2Coding",monospace;
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16.5px;
+    line-height:1.72;
+    letter-spacing:-0.005em;
+    word-break:keep-all;
+    overflow-wrap:anywhere;
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    background:var(--panel);
+    color:var(--panel-ink);
+    padding:72px 24px 56px;
+    border-bottom:1px solid #000;
+  }
+  .hero-inner{max-width:1180px;margin:0 auto}
+  .hero h1{
+    font-size:clamp(2.7rem,7vw,4.6rem);
+    line-height:0.98;
+    letter-spacing:-0.035em;
+    font-weight:800;
+    margin:0 0 18px;
+    color:#fff;
+  }
+  .hero .lede{
+    max-width:58ch;
+    font-size:clamp(1.02rem,2.1vw,1.2rem);
+    color:var(--panel-ink);
+    margin:0 0 6px;
+  }
+  .hero .meta{
+    font-family:var(--mono);
+    font-size:0.78rem;
+    color:var(--panel-faint);
+    letter-spacing:0.02em;
+    margin-top:22px;
+  }
+
+  /* ---------- cycle diagram ---------- */
+  .cycle{margin-top:46px}
+  .cycle-track{
+    display:flex;
+    align-items:stretch;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .node{
+    flex:1 1 180px;
+    min-width:160px;
+    border:1.5px solid currentColor;
+    background:rgba(255,255,255,0.03);
+    padding:16px 18px 15px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .node .tag{
+    font-family:var(--mono);
+    font-size:clamp(1rem,2.2vw,1.32rem);
+    font-weight:600;
+    letter-spacing:0.06em;
+    color:currentColor;
+  }
+  .node .what{
+    font-size:0.82rem;
+    line-height:1.5;
+    color:var(--panel-faint);
+    letter-spacing:0;
+  }
+  .node.n-red{color:#E8776C}
+  .node.n-green{color:#5FBE89}
+  .node.n-ref{color:#79A8DF}
+  .node.n-rev{color:#CFD9E0}
+  .arrow{
+    align-self:center;
+    font-family:var(--mono);
+    color:#4A5A66;
+    font-size:1.15rem;
+    padding:0 2px;
+  }
+  .loop{
+    margin-top:14px;
+    border-top:1.5px dashed #3A4A56;
+    padding-top:10px;
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    font-size:0.8rem;
+    color:var(--panel-faint);
+  }
+  .loop b{font-family:var(--mono);font-weight:600;color:#9FB0BC;letter-spacing:0.04em}
+
+  @media (prefers-reduced-motion:no-preference){
+    .node,.loop{animation:rise .5s cubic-bezier(.2,.7,.3,1) both}
+    .node:nth-child(1){animation-delay:.05s}
+    .node:nth-child(3){animation-delay:.14s}
+    .node:nth-child(5){animation-delay:.23s}
+    .node:nth-child(7){animation-delay:.32s}
+    .loop{animation-delay:.42s}
+    .arrow{animation:fade .5s ease both;animation-delay:.3s}
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+
+  /* ---------- shell ---------- */
+  .shell{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 24px 96px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:40px;
+  }
+  @media (min-width:1080px){
+    .shell{grid-template-columns:var(--rail) minmax(0,1fr);gap:56px;padding-top:8px}
+  }
+
+  /* ---------- rail ---------- */
+  .rail{padding-top:36px}
+  @media (min-width:1080px){
+    .rail{position:sticky;top:0;align-self:start;max-height:100vh;overflow-y:auto;padding-bottom:40px}
+  }
+  .rail nav{border-left:1.5px solid var(--rule);}
+  .rail a{
+    display:block;
+    padding:5px 0 5px 14px;
+    margin-left:-1.5px;
+    border-left:1.5px solid transparent;
+    color:var(--ink-soft);
+    text-decoration:none;
+    font-size:0.86rem;
+    line-height:1.45;
+  }
+  .rail a:hover{color:var(--ink)}
+  .rail a.active{color:var(--ink);border-left-color:var(--red);font-weight:600}
+  .rail .rail-title{
+    font-size:0.78rem;
+    color:var(--ink-faint);
+    font-family:var(--mono);
+    letter-spacing:0.04em;
+    margin:0 0 10px;
+  }
+  .rail details summary{
+    cursor:pointer;
+    font-size:0.9rem;
+    font-weight:600;
+    padding:8px 0;
+  }
+  @media (min-width:1080px){
+    .rail details{display:block}
+    .rail details summary{display:none}
+    .rail details[open]>nav,.rail details>nav{display:block}
+  }
+
+  /* ---------- content ---------- */
+  main{padding-top:36px;min-width:0}
+  section{scroll-margin-top:24px}
+  section+section{margin-top:64px}
+
+  h2{
+    font-size:clamp(1.55rem,3.4vw,2.05rem);
+    line-height:1.18;
+    letter-spacing:-0.028em;
+    font-weight:800;
+    margin:0 0 4px;
+  }
+  .h2-en{
+    font-family:var(--mono);
+    font-size:0.76rem;
+    color:var(--ink-faint);
+    letter-spacing:0.05em;
+    margin:0 0 22px;
+  }
+  h3{
+    font-size:1.12rem;
+    letter-spacing:-0.015em;
+    font-weight:700;
+    margin:38px 0 10px;
+    padding-top:18px;
+    border-top:1px solid var(--rule);
+  }
+  h3.step{
+    display:flex;
+    gap:12px;
+    align-items:baseline;
+  }
+  h3.step .num{
+    font-family:var(--mono);
+    font-size:0.92rem;
+    font-weight:600;
+    color:var(--red);
+    flex:none;
+  }
+  h4{font-size:0.98rem;font-weight:700;margin:26px 0 8px}
+
+  p,ul,ol{max-width:var(--measure)}
+  p{margin:0 0 15px}
+  ul,ol{margin:0 0 15px;padding-left:1.3em}
+  li{margin:0 0 7px}
+  li>ul,li>ol{margin-top:7px}
+  strong{font-weight:700}
+  em{font-style:normal;font-weight:600;color:var(--blue)}
+  a{color:var(--blue)}
+  img{max-width:100%;height:auto;display:block}
+
+  code{
+    font-family:var(--mono);
+    font-size:0.855em;
+    background:var(--surface-2);
+    border:1px solid var(--rule-soft);
+    border-radius:2px;
+    padding:0.08em 0.34em;
+    letter-spacing:0;
+    white-space:nowrap;
+  }
+  .tok-red{color:var(--red);border-color:#E7C7C4;background:#FBF0EF}
+  .tok-green{color:var(--green);border-color:#BFD9C9;background:#EDF6F1}
+  .tok-blue{color:var(--blue);border-color:#C6D4E5;background:#EFF3F9}
+
+  pre{
+    background:var(--panel);
+    color:var(--panel-ink);
+    padding:18px 20px;
+    margin:0 0 18px;
+    overflow-x:auto;
+    font-size:0.815rem;
+    line-height:1.62;
+    border-left:3px solid #2C3B47;
+  }
+  pre code{
+    background:none;border:none;padding:0;font-size:inherit;color:inherit;white-space:pre;
+  }
+  pre.plain{background:var(--surface);color:var(--ink);border:1px solid var(--rule);border-left:3px solid var(--rule)}
+  pre.frontmatter{border-left-color:var(--red)}
+
+  blockquote{
+    margin:0 0 18px;
+    padding:14px 20px;
+    background:var(--surface);
+    border-left:3px solid var(--blue);
+    max-width:var(--measure);
+    color:var(--ink);
+  }
+  blockquote p{margin:0}
+  blockquote p+p{margin-top:8px}
+  blockquote.rule{border-left-color:var(--red);background:#FCF4F3}
+  blockquote.signal{border-left-color:var(--amber);background:#FBF6EC}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:0 0 20px;
+    font-size:0.89rem;
+    background:var(--surface);
+  }
+  .table-wrap{overflow-x:auto;margin-bottom:20px}
+  .table-wrap table{margin-bottom:0;min-width:520px}
+  th,td{
+    text-align:left;
+    padding:10px 14px;
+    border-bottom:1px solid var(--rule-soft);
+    vertical-align:top;
+    line-height:1.55;
+  }
+  thead th{
+    background:var(--surface-2);
+    border-bottom:1.5px solid var(--rule);
+    font-weight:700;
+    font-size:0.83rem;
+    white-space:nowrap;
+  }
+  tbody tr:last-child td{border-bottom:none}
+  td code{white-space:normal}
+
+  .note{
+    max-width:var(--measure);
+    font-size:0.9rem;
+    color:var(--ink-soft);
+  }
+  hr{border:none;border-top:1px solid var(--rule);margin:40px 0}
+
+  footer{
+    max-width:1180px;
+    margin:0 auto;
+    padding:28px 24px 60px;
+    border-top:1px solid var(--rule);
+    color:var(--ink-faint);
+    font-size:0.82rem;
+    font-family:var(--mono);
+    letter-spacing:0.02em;
+  }
+
+  :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+  html{scroll-behavior:smooth}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <h1>TDD Team</h1>
+    <p class="lede">순차적인 <code style="background:rgba(255,255,255,.07);border-color:#2C3B47;color:#DCE4EA">Agent</code> 호출로 Red-Green-Refactor 3단계 TDD 사이클을 지휘한다. 한 사이클은 하나의 작은 동작 증분을 구현한다.</p>
+    <p class="meta">skill: tdd-team · 오케스트레이터 명세 · 한국어판</p>
+
+    <div class="cycle" aria-label="TDD 사이클 흐름">
+      <div class="cycle-track">
+        <div class="node n-red">
+          <span class="tag">RED</span>
+          <span class="what">실패하는 테스트를 먼저 작성하고 실패를 확인한다</span>
+        </div>
+        <span class="arrow" aria-hidden="true">→</span>
+        <div class="node n-green">
+          <span class="tag">GREEN</span>
+          <span class="what">테스트를 통과시키는 최소한의 구현을 넣는다</span>
+        </div>
+        <span class="arrow" aria-hidden="true">→</span>
+        <div class="node n-ref">
+          <span class="tag">REFACTOR</span>
+          <span class="what">정리할 것이 없으면 스스로 건너뛴다</span>
+        </div>
+        <span class="arrow" aria-hidden="true">→</span>
+        <div class="node n-rev">
+          <span class="tag">CYCLE REVIEW</span>
+          <span class="what">독립 서브에이전트가 사이클 diff를 판정한다</span>
+        </div>
+      </div>
+      <div class="loop">
+        <span><b>APPROVED</b> — 다음 태스크로</span>
+        <span><b>NEEDS_FIX</b> — FIX 에이전트 후 재리뷰 (사이클당 최대 2라운드)</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+
+  <aside class="rail">
+    <details open>
+      <summary>목차</summary>
+      <p class="rail-title">목차</p>
+      <nav id="toc">
+        <a href="#frontmatter">프론트매터</a>
+        <a href="#intro">TDD Team</a>
+        <a href="#execution-rules">실행 규칙</a>
+        <a href="#ceremony">절차의 크기 맞추기</a>
+        <a href="#setup">Setup</a>
+        <a href="#cycle">TDD 사이클 실행</a>
+        <a href="#errors">오류 처리</a>
+        <a href="#final-review">Final Review</a>
+        <a href="#session-end">세션 종료</a>
+      </nav>
+    </details>
+  </aside>
+
+  <main>
+
+  <!-- ============ FRONTMATTER ============ -->
+  <section id="frontmatter">
+    <h2>프론트매터</h2>
+    <p class="h2-en">YAML frontmatter</p>
+<pre class="frontmatter"><code>---
+name: tdd-team
+description: &gt;
+  사용자가 에이전트 기반 Red-Green-Refactor 사이클로 테스트 주도 개발을 하며
+  기능을 구현하려 할 때 이 스킬을 사용한다. 트리거 문구: "start TDD", "do TDD",
+  "TDD로 개발해줘", "TDD로 구현해줘", "TDD로 만들어줘", "TDD 시작", "TDD 팀 만들어",
+  "테스트 주도 개발", "red green refactor", "test-driven development",
+  "테스트 먼저 작성하고 싶어", "write tests first then implement",
+  "테스트부터 짜줘", "TDD 방식으로 구현해줘".
+  사용자가 기능을 설명하면서 테스트와 함께 점진적으로 만들고 싶다고 말할 때도
+  트리거한다. 예: "이 기능 테스트 먼저 만들고 하나씩 구현하자", "build this with
+  failing tests first", "한 단계씩 테스트 작성하면서 개발하고 싶어".
+  구현을 마친 뒤 단위 테스트만 작성하거나, 기존 테스트를 실행하거나, 테스트 실패를
+  디버깅하는 경우에는 트리거하지 않는다 — TDD 워크플로가 아니다.
+---</code></pre>
+  </section>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <h2>TDD Team</h2>
+    <p class="h2-en">overview</p>
+    <p>순차적인 <code>Agent</code> 호출을 사용해 Red-Green-Refactor 3단계 TDD 사이클을 지휘한다. 각 사이클은 작은 동작 증분 하나를 구현한다.</p>
+  </section>
+
+  <!-- ============ EXECUTION RULES ============ -->
+  <section id="execution-rules">
+    <h2>실행 규칙</h2>
+    <p class="h2-en">Execution Rules</p>
+    <ul>
+      <li>이 스킬보다 상위에 있는 system, developer, 프로젝트 <code>CLAUDE.md</code> 지시를 존중한다.</li>
+      <li>프로젝트 지시가 각 단계마다 피드백을 요구한다면, <strong>사이클</strong> 단위로 지킨다 — 사이클당 한 번, 사이클 리뷰어의 판정 이후에 멈춘다. 피드백 주기를 참고한다.</li>
+      <li>RED, GREEN, REFACTOR, 사이클 리뷰, 최종 리뷰에는 서브에이전트(<code>Agent({ subagent_type: "general-purpose", ... })</code>)를 사용한다. <code>Agent</code> 툴을 쓸 수 없으면 <code>not available</code>이라고 말하고 로컬 실행으로 대체한다.</li>
+    </ul>
+  </section>
+
+  <!-- ============ CEREMONY ============ -->
+  <section id="ceremony">
+    <h2>절차의 크기 맞추기</h2>
+    <p class="h2-en">Right-Size the Ceremony</p>
+
+    <p><strong>변경 크기와 무관하게 RED/GREEN 분리는 절대 줄이지 않는다.</strong> 이것은 위험도 기반이 아니라 구조적인 장치다. 한 사람이 테스트와 구현을 동시에 쓰면 해피 패스만 덮는 쪽으로 기울게 되는데, 테스트가 요구사항을 압박하는 대신 이미 만들려고 마음먹은 것을 서술하는 데서 끝나기 때문이다. RED는 언제나 GREEN이 어떻게 구현할지 모르는 상태로 돌고, GREEN은 언제나 별도의 디스패치로 돈다. 모든 사이클에서 그렇다.</p>
+
+    <p>변경 크기에 따라 줄어드는 것, 즉 당신이 조절할 몫은 다음 두 가지다.</p>
+    <ul>
+      <li><strong>사이클 단위(granularity)</strong> — 같은 구현 변경을 공유하는 시나리오들은 하나의 태스크로 묶는다 (Setup 4단계).</li>
+      <li><strong>Final Review 범위</strong> — 변경의 파급 범위가 넓지 않은 한 건드린 클래스만 본다 (Final Review 참고).</li>
+    </ul>
+
+    <p><strong>에이전트 내부의 모든 결정은 그 에이전트의 몫이다.</strong> REFACTOR는 건너뛸지 스스로 정하고, 사이클 리뷰어는 얼마나 깊게 볼지 스스로 정하며, 두 리뷰어 모두 당신이 건넨 테스트 결과에서 무엇을 신뢰할지 스스로 판단한다. 각 규칙은 해당 에이전트의 참조 파일에 들어 있고, 어느 것도 당신이 다시 유도할 대상이 아니다. 당신은 디스패치하고 봉투(envelope)를 읽는다. 당신이라면 다르게 판단했을 것이라는 이유로 에이전트를 다시 디스패치하지 않는다. <code>SKIPPED</code>로 끝난 REFACTOR나 diff만 읽은 리뷰어는 설계된 결과이지 미달이 아니다.</p>
+  </section>
+
+  <!-- ============ SETUP ============ -->
+  <section id="setup">
+    <h2>Setup</h2>
+    <p class="h2-en">Setup — 0 ~ 6</p>
+
+    <h3 class="step"><span class="num">0.</span><span>이어서 하기 또는 새로 시작</span></h3>
+    <p>무엇보다 먼저 프로젝트 루트의 <code>.tdd-team/session.md</code>를 확인한다 — 정확히 그 경로만, 다른 경로는 보지 않는다. <code>.tdd-team/archive-*/</code> 디렉터리 안에 있는 <code>session.md</code>는 이미 보관된 세션의 것이며 절대 이어서 하기를 트리거하지 않는다.</p>
+    <p>파일이 있으면 읽고 다음과 같이 묻는다.</p>
+    <blockquote>
+      <p>"이전 TDD 세션 기록이 있습니다: {완료}/{전체} 태스크 완료, 마지막 단계 {last_phase}. 이어서 진행할까요, 새로 시작할까요?"</p>
+    </blockquote>
+    <ul>
+      <li><strong>이어서</strong> → <code>.tdd-team/context.md</code>와 <code>.tdd-team/session.md</code>를 있는 그대로 채택한다. Setup 2~6단계는 전부 건너뛴다. 이미 실행된 단계다. <code>status</code>가 <code>DONE</code>이 아닌 첫 행부터, 그 행의 <code>last_phase</code> 다음 단계에서 재개하고, <code>feedback_mode</code>, <code>consecutive_needs_fix</code>, <code>fix_rounds_this_cycle</code>, <code>fix_rounds_total</code>을 파일에서 복원한다. 이 카운터들을 복원하는 것이 이어서 하기의 핵심이다. 0부터 시작하면 이전 세션이 이미 써버린 수정 라운드를 다시 돌게 된다. <code>feedback_mode</code>가 <code>unset</code>이면 주기 질문을 한 적이 없다는 뜻이므로, 재개한 사이클을 게이트로 두고 그 사이클의 리뷰어 판정 후에 — 1번 사이클과 똑같이 — 질문한다.</li>
+      <li><strong>새로 시작</strong> → 이전 세션을 제외 트리 <strong>바깥</strong>이 아니라 <strong>안쪽</strong>에 보관한다. <code>.tdd-team/archive-{YYYYMMDD-HHMMSS}/</code>를 만들고 현재 <code>.tdd-team/</code>에 있는 모든 것을 그 안으로 옮기되, 기존 <code>archive-*</code> 디렉터리들은 그대로 둔다. <code>.tdd-team/</code> 자체는 남아서 보관본만 담고, Setup 5~6단계가 새 세션의 <code>context.md</code>와 <code>session.md</code>를 그 안에 쓴다. 그런 다음 Setup을 정상적으로 진행한다. 보관본은 절대 삭제하지 않는다 — 이전 세션의 디버깅 기록이다. 형제 경로인 <code>.tdd-team.{YYYYMMDD-HHMMSS}</code>는 <code>.tdd-team/</code> 제외 항목을 벗어나 사용자 저장소에 추적되지 않는 잔여물을 남긴다. 안쪽에 보관하면 이 스킬이 만드는 모든 파일을 제외 항목 하나로 덮을 수 있다.</li>
+    </ul>
+    <p>파일이 없으면 1단계로 넘어간다.</p>
+
+    <h3 class="step"><span class="num">1.</span><span>스킬 경로와 산출물 디렉터리 확정</span></h3>
+    <p>이 SKILL.md는 알려진 절대 경로에서 로드되었다. 그 상위 디렉터리를 <code>SKILL_DIR</code>로 잡는다. 각 단계 에이전트의 프롬프트 파일은 <code>{SKILL_DIR}/references/</code> 아래에 있고, 해당 단계의 <code>Agent</code> 호출이 직접 읽는다. 여기서 따로 불러올 통합 프롬프트 파일은 없다.</p>
+<pre class="plain"><code>{SKILL_DIR}/references/red-agent.md
+{SKILL_DIR}/references/green-agent.md
+{SKILL_DIR}/references/refactor-agent.md
+{SKILL_DIR}/references/cycle-reviewer.md
+{SKILL_DIR}/references/final-reviewer.md
+{SKILL_DIR}/references/fix-agent.md</code></pre>
+    <p>그런 다음 산출물 디렉터리를 정한다. 이 세션이 만드는 모든 파일이 여기에 놓이고, 모든 에이전트가 입력을 여기서 읽는다.</p>
+    <ul>
+      <li><code>TDD_DIR</code> = <code>.tdd-team</code> — 스킬은 프로젝트 루트에서 실행되므로 이 경로는 작업 디렉터리를 기준으로 해석된다</li>
+      <li><code>TASK_DIR</code> = <code>{TDD_DIR}/task-{NN}</code> — <code>NN</code>은 두 자리로 0을 채운 태스크 번호</li>
+    </ul>
+    <p><code>TDD_DIR</code>을 만들고 git 추적에서 제외한다.</p>
+<pre><code>mkdir -p .tdd-team
+git rev-parse --git-dir &gt;/dev/null 2&gt;&amp;1 \
+  &amp;&amp; ! grep -qxF '.tdd-team/' "$(git rev-parse --git-dir)/info/exclude" 2&gt;/dev/null \
+  &amp;&amp; echo '.tdd-team/' &gt;&gt; "$(git rev-parse --git-dir)/info/exclude"</code></pre>
+    <p><code>.gitignore</code>가 아니라 <code>.git/info/exclude</code>를 쓴다. <code>.gitignore</code>는 사용자 저장소에서 추적되는 파일이고, 이 스킬은 거기에 커밋을 만들지 않는다.</p>
+
+    <h3 class="step"><span class="num">2.</span><span>환경 탐지</span></h3>
+    <p>빌드 파일(<code>build.gradle.kts</code>, <code>pom.xml</code>, <code>package.json</code> 등)을 확인하고 테스트 명령을 결정한다. 다음을 잡는다.</p>
+<pre class="plain"><code>PROJECT_ROOT / SOURCE_DIR / TEST_DIR / TEST_CMD / TEST_SCOPED_CMD / TEST_COMPILE_CMD / TEST_FRAMEWORK</code></pre>
+    <ul>
+      <li><strong>PROJECT_ROOT</strong> — 절대 경로. 당신이 아니라 에이전트를 위해 잡는다. <code>context.md</code>에 들어가서, 디스패치된 에이전트가 추측 없이 경로를 해석할 수 있게 한다.</li>
+      <li><strong>TEST_CMD</strong> — 전체 스위트 명령. 기본적으로 실행하지 않는다(Final Review 참고). 사용자가 전체 스위트/클래스 간 회귀 커버리지를 명시적으로 요청할 때만 실행한다.</li>
+      <li><strong>TEST_SCOPED_CMD</strong> — <strong>테스트 클래스 하나</strong>를 실행하는 명령 템플릿으로, 사이클 내 모든 테스트 실행과 Final Review가 사용한다. Gradle: <code>./gradlew test --tests "{FQCN}" --offline</code> (JUnit <code>@Nested</code> 클래스는 감싸는 클래스의 FQCN으로 실행한다). Maven: <code>mvn -o test -Dtest={ClassName}</code>. npm/jest/vitest: 테스트 파일 경로를 전달한다(예: <code>npx vitest run {test_file}</code>). 대부분의 프레임워크는 한 번의 호출에서 여러 <code>--tests</code>/파일 경로 인자를 받는다 — 클래스마다 명령을 나누지 말고 이를 이용해 건드린 여러 클래스를 함께 실행한다.</li>
+      <li><strong>TEST_COMPILE_CMD</strong> — 아무것도 실행하지 않고 테스트 소스만 컴파일한다. RED는 실제 실행 비용을 치르기 전에 컴파일 오류를 없애는 데 이를 사용한다. 새로 만든 테스트 클래스는 실패하는 데 실패하는 것보다 컴파일에 실패하는 경우가 훨씬 많기 때문이다. Gradle: <code>./gradlew compileTestJava --offline</code> (Kotlin: <code>compileTestKotlin</code>). Maven: <code>mvn -o test-compile</code>. TypeScript: <code>npx tsc --noEmit</code>. 별도 컴파일 단계가 없는 스택(순수 JS, Python)이라면 <code>none</code>으로 두고 RED는 곧바로 실행으로 넘어간다.</li>
+    </ul>
+
+    <h3 class="step"><span class="num">3.</span><span>도메인 불변성 식별</span></h3>
+    <p><strong>출처는 요구사항 문서가 먼저이고 코드가 그다음이다.</strong> 스펙이든 계획서든 티켓이든 평문 설명이든 모두 같은 방식으로 다룬다.</p>
+    <ol>
+      <li>문서가 제공됨 → 오직 그 문서에서만 불변성을 도출한다. 아직 코드를 스캔하지 <strong>않는다</strong>. 문서가 불변성을 명시하고 있다면 적힌 그대로 채택하되, ID(<code>INV-001</code>, …)를 부여하고 있다면 <strong>ID까지 포함해</strong> 채택한다. 세션 전체에서 그 ID를 그대로 재사용한다. 최종 리뷰어가 계획서를 다시 읽지 않고도 커버리지를 확인하는 수단이다.</li>
+      <li>아무것도 제공되지 않음 → "구현할 기능의 요구사항이나 티켓 내용을 공유해주시겠어요?"라고 묻고 기다린다.</li>
+      <li>그다음에야 코드(enum 전이, 검증 애너테이션, 가드 절)를 스캔해 문서가 빠뜨린 구조적 제약을 찾는다. 코드가 문서의 의도를 덮어쓰게 두지 않는다.</li>
+    </ol>
+    <p>각 규칙은 코드가 무엇을 하는지가 아니라 <strong>무엇이 참이어야 하는지</strong>에 대한 서술문으로 표현한다.</p>
+    <blockquote>
+      <p>"결제 완료 상태로 전환된 주문의 금액은 어떠한 경우에도 변경될 수 없다."</p>
+    </blockquote>
+    <p>추출한 불변성을 정확히 이 표 형식으로 제시하고, 빠진 것이 없는지 묻는다.</p>
+<pre class="plain"><code>도메인 불변성 (비즈니스 규칙)
+
+  ┌─────┬─────────────────────────────────────────────────────────────────────────────────┐
+  │  #  │                                     불변성                                      │
+  ├─────┼─────────────────────────────────────────────────────────────────────────────────┤
+  │ 1   │ {불변성 문장}                                                                   │
+  ├─────┼─────────────────────────────────────────────────────────────────────────────────┤
+  │ 2   │ {불변성 문장}                                                                   │
+  └─────┴─────────────────────────────────────────────────────────────────────────────────┘</code></pre>
+    <p>이 문장들이 테스트 이름의 출처가 된다.</p>
+
+    <h3 class="step"><span class="num">4.</span><span>TDD 태스크로 분해</span></h3>
+    <p>문서가 이미 순서가 있는 태스크 목록을 제공한다면 새로 도출하지 말고 그것을 채택한다. <code>[REGRESSION]</code> 태그가 붙은 항목(기존 테스트가 이미 그 동작을 덮고 있음)은 사이클이 아니다. "기존 커버리지로 확인"으로 한 번만 나열하고, 각각에 RED를 주는 대신 Final Review의 일부로 실행한다. <code>[NEW]</code> 항목만 사이클이 된다. 목록을 제시하기 전에 아래의 묶기 규칙과 커버리지 하한을 적용한다. 문서는 가독성을 위해 시나리오를 한 줄에 하나씩 나열하는 경우가 많은데, 그것은 문서의 단위이지 사이클의 단위가 아니다.</p>
+    <p>각 태스크의 이름은 <strong>도메인 규칙 문장</strong>으로 짓는다 — RED가 이를 테스트의 <code>@DisplayName</code>으로 바꾼다. 메서드를 어떻게 명명하고, 묶고, 한 문장을 여러 케이스로 나눌지는 <code>red-agent.md</code>의 몫이다. 당신이 줄 것은 문장 하나뿐이다.</p>
+
+    <p><strong>같은 구현 변경을 공유하는 시나리오는 묶는다.</strong> 사이클은 테스트 메서드 하나가 아니라 <em>구현 작업</em>의 한 단위에 대응해야 한다. 태스크 목록을 확정하기 전에, 같은 가드 절·같은 조건문·같은 작은 함수 하나로 모두 만족되는 시나리오 묶음을 찾는다 — 예를 들어 한 검사의 참/거짓 분기, 또는 하나의 조회에 대한 역할·상태 조합군. 그런 묶음은 시나리오마다 태스크를 만들지 말고, 여러 <code>@DisplayName</code>을 거느린 하나의 태스크로 합친다.</p>
+    <blockquote class="signal">
+      <p>너무 거칠게 묶었다는 신호: GREEN이 작은 변경 하나로 그 태스크의 테스트 메서드 전부를 통과시키지 못한다 — 다시 쪼갠다.</p>
+      <p>너무 잘게 쪼갰다는 신호: N번 사이클의 RED가 <code>ALREADY_PASSES</code>로 돌아온다. N-1번 사이클의 GREEN이 이미 덮었기 때문이다 — 앞으로는 공유 로직을 실제로 구현하는 이전 태스크에 합친다. 이것은 통제 수단이 아니라 최후의 안전망이다. 모든 태스크 뒤에 있는 변경을 이름 붙이는 사전 점검이 잡았어야 하므로, 이 신호가 울리면 아직 남아 있는 모든 태스크에 대해 그 점검을 다시 돌린다.</p>
+    </blockquote>
+
+    <p><strong>커버리지 하한 — 하한이지 상한이 아니다.</strong> Setup 3단계의 모든 불변성에는 규칙 안쪽 어딘가의 테스트 하나가 아니라 <strong>경계</strong>를 고정할 만큼의 테스트가 필요하다. 불변성은 규칙이고, 테스트 하나는 규칙의 한 점만 표본으로 잡을 뿐 어디서 시작하고 끝나는지는 아무것도 증명하지 못한다. 각 불변성의 하한은 다음과 같다.</p>
+    <ul>
+      <li>그것을 <strong>위반</strong>하는 케이스(규칙이 발동),</li>
+      <li>그것을 <strong>만족</strong>하는 가장 가까운 케이스(규칙이 발동하지 않음),</li>
+      <li>그리고 규칙 자체가 지목하는 모든 추가 상태나 입력 — "결제 완료 상태에서는"이라고 적혀 있다면 결제 대기와 부분 환불은 누가 덧붙인 것이 아니라 규칙이 직접 그은 경계다.</li>
+    </ul>
+    <p>여기에 더해, 이 기능이 건드리는 클래스마다 해피 패스 테스트 하나씩 — 매핑되는 불변성이 없는 곳에도 둔다.</p>
+    <p>TDD에서 이것은 커버리지 취향의 문제가 아니다. <strong>테스트가 없는 엣지 케이스는 검증되지 않은 동작이 아니라 만들어지지 않은 동작이다.</strong> GREEN은 테스트가 요구하는 것만 정확히 구현하고 그 이상은 하지 않기 때문이다. 여기서 테스트를 적게 나열하면 기능이 조용히 덜 만들어진다.</p>
+    <p>도메인이 이유를 주는 곳에서는 하한을 넘겨도 좋다. 덜어낼 수 있는 시나리오는 언어를 테스트하거나, 프레임워크를 테스트하거나, 단순 접근자를 테스트하는 것뿐이다 — 도메인 규칙의 경계는 절대 아니다. 무언가를 덜어낼 때는 목록을 제시하면서 무엇을 왜 덜어냈는지 말한다.</p>
+    <p>한 규칙의 경계 케이스들은 같은 가드 절을 공유하므로 묶기 규칙이 이미 그것들을 하나의 태스크에 넣는다 — 한 사이클에 테스트 메서드가 늘어나는 것은 거의 공짜이고 비싼 것은 사이클이 늘어나는 것이며, RED는 같은 규칙에 입력만 다른 케이스들을 스스로 합친다.</p>
+
+    <p><strong>목록을 제시하기 전에, 모든 태스크 뒤에 있는 변경을 이름 붙인다.</strong> 각 행에 대해 스스로에게 한 줄을 적는다. <em>어떤 프로덕션 코드 변경이 이 태스크의 테스트를 실패에서 통과로 옮기는가?</em> 그 답이 이것이 사이클인지 아닌지를 결정한다.</p>
+    <ul>
+      <li><strong>구체적인 변경</strong> — 가드 절, 새 메서드, 분기 → 사이클이다.</li>
+      <li><strong>"없음 — 이미 동작한다"</strong> → 사이클이 아니라 커버리지다. 그 시나리오들을 해당 로직을 만드는 태스크로 옮겨 추가 테스트 메서드로 붙인다.</li>
+      <li><strong>"앞선 태스크가 이미 통과시킨다"</strong> → 이것도 사이클이 아니다. 그 태스크에 합친다.</li>
+    </ul>
+    <p>이 줄들은 필터이지 산출물이 아니다 — <code>task.md</code>나 다른 어디에도 쓰지 않는다. 살아남은 태스크만 제시한다.</p>
+    <p>제시하기 전에 이것을 돌린다. 돈이 쓰이기 전에 작동하는 유일한 통제 수단이기 때문이다. <code>ALREADY_PASSES</code> 백스톱은 Red일 수 없었던 작업에 RED 디스패치, 리뷰어, 테스트 실행을 <em>이미</em> 태운 뒤에야 울린다. 측정된 한 세션에서는 그런 사이클 두 개가 전체 에이전트 시간의 41%를 차지했다.</p>
+    <p>태스크 목록을 이 형식으로 제시하고, 시작하기 전에 사용자 확인을 받는다.</p>
+<pre class="plain"><code>TDD 태스크 목록
+
+  ┌─────┬─────────────────────────────────────────────────────────────────────────────────┐
+  │  #  │                                    태스크                                       │
+  ├─────┼─────────────────────────────────────────────────────────────────────────────────┤
+  │ 1   │ {도메인 규칙 문장 → @DisplayName} (묶었다면 + {도메인 규칙 문장 → @DisplayName}) │
+  ├─────┼─────────────────────────────────────────────────────────────────────────────────┤
+  │ 2   │ {도메인 규칙 문장 → @DisplayName}                                               │
+  └─────┴─────────────────────────────────────────────────────────────────────────────────┘</code></pre>
+
+    <h3 class="step"><span class="num">5.</span><span>세션 컨텍스트 파일 작성</span></h3>
+    <p>첫 사이클 전에 <strong>오케스트레이터</strong>가 기능 영역을 <strong>한 번</strong> 탐색하고 <code>{TDD_DIR}/context.md</code>를 쓴다. <strong>이번 세션에서 직접 확인한 것만 쓴다.</strong> 서술하려는 스키마를 덤프하고, 인용하려는 시그니처의 클래스를 열어 보고, 주입하라고 지시하기 전에 그 빈이 존재하는지 확인한다. 확인하지 않고 기억으로 적은 사실은 이 파일에서 가장 비싼 줄이다. 틀리거나 부분적인 사실은 나중에 에이전트가 발견하는데, 그 에이전트는 이를 싸게 고칠 수 없기 때문이다. 모든 단계 에이전트는 코드베이스를 다시 스캔하는 대신, 그리고 매 디스패치마다 같은 블록을 인라인으로 받는 대신 이 파일을 읽는다.</p>
+    <p>파일은 다음 순서로 네 개의 섹션을 가진다.</p>
+<pre class="plain"><code># TDD Session Context
+
+## Environment
+- Project root: {PROJECT_ROOT}
+- Source directory: {SOURCE_DIR}
+- Test directory: {TEST_DIR}
+- Scoped test command: {TEST_SCOPED_CMD}
+- Test compile command: {TEST_COMPILE_CMD}
+- Test framework: {TEST_FRAMEWORK}
+
+## Project Context (한 번만 수집 — 코드베이스를 다시 탐색하지 말 것)
+- Package / directory layout: {기능의 소스·테스트 패키지가 있는 위치}
+- Test conventions: {JUnit 버전, 단언 라이브러리/스타일, // arrange·act·assert, @Nested 사용 여부}
+- Fixture pattern: {Fixture 빌더 위치와 사용법, repository.save 헬퍼 패턴}
+- Relevant existing types: {ClassName → 주요 public 메서드 시그니처} — 이 기능이 건드리는 클래스들
+- Domain anchors: {여기에 적용되는 애그리거트/엔티티 파일 + 불변성}
+- In-scope files: {이번 세션이 수정할 수 있는 실제 경로 — 그 밖은 범위 밖}
+- Out of scope: {이 태스크가 의도적으로 바꾸지 않는 것}
+- Known pitfalls — 따라 하지 말 것: {기존 코드의 결함} → {대신 무엇을 할지}
+
+## Domain Invariants
+{3단계의 번호 목록, ID는 그대로}
+
+## Workspace Rules
+이 파일이 작성된 뒤 다른 사람이 이 워크스페이스를 수정했을 수 있다. 당신이 만들지 않은 변경은 절대 되돌리지 않는다 — 다른 사람의 진행 중인 작업이다.
+커밋하지 않는다. 커밋 이력은 오케스트레이터와 사용자의 소유다.
+불변성 ID(`INV-001`, …)는 세션 관리용이며 `.tdd-team/` 파일 안에만 존재한다. 프로덕션 코드나 테스트 코드에 절대 쓰지 않는다 — 주석에도, 이름에도, 메시지에도. 가드 절은 자신의 규칙을 도메인 언어로 말한다. 계획 문서의 코드 조각이 ID를 주석으로 보여주더라도 마찬가지다 — 규칙은 가져오고 태그는 버린다.</code></pre>
+    <p>간결하게 유지한다(파일 전문이 아니라 시그니처와 경로). 기능이 완전히 새로워 인접 코드가 없다면 "관련 기존 코드 없음"이라고 적고 대상 패키지만 나열한다.</p>
+    <p><strong>마지막 세 줄은 배경이 아니라 경계다.</strong> 모든 단계 에이전트는 각자의 컨텍스트에서 돌며 자신이 읽은 코드로부터 관례를 추론한다. 알려진 결함이 그대로 재생산되고, 아무도 건드릴 생각이 없던 파일에 수정이 내려앉는 경로가 정확히 이것이다. 출처는 계획 문서의 「구현 대상 파일」, 「목표가 아닌 것」, 「기존 코드의 함정」이다. 계획서에 함정 섹션이 없다면, 첫 사이클 전에 이 기능이 본뜨는 참조 구현을 한 번 훑는 데 시간을 쓴다. 3번 사이클에서 발견된 결함은 이미 두 번 복사된 뒤다.</p>
+    <p>함정 항목에 <code>→ 대신 무엇을 할지</code>가 빠져 있다면 아예 적지 않느니만 못하다 — 에이전트는 무언가를 피해야 한다는 것만 알고 대체안을 스스로 지어낸다. 어떤 섹션에 적을 내용이 없다면 줄을 지우지 말고 <code>해당 없음</code>이라고 쓴다. 나중에 읽는 사람이 검토는 되었음을 알 수 있도록.</p>
+    <p>이 섹션들을 에이전트 프롬프트에 인라인으로 넣지 않는다. 경로를 전달한다. 사용자가 사이클 사이에 <code>context.md</code>를 수정할 수 있고, 인라인 사본은 그 수정을 조용히 무시하기 때문이다.</p>
+
+    <h3 class="step"><span class="num">6.</span><span>세션 파일 작성</span></h3>
+    <p>첫 사이클 전에 <code>{TDD_DIR}/session.md</code>를 쓴다 — <strong>태스크 개수와 무관하게 언제나.</strong> 이어서 하기가 이 파일에 의존하며, 세션의 크기에 따라 좌우되어서는 안 된다.</p>
+<pre class="plain"><code># TDD Session: {feature}
+skill_dir: {SKILL_DIR}
+test_command: {TEST_SCOPED_CMD}
+feedback_mode: unset
+consecutive_needs_fix: 0
+fix_rounds_this_cycle: 0
+fix_rounds_total: 0
+
+| # | task | status | last_phase |
+|---|------|--------|------------|
+| 1 | {도메인 규칙 문장} | PENDING | - |
+| 2 | {도메인 규칙 문장} | PENDING | - |</code></pre>
+    <p><code>status</code>는 <code>PENDING</code> | <code>IN_PROGRESS</code> | <code>DONE</code>이다. <code>last_phase</code>는 <code>status: OK</code>를 반환한 마지막 단계를 기록한다(예: <code>GREEN</code> 또는 <code>CYCLE_REVIEW:APPROVED</code>).</p>
+    <p><code>feedback_mode</code>는 문자 그대로 <code>unset</code>으로 적히고, 사용자가 주기 질문에 답해 <code>per-cycle</code> 또는 <code>auto</code>로 바뀔 때까지 그대로 둔다. <code>fix_rounds_total</code>은 세션 전체의 수정 라운드 횟수로 절대 초기화하지 않는다 — 세션 종료가 보고하는 값이다.</p>
+    <p>모든 단계 후에 해당 행을 갱신한다 — 한 줄 수정, 그 이상은 하지 않는다. 사용자가 주기 질문에 답하면 <code>feedback_mode</code>를, 값이 바뀔 때마다 세 카운터를 갱신한다. 갱신하지 않은 카운터는 이어서 하기를 새로 시작하는 것보다 나쁘게 만드는 유일한 실패 모드다.</p>
+    <p>그런 다음 태스크마다 <code>{TASK_DIR}/task.md</code>를 하나씩 쓴다.</p>
+<pre class="plain"><code># Task {NN}: {도메인 규칙 문장}
+invariants: {INV-001, INV-004}
+test_class: {FQCN, 또는 "미정 — RED가 결정"}
+scenarios:
+- {시나리오 문장}
+- {시나리오 문장}</code></pre>
+  </section>
+
+  <!-- ============ CYCLE ============ -->
+  <section id="cycle">
+    <h2>TDD 사이클 실행</h2>
+    <p class="h2-en">TDD Cycle Execution</p>
+
+    <blockquote class="rule">
+      <p><strong>BLOCKING REQUIREMENT — TDD 순서</strong>: 실패하는 테스트를 작성하고 실패를 확인하기 전에는 프로덕션 구현을 쓰지 않는다.</p>
+      <p><strong>BLOCKING REQUIREMENT — 오케스트레이터 전용</strong>: 당신은 오케스트레이터다. 사용자 확인 이후, 모든 RED / GREEN / REFACTOR 단계에 반드시 <code>Agent</code> 툴을 사용해야 한다. 소스나 테스트 파일에 직접 <code>Edit</code>나 <code>Write</code>를 호출하지 <strong>않는다</strong>. 파일을 직접 수정하려는 자신을 발견하면 멈추고 대신 Agent를 띄운다.</p>
+    </blockquote>
+
+    <p>태스크마다 <code>Agent</code> 툴을 순차적으로 세 번 호출한다(RED → GREEN → REFACTOR). 각 에이전트는 자기 참조 파일과 <code>{TDD_DIR}/context.md</code>, <code>{TASK_DIR}/task.md</code>를 읽는다. 프롬프트는 내용이 아니라 경로를 담으므로 에이전트는 코드베이스를 다시 스캔하지 않는다.</p>
+
+    <h3>Agent 툴 호출 패턴</h3>
+    <p>모든 작업자 프롬프트는 <strong>내용이 아니라 경로</strong>를 담는다. 따라야 할 참조 파일, 읽어야 할 파일, 써야 할 파일을 지목할 뿐 그 밖의 것은 담지 않는다.</p>
+    <p>세 단계 모두 하나의 디스패치 형태를 쓴다 — <code>{PHASE}</code>, 참조 파일, 이전 결과 줄, 결과 파일만 달라진다.</p>
+<pre><code>Agent({
+  subagent_type: "general-purpose",
+  description: "{PHASE}: {task description}",
+  prompt: """
+{SKILL_DIR}/references/{PHASE_FILE}를 읽는다 — 이 파일에 접근할 권한이 있다.
+정확히 그대로 따른다.
+
+시작하기 전에 다음을 읽는다:
+- {TDD_DIR}/context.md — 환경, 프로젝트 컨텍스트, 도메인 불변성, 워크스페이스 규칙
+- {TASK_DIR}/task.md — 당신이 구현할 태스크
+{PRIOR_RESULT_LINE}
+
+범위 울타리: 위 문서들이 지목한 파일과 패키지 안에 머문다. 그 밖의 것은 열지 않는다.
+그 문서들이 주지 않는 무언가가 필요하다면, 찾아 나서지 말고 BLOCKED를
+`blocked_reason: MISSING_FACT`와 함께 반환하며 필요한 사실 하나를 지목한다.
+오케스트레이터가 몇 초 안에 해결해 그 사실과 함께 당신을 다시 디스패치한다.
+직접 찾아 나서는 것은 당신에게 주어진 가장 느린 경로다.
+
+전체 결과 블록을 {TASK_DIR}/{RESULT_FILE}에 쓴다.
+참조 파일에 서술된 TDD_STATUS 봉투만 반환한다 — 산문도, 결과 블록도, 파일 내용도 반환하지 않는다.
+"""
+})</code></pre>
+
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>PHASE</th><th>PHASE_FILE</th><th>PRIOR_RESULT_LINE</th><th>RESULT_FILE</th></tr></thead>
+      <tbody>
+        <tr><td><code class="tok-red">RED</code></td><td><code>red-agent.md</code></td><td><em>(줄 생략)</em></td><td><code>red-result.md</code></td></tr>
+        <tr><td><code class="tok-green">GREEN</code></td><td><code>green-agent.md</code></td><td><code>- {TASK_DIR}/red-result.md — RED 단계의 RED_RESULT</code></td><td><code>green-result.md</code></td></tr>
+        <tr><td><code class="tok-blue">REFACTOR</code></td><td><code>refactor-agent.md</code></td><td><code>- {TASK_DIR}/green-result.md — GREEN 단계의 GREEN_RESULT</code><br><code>- {TASK_DIR}/red-result.md — 이 사이클이 추가한 테스트 파일과 메서드</code></td><td><code>refactor-result.md</code></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p><code>context.md</code>나 <code>task.md</code>의 내용을 프롬프트에 붙여 넣지 않고, 요약하지도 않는다. 사용자가 단계 사이에 그 파일들을 수정할 수 있으며, 인라인 사본은 그 수정을 버린다.</p>
+
+    <h3><code>TDD_STATUS</code> 봉투</h3>
+    <p>모든 단계는 정확히 이것만 반환한다. 오케스트레이터의 컨텍스트에 들어오는 유일한 것이다.</p>
+<pre class="plain"><code>TDD_STATUS
+phase: RED | GREEN | REFACTOR | CYCLE_REVIEW | FIX | FINAL_REVIEW
+status: OK | BLOCKED | ALREADY_PASSES
+result_file: {에이전트가 쓴 경로}
+tests: {passed}/{failed}
+verdict: APPROVED | NEEDS_FIX
+findings: {Critical}/{Important}/{Minor}
+blocked_reason: MISSING_FACT | OVERWHELMED | n/a
+note: {한 줄 — status가 BLOCKED일 때만. MISSING_FACT라면 필요한 사실 하나만 지목한다.}</code></pre>
+    <p>해당 단계에 적용되지 않는 필드는 생략하지 않고 <code>n/a</code>로 채운다 — 빈 값과 없는 필드는 구분 가능해야 한다.</p>
+    <p><code>status: ALREADY_PASSES</code>는 RED 전용이며, 보고된 <em>모든</em> 메서드가 이미 통과한다는 뜻이다. 한 메서드라도 진짜로 Red라면 RED는 <code>OK</code>를 반환한다.</p>
+    <p>이 봉투가 이 스킬의 모든 분기를 움직인다.</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>분기</th><th>필드</th></tr></thead>
+      <tbody>
+        <tr><td>모든 메서드가 <code>ALREADY_PASSES</code> → GREEN + REFACTOR 건너뛰기</td><td><code>status</code></td></tr>
+        <tr><td>GREEN이 테스트를 통과시키지 못함</td><td><code>tests</code></td></tr>
+        <tr><td>리뷰어 판정</td><td><code>verdict</code></td></tr>
+        <tr><td>Critical/Important는 수정 에이전트로, Minor는 기록만</td><td><code>findings</code></td></tr>
+        <tr><td>수정 라운드 예산, 서킷 브레이커</td><td><code>verdict</code>, <code>session.md</code>에 집계</td></tr>
+        <tr><td>막힌 에이전트가 사실이 없는 것인지, 컨텍스트가 과한 것인지</td><td><code>blocked_reason</code></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>결과 파일은 봉투가 담지 못하는 세부가 필요할 때만 읽는다 — <code>BLOCKED</code> 진단이나 게이트 실패의 경우다. 정상적인 사이클은 결과 파일을 열지 않는다.</p>
+
+    <h3>결과 블록 게이트</h3>
+    <p>검증은 두 곳에서 일어난다. 봉투와 결과 파일은 서로 독립적으로 실패할 수 있기 때문이다.</p>
+    <p><strong>1. 봉투 검사</strong> — 반환값이므로 직접 읽는다. 모든 필드가 존재하고, <code>result_file</code>이 비어 있지 않으며, <code>status</code>가 세 리터럴 중 하나여야 한다.</p>
+    <p><strong>2. 결과 파일 검사</strong> — <strong>파일을 컨텍스트로 읽어 들이지 않고</strong> 필수 키를 확인한다.</p>
+<pre><code>f={TASK_DIR}/{RESULT_FILE}
+miss=$(for k in {REQUIRED_KEYS}; do grep -q "^$k:" "$f" 2&gt;/dev/null || echo "$k"; done | tr '\n' ',')
+[ -z "$miss" ] &amp;&amp; echo PASS || echo "MISSING:$miss"</code></pre>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>PHASE</th><th>REQUIRED_KEYS</th></tr></thead>
+      <tbody>
+        <tr><td><code class="tok-red">RED</code></td><td><code>test_file test_method failure stubs</code></td></tr>
+        <tr><td><code class="tok-green">GREEN</code></td><td><code>files_modified tests_passed tests_failed failure_detail</code></td></tr>
+        <tr><td><code class="tok-blue">REFACTOR</code></td><td><code>status reason tests_passed deferred</code></td></tr>
+        <tr><td><code>FIX</code></td><td><code>findings_addressed files_modified tests_passed tests_failed notes</code></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>둘 중 하나라도 실패하면 <strong>값을 추론하지 말고 다음 단계로 넘어가지도 않는다</strong> — 같은 에이전트를 같은 프롬프트에 무엇이 빠졌는지 지목한 한 줄만 덧붙여 다시 디스패치한다. 추측한 <code>RED_RESULT</code>는 GREEN을 엉뚱한 메서드로 보내고, 사이클 하나를 통째로 날린다. 이 재디스패치는 <code>BLOCKED</code> 예산에 계산한다. 재시도 1회, 그다음은 사용자에게 묻는다.</p>
+    <p><code>Agent</code> 툴을 쓸 수 없다면 <code>not available</code>이라고 말하고 같은 단계를 로컬에서 실행한다.</p>
+    <ol>
+      <li>해당 단계의 참조 파일을 읽는다.</li>
+      <li><code>{TDD_DIR}/context.md</code>와 <code>{TASK_DIR}/task.md</code>를 읽는다.</li>
+      <li>그 단계의 워크플로를 로컬에서 따르며 파일 수정에는 <code>Edit</code>/<code>Write</code>를 쓴다.</li>
+      <li>에이전트가 그러하듯 결과 블록을 <code>{TASK_DIR}/{RESULT_FILE}</code>에 쓴다.</li>
+    </ol>
+
+    <h3>사이클 흐름</h3>
+    <ol>
+      <li><strong>RED</strong> → 테스트 파일 경로, 메서드 이름, 실패 메시지를 확보한다 — 묶인 태스크는 시나리오마다 한 줄씩 보고한다
+        <ul>
+          <li>보고된 모든 메서드가 <code>ALREADY_PASSES</code> → GREEN + REFACTOR를 건너뛰고 다음 태스크로 간다 (그래도 CYCLE REVIEWER는 돌린다 — 새 테스트가 공허하지 않은 진짜 커버리지인지 확인하는 유일한 검사다)</li>
+          <li>한 메서드라도 진짜 Red → 평소대로 GREEN으로 진행한다. GREEN은 Red인 것을 겨냥하고, <code>ALREADY_PASSES</code>인 것들은 이미 통과하는 커버리지로 함께 따라간다</li>
+          <li>빌드 실패 → RED가 내부적으로 처리한다(스텁 수정 후 재확인)</li>
+        </ul>
+      </li>
+      <li><strong>GREEN</strong> → 수정된 파일과 전체 테스트 결과를 확보한다</li>
+      <li><strong>REFACTOR</strong> — GREEN 결과물이 이미 깔끔하면 건너뛴다</li>
+      <li><strong>CYCLE REVIEWER</strong> → 독립 서브에이전트를 디스패치한다 (아래 참고)</li>
+    </ol>
+    <p>각 단계가 반환될 때마다, 다음 단계를 디스패치하기 전에 <code>{TDD_DIR}/session.md</code>의 해당 태스크 행(<code>status</code>, <code>last_phase</code>)을 갱신한다. 단계 사이에 죽더라도 파일은 세션이 어디서 멈췄는지 진실을 말하고 있어야 한다.</p>
+
+    <h3>사이클 리뷰어 디스패치</h3>
+    <p>먼저 사이클 diff를 만든다. 곧바로 파일로 리다이렉트한다 — diff는 절대 당신의 컨텍스트를 거쳐서는 안 된다.</p>
+<pre><code>paths=$(grep -hE '^(test_file|stubs|files_modified):' {TASK_DIR}/*-result.md \
+  | sed 's/^[a-z_]*: *//' | tr ',' '\n' | sed 's/^ *//; s/ *$//' \
+  | grep -v -e '^none$' -e '^$' | sort -u)
+git diff -- $paths &gt; {TASK_DIR}/diff.md
+for f in $paths; do
+  git ls-files --error-unmatch "$f" &gt;/dev/null 2&gt;&amp;1 || git diff --no-index /dev/null "$f" &gt;&gt; {TASK_DIR}/diff.md
+done
+wc -l &lt; {TASK_DIR}/diff.md</code></pre>
+    <p><code>for</code> 루프는 이번 사이클에 새로 생긴 파일들을 덧붙인다. RED의 테스트 클래스와 스텁은 추적되지 않는 파일이라 평범한 <code>git diff</code>는 아무것도 보고하지 않고, 이 루프가 없으면 리뷰어는 테스트가 빠진 diff를 받게 된다. <code>git diff --no-index</code>는 차이를 찾을 때마다 0이 아닌 코드로 종료하는데, 여기서는 그것이 정상적인 결과이지 반응해야 할 명령 실패가 아니다.</p>
+    <p>당신에게 돌아오는 것은 줄 수뿐이다. diff가 비어 있지 않은지 확인하는 데 쓴다. 0이라는 것은 아무것도 바뀌지 않았다는 뜻이며, <code>ALREADY_PASSES</code> 사이클이 아닌 이상 이는 리뷰할 수 있는 상태가 아니라 멈춰 설 만한 결함이므로, 리뷰어를 디스패치하지 말고 멈춰서 묻는다.</p>
+    <p><strong>알려진 한계:</strong> 에이전트는 커밋하지 않으므로, 앞선 사이클이 이미 건드린 파일은 그 사이클의 변경까지 여기에 함께 보인다. 리뷰어에게는 <code>red-result.md</code>에 지목된 메서드에 집중하라고 지시하므로 잡음은 제한된다. 사이클마다 커밋하면 없앨 수 있지만 그것은 "에이전트는 커밋하지 않는다" 규칙을 바꾸는 일이라 범위 밖이다.</p>
+    <p>REFACTOR가 끝나면 독립 리뷰어 서브에이전트를 디스패치하되, <strong>GREEN(또는 수정 에이전트)이 보고한 테스트 결과를 함께 넘겨</strong> 방금 돌린 것을 다시 돌릴 이유가 없게 한다. <code>Agent</code> 툴을 쓸 수 없다면 <code>not available</code>이라고 말하고 <code>references/cycle-reviewer.md</code>를 사이클 diff에 로컬로 적용한다.</p>
+<pre><code>Agent({
+  subagent_type: "general-purpose",
+  description: "CYCLE REVIEW: {task description}",
+  prompt: """
+{SKILL_DIR}/references/cycle-reviewer.md를 읽는다 — 이 파일에 접근할 권한이 있다.
+정확히 그대로 따른다.
+
+시작하기 전에 다음을 읽는다:
+- {TDD_DIR}/context.md — 환경, 도메인 불변성, 워크스페이스 규칙
+- {TASK_DIR}/task.md — 리뷰 대상 태스크
+- {TASK_DIR}/diff.md — 당신이 판정할 사이클 diff
+- {TASK_DIR}/red-result.md — 이 사이클이 추가한 테스트 메서드. 리뷰는 여기에 집중한다
+- {TASK_DIR}/green-result.md — 이미 완료된 테스트 실행 결과. 다시 실행하지 않는다
+- 수정 라운드 이후 재리뷰라면 green-result.md 대신 {TASK_DIR}/fix-result.md를 읽는다 — 현재 테스트 실행 결과가 거기 있다. 다시 실행하지 않는다
+- RED가 모든 메서드에 대해 `ALREADY_PASSES`를 보고했다면 green-result.md는 없다 — 모든 메서드가 통과함을 이미 기록한 red-result.md에 의존한다
+
+전체 리뷰 보고서를 {TASK_DIR}/review.md에 쓴다.
+TDD_STATUS 봉투만 반환한다.
+"""
+})</code></pre>
+    <p><strong>리뷰어 판정 처리</strong> (<code>review.md</code>가 아니라 봉투의 <code>verdict</code>와 <code>findings</code>에서 읽는다):</p>
+    <ul>
+      <li><code class="tok-green">APPROVED</code> → <code>session.md</code>를 갱신하고, <code>fix_rounds_this_cycle</code>을 0으로, <code>consecutive_needs_fix</code>를 0으로 되돌린 뒤 다음 태스크로 간다</li>
+      <li><code>NEEDS_FIX</code>이고 Critical 또는 Important &gt; 0 → 수정 에이전트를 디스패치하고(수정 에이전트 디스패치 참고) 사이클 리뷰어를 다시 돌린다. 매 라운드 전에 <code>session.md</code>의 <code>fix_rounds_this_cycle</code>과 <code>fix_rounds_total</code>을 모두 증가시킨다.</li>
+      <li><code>NEEDS_FIX</code>인데 Minor만 있음 → 기록하고 계속 진행한다. Minor는 절대 수정 라운드를 유발하지 않는다</li>
+    </ul>
+
+    <h3>수정 라운드 예산</h3>
+    <p><strong>사이클당 최대 2라운드.</strong> 한 라운드는 수정 에이전트 디스패치 1회와 리뷰어 재실행 1회다.</p>
+    <p>횟수는 머릿속이 아니라 <code>{TDD_DIR}/session.md</code>의 <code>fix_rounds_this_cycle</code>에 산다 — 이어서 하는 세션은 이미 쓴 라운드를 알아야 한다.</p>
+    <p>새 태스크를 시작할 때는 이전 태스크가 무엇으로 끝났든 0으로 되돌린다 — <code>APPROVED</code> 판정이든, 사용자가 그대로 두기로 한 소진된 예산이든, Minor만 담긴 <code>NEEDS_FIX</code>든 마찬가지다. 스스로 초기화되는 것은 <code>APPROVED</code> 경로뿐이므로, 이 규칙이 없으면 다음 사이클이 쓰지도 않은 라운드를 물려받는다.</p>
+    <p>두 번째 라운드 후에도 리뷰어가 <code>NEEDS_FIX</code>를 반환하면, 세 번째를 디스패치하지 말고 루프를 멈춰 결정을 사용자에게 넘긴다.</p>
+    <blockquote>
+      <p>"{태스크}에서 리뷰어가 2회 수정 후에도 지적을 남겼습니다: {미해결 findings}. 이대로 두고 다음 태스크로 갈까요, 직접 손보실까요, 아니면 이 태스크를 다시 설계할까요?"</p>
+    </blockquote>
+    <p>두 번으로 풀리지 않은 것이 세 번째 라운드로 풀리는 일은 거의 없다. 대개 그 지적이 코드가 아니라 태스크의 설계에 관한 것이라는 뜻이고, 그것은 사용자가 판단할 몫이다.</p>
+
+    <h3>서킷 브레이커</h3>
+    <p><strong>3개 사이클 연속</strong>으로 <code>NEEDS_FIX</code>가 돌아오면 새 사이클을 시작하지 않는다. 반복되는 원인은 거의 항상 상류에 있다 — 의도한 바를 말하지 못하는 불변성이거나, 코드가 구성되기를 원하는 방식과 맞지 않는 태스크 분해다. 패턴을 보고하고 사용자와 함께 Setup 3~4단계로 돌아간다.</p>
+    <blockquote>
+      <p>"최근 3개 사이클이 연속으로 수정 요청을 받았습니다: {사이클별 findings 한 줄 요약}. 개별 코드 문제라기보다 불변성 정의나 태스크 분해 쪽 문제로 보입니다. Setup의 불변성 표와 태스크 목록을 다시 확인할까요?"</p>
+    </blockquote>
+    <p>횟수는 <code>{TDD_DIR}/session.md</code>의 <code>consecutive_needs_fix</code>에 산다. 이것은 <strong>판정이 아니라 사이클</strong>을 센다. 사이클이 <code>APPROVED</code> 없이 끝나면 정확히 1만큼 증가시키고, <code>APPROVED</code>로 끝나면 0으로 되돌린다. 한 사이클은 첫 리뷰와 두 번의 수정 라운드를 합쳐 <code>NEEDS_FIX</code> 판정 세 개를 낼 수 있지만 그래도 하나로 센다. 판정을 세면 한 사이클 안에서 브레이커가 떨어지는데, 그것은 브레이커의 메시지가 주장하는 상황이 아니다.</p>
+
+    <h3>피드백 주기</h3>
+    <p><strong>피드백의 단위는 사이클이다.</strong> 사이클은 리뷰어가 <code>APPROVED</code>를 반환할 때 — 필요했던 수정 라운드를 모두 거친 뒤 — 완료된다. 멈춰 설 가치가 있는 지점은 그 한 곳이다. 테스트, 구현, 리팩터링, 그리고 그 셋에 대한 독립 리뷰가 한 상에 함께 올라와 있고, 사용자가 바꾸고 싶은 무엇이든 아직 사이클 하나 분량의 작업이기 때문이다. 사이클 안에서 단계 사이에 멈추지 않는다.</p>
+    <p>프로젝트 지시(<code>CLAUDE.md</code>)가 각 단계마다 피드백을 요구한다면, 단계 사이에 네 번 멈추는 대신 <strong>여기, 사이클 단위로</strong> 지킨다. RED 뒤의 멈춤은 리뷰가 붙지 않은 절반짜리 사이클을 사용자에게 건네는 것이고, 그것은 그 지시가 요구하는 점검이 아니다. 그 중간 멈춤이 대신하려던 역할이 바로 사이클 리뷰어다. 단계별 지시가 실제로 바꾸는 것은 아래의 기본값이다. <code>per-cycle</code>이 필수가 되므로 <code>auto</code>를 제안하지 않고 기록하지도 않는다.</p>
+    <p><strong>1번 사이클은 무조건 멈춘다.</strong> 다른 무엇과도 무관하다 — 불변성, 테스트 관례, 태스크 단위가 옳았는지를 드러내는 사이클이기 때문이다. 그 게이트 직후에 정확히 한 번만 묻는다.</p>
+    <blockquote>
+      <p>"1번 사이클이 끝났습니다. 남은 {N}개 사이클은 이어서 자동으로 진행할까요, 아니면 사이클마다 확인받을까요?<br>
+      (<code>.tdd-team/context.md</code>나 각 태스크의 <code>task.md</code>를 직접 수정하시면 다음 단계부터 반영됩니다.)"</p>
+    </blockquote>
+    <p>답을 <code>{TDD_DIR}/session.md</code>에 <code>feedback_mode</code>로 기록하고 남은 세션 동안 따른다. <code>auto</code>를 덮는 예외는 두 가지다.</p>
+    <ul>
+      <li>수정 라운드 예산이 소진된 경우</li>
+      <li>서킷 브레이커가 작동한 경우</li>
+    </ul>
+    <p>둘 다 어떤 모드가 켜져 있든 멈추고 묻는다.</p>
+
+    <h3>수정 에이전트 디스패치</h3>
+    <p>사이클 리뷰어와 최종 리뷰어의 판정, 그리고 실패한 Final Review 테스트 실행이 모두 사용한다. 에이전트에게는 findings 목록 자체를 건넨다 — 리뷰 보고서 전문도 아니고, 그것이 유래한 문서도 아니다. <code>Agent</code> 툴을 쓸 수 없다면 <code>not available</code>이라고 말하고 <code>references/fix-agent.md</code>를 같은 findings에 로컬로 적용한다.</p>
+<pre><code>Agent({
+  subagent_type: "general-purpose",
+  description: "FIX: {short summary of findings}",
+  prompt: """
+{SKILL_DIR}/references/fix-agent.md를 읽는다 — 이 파일에 접근할 권한이 있다.
+정확히 그대로 따른다.
+
+시작하기 전에 다음을 읽는다:
+- {TDD_DIR}/context.md — 환경, 프로젝트 컨텍스트, 워크스페이스 규칙
+- {REVIEW_FILE} — 리뷰 보고서. 오직 Critical과 Important findings만 고친다.
+  리뷰가 아니라 실패한 테스트 실행 결과가 담겨 있다면, 거기 기록된 실패만 고친다.
+
+범위 울타리: 위 문서들이 지목한 파일과 패키지 안에 머문다. 그 밖의 것은 열지 않는다.
+그 문서들이 주지 않는 무언가가 필요하다면, 찾아 나서지 말고 BLOCKED를
+`blocked_reason: MISSING_FACT`와 함께 반환하며 필요한 사실 하나를 지목한다.
+오케스트레이터가 몇 초 안에 해결해 그 사실과 함께 당신을 다시 디스패치한다.
+직접 찾아 나서는 것은 당신에게 주어진 가장 느린 경로다.
+
+전체 결과 블록을 {FIX_RESULT_FILE}에 쓴다.
+TDD_STATUS 봉투만 반환한다.
+"""
+})</code></pre>
+    <p><code>{REVIEW_FILE}</code>과 <code>{FIX_RESULT_FILE}</code>은 어느 경로가 수정을 디스패치했는지에 따라 함께 정해진다.</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>디스패치 주체</th><th><code>{REVIEW_FILE}</code></th><th><code>{FIX_RESULT_FILE}</code></th></tr></thead>
+      <tbody>
+        <tr><td>사이클 리뷰어 <code>NEEDS_FIX</code></td><td><code>{TASK_DIR}/review.md</code></td><td><code>{TASK_DIR}/fix-result.md</code></td></tr>
+        <tr><td>최종 리뷰어 <code>NEEDS_FIX</code></td><td><code>{TDD_DIR}/final-review.md</code></td><td><code>{TDD_DIR}/final-fix-result.md</code></td></tr>
+        <tr><td>Final Review 테스트 실행 실패</td><td><code>{TDD_DIR}/test-failure.md</code></td><td><code>{TDD_DIR}/final-fix-result.md</code></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Final Review 중에는 <code>TASK_DIR</code>이 정의되어 있지 않으므로 최종 리뷰의 수정을 절대 태스크 디렉터리로 향하게 하지 않는다. <code>{TASK_DIR}/fix-result.md</code>는 사이클 리뷰어의 입력이자 diff 경로의 출처이고, 어떤 태스크의 사본을 덮어쓰면 둘 다 망가진다. 수정 에이전트는 findings를 직접 읽는다 — 당신이 중계하지 않는다.</p>
+    <p>재실행 때 리뷰어에게 건네는 것은 봉투의 <code>tests</code> 필드다. 그래야 리뷰어가 테스트를 다시 돌릴 이유가 없다.</p>
+  </section>
+
+  <!-- ============ ERRORS ============ -->
+  <section id="errors">
+    <h2>오류 처리</h2>
+    <p class="h2-en">Error Handling</p>
+    <p>이 스킬의 모든 재시도에는 한계가 있다. 예산이 떨어지면 답은 언제나 사용자에게 묻는 것이지, 한 번 더 시도하는 것이 아니다.</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>상황</th><th>조치</th><th>예산</th></tr></thead>
+      <tbody>
+        <tr><td>GREEN이 테스트를 통과시키지 못함</td><td>다른 접근으로 GREEN 재디스패치</td><td>2회 시도, 그다음 <code>BLOCKED</code></td></tr>
+        <tr><td>에이전트가 <code>BLOCKED</code> 보고</td><td><code>BLOCKED</code> 처리 참고</td><td>컨텍스트 축소 재시도 1회, 그다음 질문</td></tr>
+        <tr><td>결과 블록 누락/불완전</td><td>결과 블록 게이트 참고</td><td>재디스패치 1회, 그다음 질문</td></tr>
+        <tr><td>리뷰어가 <code>NEEDS_FIX</code> 반환</td><td>수정 라운드 예산 참고</td><td>2라운드, 그다음 질문</td></tr>
+        <tr><td>3개 사이클 연속 수정 필요</td><td>서킷 브레이커 참고</td><td>중단하고 Setup 재검토</td></tr>
+        <tr><td>Final Review 테스트 실행 실패</td><td>Final Review 참고</td><td>2라운드, 그다음 질문</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>이 표에서 의도적으로 빠진 실패 모드가 둘 있다. RED 내부의 빌드 실패, 그리고 REFACTOR가 깨뜨린 테스트다. 둘 다 예산을 잡지 않는다 — 각 에이전트가 자기 참조 파일에 따라 스스로 해결하며, 에이전트가 포기하고 <code>BLOCKED</code>를 반환할 때에만 당신이 알게 된다.</p>
+
+    <h3><code class="tok-red">BLOCKED</code> 처리</h3>
+
+    <p>막힌 에이전트는 서로 다른 두 가지 문제 중 하나를 보고하고 있으며, 둘은 정반대의 대응을 필요로 한다. 무엇을 하기 전에 <code>blocked_reason</code>부터 읽는다.</p>
+
+    <h4><code>MISSING_FACT</code> — <code>context.md</code>에 없는 것을 에이전트가 필요로 한다.</h4>
+    <p>직접 해결해서 넘겨준다. 당신에게는 워크스페이스 전체가 있고 툴 호출은 몇 초면 끝나지만, 에이전트에게는 패키지 하나뿐이라 같은 답에 도달하려면 추론으로 파고들어야 한다. 실제 세션에서 측정한 결과, 이 오케스트레이터가 몇 초 만에 덤프할 수 있는 스키마 하나를 서브에이전트가 재구성하는 데 30분이 걸렸고, 그렇게 재구성한 결과마저 틀렸다.</p>
+    <ol>
+      <li>사실을 확보한다 — 데이터베이스를 조회하고, 파일을 열고, 그 빈이 실제로 존재하는지 확인한다.</li>
+      <li><code>{TDD_DIR}/context.md</code>의 해당 섹션에 덧붙인다. 이후의 모든 디스패치가 이를 물려받으므로 같은 공백에 두 번 비용을 치르지 않는다.</li>
+      <li><strong>동일하고 잘라내지 않은</strong> 컨텍스트로 같은 호출을 다시 디스패치한다. 무엇도 크지 않았다. 무언가가 없었을 뿐이다.</li>
+    </ol>
+    <p>절대 <code>MISSING_FACT</code>에 컨텍스트를 잘라내는 것으로 답하지 않는다 — 방금 부족하다고 말한 것을 더 없애는 일이기 때문이고, 잘라낸 재시도를 예상하는 에이전트가 보고 대신 탐색을 배우게 되는 이유이기도 하다. 이 라운드는 어떤 예산에도 계산되지 않는다. 재시도가 아니라 설계대로 동작하는 저비용 경로다. 사실을 직접 해결할 수 없다면 사용자에게 묻는다 — 재디스패치하지도, 에이전트가 찾으러 가게 두지도 않는다.</p>
+
+    <h4><code>OVERWHELMED</code> — 에이전트가 필요한 것을 모두 가졌는데도 진행하지 못한다.</h4>
+    <p>컨텍스트를 줄여 <strong>한 번만</strong> 재디스패치한다. Project Context 섹션을 잘라낸 사본 — 대상 패키지와 에이전트가 필요로 하는 시그니처 한두 개만 — 을 <code>{TRIMMED_CONTEXT_FILE}</code>에 쓰고, 재시도 프롬프트가 전체 <code>context.md</code> 대신 그 파일을 가리키게 한다.</p>
+
+    <p><code>{TRIMMED_CONTEXT_FILE}</code>은 어떤 디스패치를 재시도하는지에 따라 달라진다.</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>재시도 대상</th><th><code>{TRIMMED_CONTEXT_FILE}</code></th></tr></thead>
+      <tbody>
+        <tr><td>사이클 디스패치 (RED, GREEN, REFACTOR, 사이클 리뷰어, 사이클 수정 에이전트)</td><td><code>{TASK_DIR}/context-trimmed.md</code></td></tr>
+        <tr><td>최종 리뷰어 또는 최종 리뷰 수정 에이전트</td><td><code>{TDD_DIR}/context-trimmed.md</code></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>Final Review 중에는 <code>TASK_DIR</code>이 정의되어 있지 않으므로, 컨텍스트를 줄인 재시도를 절대 태스크 디렉터리로 향하게 하지 않는다.</p>
+
+    <p>그 재시도 이후에도 <code>BLOCKED</code>라면 → 디스패치를 멈추고 사용자에게 묻는다.</p>
+
+    <blockquote>
+      <p>"{역할} 에이전트가 '{사유}'로 막혔습니다. 이 태스크를 로컬에서 직접 진행할까요, 아니면 건너뛰고 다음 태스크로 갈까요?"</p>
+    </blockquote>
+
+    <p>같은 호출에 세 번째 디스패치를 쓰지 않는다.</p>
+
+  </section>
+
+  <!-- ============ FINAL REVIEW ============ -->
+  <section id="final-review">
+    <h2>Final Review</h2>
+    <p class="h2-en">Final Review</p>
+    <p>모든 사이클이 끝나면 <strong>이번 세션에서 건드린 테스트 클래스만</strong> 실행한다 — 모든 <code>RED_RESULT</code>의 서로 다른 <code>test_file</code> 값들을 하나의 <code>TEST_SCOPED_CMD</code> 호출에 함께 넣는다(Gradle: <code>./gradlew test --tests "FQCN1" --tests "FQCN2" … --offline</code>). 전체 <code>TEST_CMD</code>로 넘어가는 것은 사용자가 요청하거나, 변경이 간접 호출자가 많은 대상(공용 유틸리티, 널리 쓰이는 기반 클래스)을 건드렸을 때뿐이다.</p>
+    <p>실패하는 것이 있으면 먼저 수정 에이전트를 디스패치한다. 이 경로에는 리뷰 findings가 없고 실패한 실행 결과만 있으므로, 당신이 주지 않으면 수정 에이전트에게는 입력이 없다. 실패한 실행의 출력을 <code>{TDD_DIR}/test-failure.md</code>로 리다이렉트하고 그 경로를 <code>{REVIEW_FILE}</code>로 전달한다. diff를 만들 때와 마찬가지로 컨텍스트로 읽어 들이지 말고 파일로 리다이렉트한다. 수정 라운드 후에는 범위를 좁힌 테스트를 다시 실행한다.</p>
+    <p>이 루프도 이 스킬의 다른 모든 재시도처럼 제한된다. <strong>최대 2라운드.</strong> 두 번째 수정 라운드 후에도 범위를 좁힌 테스트가 여전히 실패하면, 세 번째를 디스패치하지 말고 멈춰서 사용자에게 묻는다.</p>
+    <blockquote>
+      <p>"Final Review 테스트가 2회 수정 후에도 실패합니다: {실패 내용}. 이대로 두고 다음 단계로 갈까요, 직접 손보실까요?"</p>
+    </blockquote>
+    <p>테스트가 통과했거나 사용자가 그대로 진행하기로 선택한 뒤에만 최종 리뷰어로 넘어간다.</p>
+    <p>그런 다음 독립 최종 리뷰어를 디스패치하되, <strong>범위를 좁힌 실행의 결과를 함께 넘겨</strong> 다시 실행할 이유가 없게 한다. <code>Agent</code> 툴을 쓸 수 없다면 <code>not available</code>이라고 말하고 <code>references/final-reviewer.md</code>를 태스크 목록, 불변성, 브랜치 diff에 로컬로 적용한다.</p>
+    <p>먼저 사이클 diff와 같은 방식으로 브랜치 diff를 파일로 만든다.</p>
+<pre><code>git diff &gt; {TDD_DIR}/branch-diff.md
+git ls-files --others --exclude-standard -- {SOURCE_DIR} {TEST_DIR} | while read -r f; do
+  git diff --no-index /dev/null "$f" &gt;&gt; {TDD_DIR}/branch-diff.md
+done
+wc -l &lt; {TDD_DIR}/branch-diff.md</code></pre>
+    <p>두 번째 명령은 이번 세션에 생성된 모든 파일을 덧붙인다. 새 테스트 클래스와 새 프로덕션 클래스는 추적되지 않으며 <code>git diff</code>만으로는 누락되어, 최종 리뷰어가 각 태스크에 테스트가 없다고 결론짓게 된다. <code>--exclude-standard</code>가 이미 <code>.git/info/exclude</code>를 존중하므로 <code>{TDD_DIR}</code> 자체는 건너뛴다. <code>{SOURCE_DIR}</code>과 <code>{TEST_DIR}</code>로 범위를 좁히면 사용자 저장소의 무관한 미추적 파일이 들어오지 않는다. <code>git diff --no-index</code>는 차이를 찾으면 0이 아닌 코드로 종료하는데, 여기서는 그것이 기대되는 결과다.</p>
+<pre><code>Agent({
+  subagent_type: "general-purpose",
+  description: "FINAL REVIEW",
+  prompt: """
+{SKILL_DIR}/references/final-reviewer.md를 읽는다 — 이 파일에 접근할 권한이 있다.
+정확히 그대로 따른다.
+
+시작하기 전에 다음을 읽는다:
+- {TDD_DIR}/context.md — 환경, 도메인 불변성, 워크스페이스 규칙
+- {TDD_DIR}/session.md — 확정된 태스크 목록과 완료된 항목
+- {TDD_DIR}/branch-diff.md — 이번 세션의 전체 diff
+- 태스크별 {TASK_DIR}/red-result.md — 추가된 테스트들
+
+오케스트레이터가 방금 완료한 테스트 실행: {TEST_SCOPED_CMD invocation} → {N} passed, 0 failed
+
+전체 리뷰 보고서를 {TDD_DIR}/final-review.md에 쓴다.
+TDD_STATUS 봉투만 반환한다.
+"""
+})</code></pre>
+    <p><strong>최종 리뷰어 판정 처리:</strong></p>
+    <ul>
+      <li><code class="tok-green">APPROVED</code> → 세션 종료로 넘어간다</li>
+      <li><code>NEEDS_FIX</code> → 완전한 findings 목록과 함께 수정 에이전트를 한 번 디스패치하고(수정 에이전트 디스패치 참고) 최종 리뷰어를 다시 돌린다. 매 라운드 전에 <code>session.md</code>의 <code>fix_rounds_total</code>을 증가시킨다. <code>Agent</code> 툴을 쓸 수 없다면 로컬에서 고친다.</li>
+    </ul>
+    <p>수정 라운드 예산은 여기에도 적용된다. <strong>최대 2라운드.</strong> 두 번째 이후에도 findings가 남으면, 세 번째 라운드를 디스패치하지 말고 미해결로 나열한 채 세션을 종료하며 요약에 그 사실을 분명히 적는다.</p>
+  </section>
+
+  <!-- ============ SESSION END ============ -->
+  <section id="session-end">
+    <h2>세션 종료</h2>
+    <p class="h2-en">Session End</p>
+    <p>요약을 출력한다.</p>
+<pre class="plain"><code>── TDD 세션 완료 ──
+사이클: {N}개 완료 ({M}개는 GREEN 생략 — ALREADY_PASSES)
+테스트: {N} passed, 0 failed
+파일:   {변경된 파일 목록}
+수정:   {session.md의 fix_rounds_total}
+리뷰:   APPROVED | APPROVED WITH UNRESOLVED FINDINGS
+산출물: .tdd-team/ (session.md, 태스크별 결과, 리뷰)</code></pre>
+    <p><code>.tdd-team/</code>은 그대로 둔다. 세션의 디버깅 기록이자 이후 이어서 하기의 입력이며, git 추적에서 제외되어 있으므로 유지해도 사용자에게 비용이 들지 않는다.</p>
+    <p>판정이 <code>APPROVED WITH UNRESOLVED FINDINGS</code>라면 그 아래에 미해결 항목을 나열한다. 소진된 예산으로 끝난 세션에 <code>APPROVED</code>를 출력하지 않는다.</p>
+  </section>
+
+  </main>
+</div>
+
+<footer>skills/tdd-team/SKILL.md — 한국어 번역본</footer>
+
+<script>
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+  var map = {};
+  links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+  var sections = Array.prototype.slice.call(document.querySelectorAll('main section'));
+  if (!('IntersectionObserver' in window)) return;
+
+  var visible = {};
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { visible[e.target.id] = e.isIntersecting ? e.intersectionRatio : 0; });
+    var best = null, bestVal = 0;
+    sections.forEach(function (s) {
+      var v = visible[s.id] || 0;
+      if (v > bestVal) { bestVal = v; best = s.id; }
+    });
+    if (!best) return;
+    links.forEach(function (a) { a.classList.remove('active'); });
+    if (map[best]) map[best].classList.add('active');
+  }, { rootMargin: '-10% 0px -70% 0px', threshold: [0, 0.25, 0.5, 1] });
+
+  sections.forEach(function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>

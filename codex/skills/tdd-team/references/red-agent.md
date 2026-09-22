@@ -91,6 +91,12 @@ If none of the above unblocks you → escalate to the orchestrator as `BLOCKED` 
 - After writing, run `{TEST_SCOPED_CMD}` (target test class only) and confirm the test fails
 - Structure every test with `// arrange`, `// act`, `// assert` comments
 
+## Fixture Pattern (when creating test data)
+Use project-defined Fixture builder methods — do NOT construct entities directly via `new` or raw `.builder()`.
+- Override only the fields relevant to the test scenario.
+- Wrap `repository.save(fixture.build())` in a private helper method to keep test bodies readable.
+- Never duplicate fixture logic across tests — extract shared setup into a helper.
+
 ## Do NOT write tests for
 - Constructors / static factories with no behavior
 - Trivial getters/setters
@@ -98,7 +104,7 @@ If none of the above unblocks you → escalate to the orchestrator as `BLOCKED` 
 
 ## Workflow
 1. Read the task file named in your prompt and `context.md`
-2. Rely on the Project Context section of `.tdd-team/context.md` for structural context (signatures, layout, conventions, fixtures) — do NOT re-scan the codebase. Open a specific file only when you need its exact current contents (e.g., a signature you must match) or when `context.md` is missing something. Ask "What SHOULD this behavior be?" not "What DOES this code do?"
+2. Rely on the Project Context section of `.tdd-team/context.md` for structural context (signatures, layout, conventions, fixtures) — do NOT re-scan the codebase. Open a specific file only when you need its exact current contents (e.g., a signature you must match). Ask "What SHOULD this behavior be?" not "What DOES this code do?"
 3. Write the failing test (and stubs with `UnsupportedOperationException` if new classes/methods are needed)
 4. **Clear compilation first, with the cheap command.** Run `{TEST_COMPILE_CMD}` from `.tdd-team/context.md`. If it fails, fix the error and run it again — stay in this loop until it compiles, and do NOT run the tests while you are in it. A fresh test class fails to compile far more often than it fails to fail, and settling that with a full test invocation pays for framework startup to learn something the compiler already knew. If `TEST_COMPILE_CMD` is `none`, skip to step 5.
 5. **Then run the tests once** — `{TEST_SCOPED_CMD}`, target test class only — and classify **each** method you wrote:

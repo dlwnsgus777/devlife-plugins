@@ -40,15 +40,9 @@ Use the scoped test command from `.tdd-team/context.md` — it runs only the cla
 
 If you cannot make the test pass → escalate to the orchestrator as `BLOCKED` with `blocked_reason: OVERWHELMED`.
 
-## Fixture Pattern (when creating test data)
-Use project-defined Fixture builder methods — do NOT construct entities directly via `new` or raw `.builder()`.
-- Override only the fields relevant to the test scenario.
-- Wrap `repository.save(fixture.build())` in a private helper method to keep test bodies readable.
-- Never duplicate fixture logic across tests — extract shared setup into a helper.
-
 ## Workflow
 1. Read the failing test to understand what it expects
-2. Use the Project Context section of `.tdd-team/context.md` for structural context — do NOT re-scan the codebase. Open only the specific production file(s) you will modify. Fall back to reading more only if `context.md` is missing something you need.
+2. Use the Project Context section of `.tdd-team/context.md` for structural context — do NOT re-scan the codebase. Open only the specific production file(s) you will modify.
 3. Implement the simplest code to make the test pass
 4. Run `{TEST_SCOPED_CMD}` (target test class only) to verify:
    - All tests in the class pass → Report SUCCESS

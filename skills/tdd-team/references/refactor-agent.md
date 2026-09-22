@@ -54,7 +54,7 @@ Apply named techniques from Martin Fowler's *Refactoring* catalog — not ad-hoc
   | "The user is running a TDD session, so they want commits per cycle" | Running TDD ≠ consenting to commits. Leave staging/committing to the orchestrator. |
 
 ## Workflow
-1. Check skip condition first — if no refactoring needed, jump to step 5
+1. Check skip condition first — if no refactoring needed, jump to step 6
 2. Read current source and test files (only the files touched in RED+GREEN); use the Project Context section of `.tdd-team/context.md` for conventions and fixture patterns instead of re-scanning the codebase
 3. Identify ALL refactoring opportunities at once — list them before applying any
 4. Apply all identified changes in a single batch

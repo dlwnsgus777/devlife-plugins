@@ -20,66 +20,21 @@ Orchestrate a 3-phase Red-Green-Refactor TDD cycle using sequential Agent calls.
 
 ## Execution Rules
 
+**You are the orchestrator.** Everything this document addresses to *you* is yours to do: Setup, every dispatch, the budgets, and the conversation with the user. The work itself — RED, GREEN, REFACTOR, review, fix — happens inside sub-agents, each driven by its own file under `references/`.
+
 - Respect system, developer, and project `CLAUDE.md` instructions above this skill.
 - If project instructions require feedback after each stage, honor them at **cycle** granularity — one pause per cycle, after the cycle reviewer's verdict. See Feedback Cadence.
 - Use sub-agents (`Agent({ subagent_type: "general-purpose", ... })`) for RED, GREEN, REFACTOR, cycle review, and final review. If the Agent tool is not available, say `not available` and fall back to local execution.
 
 ## Right-Size the Ceremony
 
-**Never cut RED/GREEN isolation, regardless of change size.** It is structural, not risk-based: one mind writing both the test and the implementation gravitates to happy-path-only coverage, because the test ends up describing what you already intended to build instead of pressure-testing the requirement. A tiny change is as vulnerable to that as a large one. RED always runs blind to how GREEN will implement it, and GREEN always runs as a separate dispatch, on every cycle.
+**Never cut RED/GREEN isolation, regardless of change size.** It is structural, not risk-based: one mind writing both the test and the implementation gravitates to happy-path-only coverage, because the test ends up describing what you already intended to build instead of pressure-testing the requirement. RED always runs blind to how GREEN will implement it, and GREEN always runs as a separate dispatch, on every cycle.
 
 What scales down with change size, and is yours to scale:
 - **Cycle granularity** — batch scenarios that share one implementation change into a single task (Step 4).
 - **Final Review scope** — touched classes only unless the change has wide blast radius (see Final Review).
 
 **Everything inside an agent is that agent's own call.** REFACTOR decides whether to skip, the cycle reviewer decides how deep to go, and both reviewers decide what to trust from the test result you hand them — each rule lives in that agent's reference file, and none of them is yours to re-derive. You dispatch and read the envelope. Never re-dispatch an agent because you would have judged differently: a `SKIPPED` REFACTOR or a reviewer that only read the diff is the designed outcome, not a shortfall.
-
-## Model Selection
-
-Every `Agent()` call takes a `model` field. Omitting it inherits the session default — **omit unless the table gives a concrete reason to override.** Don't downgrade reflexively: **turn count beats token price**, since an undersized model burns the savings on re-reads and retries.
-
-| Role | Default | When to override |
-|------|---------|-------------------|
-| RED | omit | Designing a failing test from a domain-rule sentence is judgment, not transcription. |
-| GREEN | omit | `model: "haiku"` only when genuinely narrow — one small method, shape already spelled out, nothing to design. |
-| REFACTOR | omit | Skips itself on clean output; the runs that happen need real judgment. |
-| CYCLE REVIEWER | omit | The check that catches vacuous tests and invariant gaps. Don't cheapen it. |
-| FIX agent | omit; `haiku` for a mechanical fix | Cheap tier is enough for a rename, a one-line guard, a reference swap. A fix that re-derives *why*, or touches more than the named lines, stays at the default. |
-| FINAL REVIEWER | **`model: "opus"`** | Last gate on the whole session — dispatch on the most capable model available. |
-
-### Handling `BLOCKED`
-
-A blocked agent is reporting one of two different problems, and they need opposite responses. Read `blocked_reason` before you do anything.
-
-**`MISSING_FACT` — the agent needs something `context.md` does not contain.**
-
-Resolve it yourself and hand it back. You have the whole workspace and your tool calls return in seconds; the agent has one package and would have to reason its way to the same answer. Measured on a real session: a schema this orchestrator can dump in seconds cost a subagent thirty minutes to reconstruct — and it reconstructed it wrong.
-
-1. Get the fact — query the database, read the file, check whether the bean actually exists.
-2. Append it to `{TDD_DIR}/context.md`, under the section it belongs to. Every later dispatch inherits it, so the same gap is never paid twice.
-3. Re-dispatch the same call with the **same, un-trimmed** context. Nothing was too big; something was missing.
-
-Never answer `MISSING_FACT` by trimming context — that removes more of what the agent just said it lacks, which is why an agent that expects a trimmed retry learns to go digging instead of reporting. This round counts against no budget: it is the cheap path working as designed, not a retry. If you cannot resolve the fact yourself, ask the user — never re-dispatch and never let the agent go find it.
-
-**`OVERWHELMED` — the agent has what it needs and still cannot proceed.**
-
-1. Dispatched at a downgraded tier → re-dispatch the same call at the default tier.
-2. `BLOCKED` at the default tier → re-dispatch **once** with reduced context: write a trimmed copy of the Project Context section — just the target package and the one or two signatures the agent needs — to `{TRIMMED_CONTEXT_FILE}`, and point the retry's prompt at that file instead of the full `context.md`.
-
-`{TRIMMED_CONTEXT_FILE}` depends on which dispatch is retrying:
-
-| Retrying | `{TRIMMED_CONTEXT_FILE}` |
-|----------|--------------------------|
-| A cycle dispatch (RED, GREEN, REFACTOR, cycle reviewer, cycle fix agent) | `{TASK_DIR}/context-trimmed.md` |
-| The final reviewer or a final-review fix agent | `{TDD_DIR}/context-trimmed.md` |
-
-`TASK_DIR` is undefined during Final Review, so never aim a reduced-context retry at a task directory.
-
-3. Still `BLOCKED` → stop dispatching and ask the user:
-
-> "{역할} 에이전트가 '{사유}'로 막혔습니다. 이 태스크를 로컬에서 직접 진행할까요, 아니면 건너뛰고 다음 태스크로 갈까요?"
-
-Never spend a third dispatch on the same call.
 
 ## Setup
 
@@ -111,10 +66,8 @@ This SKILL.md was loaded from a known absolute path. Capture its parent director
 
 Then establish the artifact directory. Every file this session produces lives here, and every agent reads its inputs from here.
 
-- `TDD_DIR` = `{PROJECT_ROOT}/.tdd-team`
+- `TDD_DIR` = `.tdd-team` — the skill runs from the project root, so this resolves against the working directory
 - `TASK_DIR` = `{TDD_DIR}/task-{NN}` — `NN` is the task number, zero-padded to two digits
-
-The skill runs from the project root, so `.tdd-team/` resolves against the working directory — which is why the `mkdir` below needs no variable and why Setup 0 could already check `.tdd-team/session.md`. `PROJECT_ROOT` is captured later, in Setup 2, for the agents' benefit: they need the absolute path written into `context.md`.
 
 Create `TDD_DIR`, then exclude it from git tracking:
 
@@ -135,7 +88,8 @@ Check for build files (`build.gradle.kts`, `pom.xml`, `package.json`, etc.) and 
 PROJECT_ROOT / SOURCE_DIR / TEST_DIR / TEST_CMD / TEST_SCOPED_CMD / TEST_COMPILE_CMD / TEST_FRAMEWORK
 ```
 
-- **TEST_CMD** — full-suite command. Not run by default (see Final Review) — only run it if the user explicitly asks for full-suite/cross-class regression coverage.
+- **PROJECT_ROOT** — the absolute path, captured for the agents rather than for you: it goes into `context.md` so a dispatched agent can resolve a path without guessing.
+- **TEST_CMD** — full-suite command. Not run by default (see Final Review).
 - **TEST_SCOPED_CMD** — command template that runs a **single test class**, used by every in-cycle test run and by Final Review. Gradle: `./gradlew test --tests "{FQCN}" --offline` (JUnit `@Nested` classes run with the enclosing class FQCN). Maven: `mvn -o test -Dtest={ClassName}`. npm/jest/vitest: pass the test file path (e.g. `npx vitest run {test_file}`). Most frameworks accept multiple `--tests`/file-path arguments in one invocation — use that to run several touched classes together instead of one command per class.
 - **TEST_COMPILE_CMD** — compiles the test sources without executing anything. RED uses it to clear compile errors before paying for a real run, since a fresh test class fails to compile far more often than it fails to fail. Gradle: `./gradlew compileTestJava --offline` (Kotlin: `compileTestKotlin`). Maven: `mvn -o test-compile`. For TypeScript: `npx tsc --noEmit`. If the stack has no separate compile step (plain JS, Python), set it to `none` and RED skips straight to the run.
 
@@ -169,9 +123,14 @@ These sentences become the source of test names.
 
 ### 4. Decompose into TDD Tasks
 
-If the document already provides an ordered task list, adopt it instead of deriving a new one. Items tagged `[REGRESSION]` (an existing test already covers that behavior) are not cycles — list them once as "기존 커버리지로 확인" and run them as part of Final Review instead of giving each its own RED. Only `[NEW]` items become cycles. Apply the coverage floor and batching rule below before presenting the list — a document often lists scenarios one-per-line for readability, which is a documentation granularity, not a cycle granularity.
+If the document already provides an ordered task list, adopt it instead of deriving a new one. Items tagged `[REGRESSION]` (an existing test already covers that behavior) are not cycles — list them once as "기존 커버리지로 확인" and run them as part of Final Review instead of giving each its own RED. Only `[NEW]` items become cycles. Apply the batching rule and coverage floor below before presenting the list — a document often lists scenarios one-per-line for readability, which is a documentation granularity, not a cycle granularity.
 
 Name each task as a **domain rule sentence** — RED turns it into the test's `@DisplayName`. How it names methods, groups them, or splits a sentence across cases is `red-agent.md`'s business; you owe it the sentence and nothing more.
+
+**Batch scenarios that share one implementation change.** A cycle should map to a unit of *implementation work*, not to a single test method. Before finalizing the task list, look for groups of scenarios that will all be satisfied by the same guard clause, the same conditional, or the same small function — e.g. the positive and negative branches of one check, or a family of role/state permutations against one lookup. Merge each such group into a single task with multiple `@DisplayName`s under it, rather than one task per scenario.
+
+> Signal you merged too coarsely: GREEN can't make all of a task's test methods pass with one small change — split it back apart.
+> Signal you split too finely: cycle N's RED comes back `ALREADY_PASSES` because cycle N-1's GREEN already covered it — merge it into whichever earlier task actually implements the shared logic, going forward. This is a backstop, not the control: the pre-check that names the change behind every task should have caught it, so when it fires, re-run that check over every task still ahead of you.
 
 **Coverage floor — a floor, never a cap.** Every invariant from Setup step 3 needs enough tests to pin its **boundary**, not one test somewhere inside it. An invariant is a rule; a single test only samples one point of a rule and proves nothing about where it starts and stops. For each invariant, the floor is:
 
@@ -185,12 +144,7 @@ Under TDD this is not a coverage preference. **An edge case with no test is not 
 
 Go above the floor whenever the domain gives a reason. The only scenarios to drop are ones that test the language, the framework, or a plain accessor — never a boundary of a domain rule. When you drop something, say which and why as you present the list.
 
-**This does not cost cycles.** A rule's boundary cases share the same guard clause, so they belong to one task, not several — the batching rule below is what controls cost, and RED collapses same-rule-different-input cases on its own. More test methods in a cycle is nearly free; more cycles is what is expensive.
-
-**Batch scenarios that share one implementation change.** A cycle should map to a unit of *implementation work*, not to a single test method. Before finalizing the task list, look for groups of scenarios that will all be satisfied by the same guard clause, the same conditional, or the same small function — e.g. the positive and negative branches of one check, or a family of role/state permutations against one lookup. Merge each such group into a single task with multiple `@DisplayName`s under it, rather than one task per scenario.
-
-> Signal you merged too coarsely: GREEN can't make all of a task's test methods pass with one small change — split it back apart.
-> Signal you split too finely: cycle N's RED comes back `ALREADY_PASSES` because cycle N-1's GREEN already covered it — merge it into whichever earlier task actually implements the shared logic, going forward. This is a backstop, not the control: the check above should have caught it, so when it fires, re-run that check over every task still ahead of you.
+Boundary cases of one rule share the same guard clause, so batching already puts them in one task — more test methods in a cycle is nearly free, more cycles is what is expensive, and RED collapses same-rule-different-input cases on its own.
 
 **Before presenting the list, name the change behind every task.** For each row, write one line to yourself: *what production code change takes this task's tests from failing to passing?* The answer decides whether it is a cycle at all:
 
@@ -200,7 +154,7 @@ Go above the floor whenever the domain gives a reason. The only scenarios to dro
 
 These lines are a filter, not an artifact — do not write them into `task.md` or anywhere else. Present only the tasks that survive.
 
-Run this before you present, because it is the only control that works before money is spent. The `ALREADY_PASSES` signal below fires *after* a cycle has already burned a RED dispatch, a reviewer, and a test run on work that could not have been Red. In a measured session, two such cycles took 41% of the total agent time.
+Run this before you present, because it is the only control that works before money is spent. The `ALREADY_PASSES` backstop fires *after* a cycle has already burned a RED dispatch, a reviewer, and a test run on work that could not have been Red. In a measured session, two such cycles took 41% of the total agent time.
 
 Present the task list in this format, then get user confirmation before starting:
 
@@ -218,7 +172,7 @@ TDD 태스크 목록
 
 ### 5. Write the Session Context File
 
-Before the first cycle, the **orchestrator** explores the feature area **one time** and writes `{TDD_DIR}/context.md`. **Write only what you verified in this session.** Dump the schema you are about to describe, open the class whose signature you are about to quote, and check that a bean exists before telling an agent to inject it — a fact you recalled instead of confirming is the most expensive line in this file, because a wrong or partial one is discovered later by an agent that cannot cheaply correct it. Every phase agent reads this file instead of re-scanning the codebase, and instead of receiving the same blocks inline on every dispatch.
+Before the first cycle, explore the feature area **one time** and write `{TDD_DIR}/context.md`. **Write only what you verified in this session.** Dump the schema you are about to describe, open the class whose signature you are about to quote, and check that a bean exists before telling an agent to inject it — a fact you recalled instead of confirming is the most expensive line in this file, because a wrong or partial one is discovered later by an agent that cannot cheaply correct it. Every phase agent reads this file instead of re-scanning the codebase, and instead of receiving the same blocks inline on every dispatch.
 
 The file has four sections, in this order:
 
@@ -254,7 +208,7 @@ Invariant IDs (`INV-001`, …) are session bookkeeping — they live in `.tdd-te
 
 Keep it compact (signatures and paths, not full file bodies). If the feature is brand-new with no nearby code, state "관련 기존 코드 없음" and list only the target package.
 
-**The last three lines are boundaries, not background.** Every phase agent runs in its own context and infers conventions from whatever code it reads, which is exactly how a known defect gets reproduced and how an edit lands in a file nobody meant to touch. Source them from the plan document — 「구현 대상 파일」, 「목표가 아닌 것」, and 「기존 코드의 함정」 respectively. If the plan has no pitfall section, spend one pass on the reference implementation the feature imitates before the first cycle; a defect found in cycle 3 has already been copied twice.
+**In-scope files, Out of scope, and Known pitfalls are boundaries, not background.** Every phase agent runs in its own context and infers conventions from whatever code it reads, which is exactly how a known defect gets reproduced and how an edit lands in a file nobody meant to touch. Source them from the plan document — 「구현 대상 파일」, 「목표가 아닌 것」, and 「기존 코드의 함정」 respectively. If the plan has no pitfall section, spend one pass on the reference implementation the feature imitates before the first cycle; a defect found in cycle 3 has already been copied twice.
 
 A pitfall entry without its `→ what to do instead` half is worse than omitting it — the agent knows to avoid something and invents its own replacement. If a section has nothing, write `해당 없음` rather than dropping the line, so a later reader can tell it was considered.
 
@@ -313,7 +267,6 @@ All three phases use one dispatch shape — only `{PHASE}`, the reference file, 
 ```
 Agent({
   subagent_type: "general-purpose",
-  model: {per Model Selection},
   description: "{PHASE}: {task description}",
   prompt: """
 Read {SKILL_DIR}/references/{PHASE_FILE} — you have permission to access this file.
@@ -343,7 +296,7 @@ Do not paste `context.md` or `task.md` contents into the prompt, and do not summ
 
 ### The TDD_STATUS Envelope
 
-Every phase returns exactly this, and nothing else. It is the only thing that enters the orchestrator's context.
+Every phase returns exactly this, and nothing else. It is the only thing that enters your context.
 
 ```
 TDD_STATUS
@@ -410,7 +363,7 @@ If the Agent tool is not available, say `not available`, then execute the same p
    - At least one method is genuinely Red → proceed to GREEN as usual; GREEN targets the Red ones, the `ALREADY_PASSES` ones just ride along as already-passing coverage
    - Build fails → RED handles internally (fix stubs, re-verify)
 2. **GREEN** → capture files modified, all test results
-3. **REFACTOR** — skip if GREEN output is already clean
+3. **REFACTOR**
 4. **CYCLE REVIEWER** → dispatch independent subagent (see below)
 
 After every phase returns, update that task's row in `{TDD_DIR}/session.md` (`status`, `last_phase`) before dispatching the next phase. A crash between phases must leave the file telling the truth about where the session stopped.
@@ -441,7 +394,6 @@ After REFACTOR completes, dispatch an independent reviewer subagent, **passing i
 ```
 Agent({
   subagent_type: "general-purpose",
-  model: {per Model Selection — omit},
   description: "CYCLE REVIEW: {task description}",
   prompt: """
 Read {SKILL_DIR}/references/cycle-reviewer.md — you have permission to access this file.
@@ -508,12 +460,11 @@ Both stop and ask no matter which mode is active.
 
 ### Fix Agent Dispatch
 
-Used by both the cycle reviewer and the final reviewer verdicts, and by a failing Final Review test run. Hand the agent the findings list itself — not the review report in full, and not the document they came from. If the Agent tool is not available, say `not available`, then apply `references/fix-agent.md` locally to the same findings.
+Used by both the cycle reviewer and the final reviewer verdicts, and by a failing Final Review test run. If the Agent tool is not available, say `not available`, then apply `references/fix-agent.md` locally to the same findings.
 
 ```
 Agent({
   subagent_type: "general-purpose",
-  model: {per Model Selection — omit, or "haiku" only for a mechanical fix},
   description: "FIX: {short summary of findings}",
   prompt: """
 Read {SKILL_DIR}/references/fix-agent.md — you have permission to access this file.
@@ -559,6 +510,39 @@ Every retry in this skill is bounded. When a budget runs out the answer is alway
 
 Two failure modes are deliberately absent from this table: a build failure inside RED, and a test that REFACTOR breaks. You budget neither — each agent resolves its own, per its reference file, and you learn of it only if the agent gives up and returns `BLOCKED`.
 
+### Handling `BLOCKED`
+
+A blocked agent is reporting one of two different problems, and they need opposite responses. Read `blocked_reason` before you do anything.
+
+**`MISSING_FACT` — the agent needs something `context.md` does not contain.**
+
+Resolve it yourself and hand it back. You have the whole workspace and your tool calls return in seconds; the agent has one package and would have to reason its way to the same answer. Measured on a real session: a schema this orchestrator can dump in seconds cost a subagent thirty minutes to reconstruct — and it reconstructed it wrong.
+
+1. Get the fact — query the database, read the file, check whether the bean actually exists.
+2. Append it to `{TDD_DIR}/context.md`, under the section it belongs to. Every later dispatch inherits it, so the same gap is never paid twice.
+3. Re-dispatch the same call with the **same, un-trimmed** context. Nothing was too big; something was missing.
+
+Never answer `MISSING_FACT` by trimming context — that removes more of what the agent just said it lacks, which is why an agent that expects a trimmed retry learns to go digging instead of reporting. This round counts against no budget: it is the cheap path working as designed, not a retry. If you cannot resolve the fact yourself, ask the user — never re-dispatch and never let the agent go find it.
+
+**`OVERWHELMED` — the agent has what it needs and still cannot proceed.**
+
+Re-dispatch **once** with reduced context: write a trimmed copy of the Project Context section — just the target package and the one or two signatures the agent needs — to `{TRIMMED_CONTEXT_FILE}`, and point the retry's prompt at that file instead of the full `context.md`.
+
+`{TRIMMED_CONTEXT_FILE}` depends on which dispatch is retrying:
+
+| Retrying | `{TRIMMED_CONTEXT_FILE}` |
+|----------|--------------------------|
+| A cycle dispatch (RED, GREEN, REFACTOR, cycle reviewer, cycle fix agent) | `{TASK_DIR}/context-trimmed.md` |
+| The final reviewer or a final-review fix agent | `{TDD_DIR}/context-trimmed.md` |
+
+`TASK_DIR` is undefined during Final Review, so never aim a reduced-context retry at a task directory.
+
+Still `BLOCKED` after that retry → stop dispatching and ask the user:
+
+> "{역할} 에이전트가 '{사유}'로 막혔습니다. 이 태스크를 로컬에서 직접 진행할까요, 아니면 건너뛰고 다음 태스크로 갈까요?"
+
+Never spend a third dispatch on the same call.
+
 ## Final Review
 
 After all cycles complete, run **only the test classes touched this session** — the distinct `test_file` values from every `RED_RESULT`, together in one `TEST_SCOPED_CMD` invocation (Gradle: `./gradlew test --tests "FQCN1" --tests "FQCN2" … --offline`). Fall back to the full `TEST_CMD` only if the user asks for it, or if the change touched something with many indirect callers (a shared utility, a widely-used base class).
@@ -588,7 +572,6 @@ The second command appends every file created this session — new test classes 
 ```
 Agent({
   subagent_type: "general-purpose",
-  model: "opus",
   description: "FINAL REVIEW",
   prompt: """
 Read {SKILL_DIR}/references/final-reviewer.md — you have permission to access this file.
@@ -610,7 +593,7 @@ Return ONLY the TDD_STATUS envelope.
 
 **Handle final reviewer verdict:**
 - `APPROVED` → proceed to session end
-- `NEEDS_FIX` → dispatch a single fix agent (see Fix Agent Dispatch) with the complete findings list, then re-run final reviewer. Increment `fix_rounds_total` in `session.md` before each round. If the Agent tool is not available, fix locally.
+- `NEEDS_FIX` → dispatch a single fix agent (see Fix Agent Dispatch), then re-run final reviewer. Increment `fix_rounds_total` in `session.md` before each round. If the Agent tool is not available, fix locally.
 
 The Fix Round Budget applies here too: **2 rounds maximum**. If findings remain after the second, end the session with them listed as unresolved rather than dispatching a third round, and say so plainly in the summary.
 

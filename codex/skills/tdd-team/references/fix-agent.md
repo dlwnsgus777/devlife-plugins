@@ -25,7 +25,7 @@ Use the scoped test command from `.tdd-team/context.md`, scoped to the class(es)
 ## Scope Discipline
 
 - Fix **only** the findings you were handed. A finding is a specific claim about a specific file/behavior — treat it as a checklist, not an invitation to also tidy up nearby code you notice along the way.
-- Do not re-derive whether the finding is valid from first principles across the whole codebase. The reviewer already established it; your job is the fix, not a second audit. A quick, targeted check (e.g. "does anything else call this constructor before I remove it") is fine — a broad re-exploration of the module is not.
+- Do not re-derive whether the finding is valid from first principles across the whole codebase. The reviewer already established it; your job is the fix, not a second audit.
 - If a finding turns out to be already fixed, or you believe it's actually wrong, say so plainly in your report — don't silently skip it and don't silently "fix" something the finding didn't ask for to compensate.
 
 ## Verification Depth — One Confirming Run, Not a Search
