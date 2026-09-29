@@ -64,7 +64,7 @@ After discovery, directly read only the 2–3 most relevant files to identify bu
 
 **Pitfall scan — the inverse of the reuse scan.** The reuse scan asks what to lean on; this one asks what **not to copy**. An agent reads existing code as this project's answer and reproduces its defects verbatim, so a defect you noticed but didn't write down will ship again. From the Explore category 8 results plus the 2–3 files you read, keep only defects the new code would actually inherit by imitation — a flaw in an unrelated corner of the codebase is not this plan's business. Each one needs a `→ 신규는` decision, not just a diagnosis. Nothing qualifies → `해당 없음`.
 
-**Existing code modification** (only when the task modifies existing code): identify the change targets and judge whether their current structure makes the new requirement hard to add — that judgment decides whether Section 0 is included.
+**Landing spot scan** (only when the task modifies existing code): for each change target, ask where the new requirement has to land and what in the current structure keeps it from landing in one place — edits scattered across several classes, responsibilities tangled so there is no seam to add it, the same branch repeated in multiple spots. Each blocker is a `0-1` candidate, and the fix is whatever removes it — method-level (Extract Method, Guard Clause) or class-level (Move Method, Extract Class, splitting a parameter object). A smell the requirement never touches is not a candidate: `0-1` exists to make this change easy, not to clean the code. No blocker → no `0-1` entries, and Section 0 is included only if `0-2` has one.
 
 **Variation point scan**: find the axis this domain keeps changing along — branching on an enum/type/channel, policy values hardcoded in a service, near-duplicate methods differing in one step. That axis is where the next requirement lands, so it is the abstraction candidate for `0-2`.
 
@@ -170,7 +170,7 @@ When listing test cases in the implementation order, name each test using a **do
 - `[REGRESSION]` — an existing test already covers this; run it as-is to confirm the behavior is preserved, never add a duplicate
 
 The template is structured for Spring Boot API feature planning. Non-obvious section requirements:
-- **0. 코드 구조 정비**: Only when modifying existing code. `0-1. Tidy First` — behavior-preserving cleanup (Extract Method, Guard Clause, …). `0-2. 추상화 제안` — entries passing the two-case rule; it is a design decision, so leave 적용 여부 as pending until Step 4 approves it. Commit order: `refactor` → `feat`.
+- **0. 코드 구조 정비**: Only when modifying existing code. `0-1. Tidy First` — behavior-preserving restructuring from the landing spot scan; every entry names the blocker and where the requirement lands once it is removed. `0-2. 추상화 제안` — entries passing the two-case rule; it is a design decision, so leave 적용 여부 as pending until Step 4 approves it. Commit order: `refactor` → `feat`.
 - **6. Implementation Files**: File table, then fill in the template's **`코드 스니핏` subsection** — class declaration, `private final` fields, and **method bodies**. The body is the point: call order, the guard clause enforcing each invariant (tagged with its `INV-xxx`), exceptions, and the return shape. Skeleton, not finished code — skip logging, transaction config, and defensive null checks, but make it concrete enough to start coding without re-reading the requirements. For dependencies, prefer injecting existing services found in Step 1 over wiring a repository directly.
 - **8. Implementation Order**: When modifying existing code, split into Tidy First → Behavior Change phases with separate commits, and tag every entry `[NEW]` or `[REGRESSION]`. An approved `0-2` abstraction is extracted in the Tidy First phase from the cases that already exist (`refactor`), and the new case follows in the behavior-change phase.
 
@@ -192,7 +192,7 @@ After writing the document, run these six checks and fix what you can inline —
 
 **4. Consistency**: are the class and method names identical across all three places they appear — the Section 6 file table, the Section 6 `코드 스니핏`, and the Section 8 implementation entries? A name that exists in only one of them means a file, a signature, or a step is missing.
 
-**5. Abstraction justification**: does every `0-2` entry have 2+ cases and a domain reason? Delete the ones that don't — `해당 없음` beats a padded table.
+**5. Section 0 justification**: does every `0-1` entry point to the Section 8 entry it makes easier, and does every `0-2` entry have 2+ cases and a domain reason? Delete the ones that don't — `해당 없음` beats a padded table.
 
 **6. Invariant coverage**: does every `INV-xxx` appear in at least one Section 8 entry, and does every Section 8 test trace back to an invariant or an explicit requirement? A test with no upstream is either an unwritten invariant or scope creep — resolve which.
 

@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-09-29
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `plan-creator` | `1.9.0` | `0-1. Tidy First` 기준을 코드 냄새에서 **이번 요구사항이 한 곳에 들어갈 수 있는가**로 변경. 예시가 Extract Method·Guard Clause뿐이고 후보를 찾는 스캔이 없어 메서드 단위 정비로만 수렴하던 문제. Step 1의 "Existing code modification"을 Landing spot scan으로 교체해 막는 지점을 찾고, 정비 단위는 메서드·클래스 무관. 요구사항이 닿지 않는 냄새는 제외. 템플릿 표에 `요구사항 수용을 막는 지점`·`정비 후 요구사항이 들어갈 자리` 컬럼 추가, 자체 검증 5번을 Section 0 전체로 확장(`0-1` 항목은 섹션 8 연결 필수). `SKILL.md`·템플릿(skills/codex)·docs·README 동기화 |
+
+---
+
 ## 2026-09-22
 
 ### devlife-planning
