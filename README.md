@@ -10,7 +10,7 @@ TDD, 기획 문서화, 브랜치 리뷰, 계획 수립, 멀티 에이전트 협�
 | [`devlife-planning`](#devlife-planning) | `1.0.0` | 기획 문서화 — 브레인스토밍부터 Spec, 계획 문서까지 |
 | [`devlife-tdd`](#devlife-tdd) | `1.1.0` | TDD 실행 — 3에이전트 Red/Green/Refactor 자동화 |
 | [`devlife-review`](#devlife-review) | `1.0.0` | 코드 리뷰 — 설계 심문 |
-| [`devlife-tools`](#devlife-tools) | `1.0.0` | 유틸리티 — 멀티 에이전트 환경, 마크다운 변환, 터미널 제어, 작업 이력 문서화 |
+| [`devlife-tools`](#devlife-tools) | `1.1.0` | 유틸리티 — 멀티 에이전트 환경·교차 모델 하네스, 마크다운 변환, 터미널 제어, 작업 이력 문서화 |
 
 ---
 
@@ -75,6 +75,13 @@ TDD 실행 워크플로우. 서브에이전트 기반 Red/Green/Refactor 사이�
 | `cmux` | `1.0.0` | Ghostty 기반 터미널 제어 — pane/workspace 관리, 브라우저 자동화, 알림, SSH, 마크다운 뷰어 |
 | `md-to-html` | `1.1.0` | Markdown → 독립형 HTML 변환 (외부 CSS/JS 없음) — 서브에이전트 위임 실행 |
 | `project-history` | `1.0.0` | Jira 티켓 하위 이슈 + git diff 분석 → 이력서용 작업 이력 문서 생성 |
+| `devlife-orchestrator` | `0.1.0` | **Codex 전용 · 실험적** — Codex가 `tdd-team`을 지휘하고 단계 에이전트는 cmux 탭의 역할별 Claude 워커 3개(RED·GREEN·REFACTOR, FIX는 RED/GREEN)가 수행하는 하네스. GREEN·REFACTOR 워커는 테스트 파일 편집을 권한으로 거부. TDD 규칙은 `tdd-team` 무수정 재사용, 바꾸는 것은 단계 에이전트 실행 위치(역할별 Claude 워커)·피드백 주기(자동) 두 가지, 리뷰는 `tdd-team`대로 Codex 서브에이전트. 평범한 `codex` 실행 + cmux 명령 1회 승인으로 동작(자기 surface는 화면 표시로 탐색), 완료 신호 `codex queue`, run당 워치독 탭 1개, 재지시 전 결과는 `*.attemptN.md`로 보존, 실행 중 커밋 없음 |
+
+#### Agents
+
+| Agent | Version | Description |
+|-------|---------|-------------|
+| `devlife-worker` | `0.1.0` | `devlife-orchestrator`의 워커 — 프롬프트 파일이 가리키는 `tdd-team` reference(red/green/refactor/fix-agent.md)를 그대로 따라 한 단계만 수행, envelope는 응답 대신 status 파일에 기록 후 `codex queue` 신호, 전역 CLAUDE.md의 질문·계획·피드백·테스트 금지 규칙보다 워커 모드 우선, 커밋 금지 |
 
 ---
 

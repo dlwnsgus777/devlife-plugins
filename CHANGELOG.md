@@ -6,6 +6,13 @@
 
 ## 2026-09-29
 
+### devlife-tools
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `devlife-orchestrator` | `0.1.0` | 신규 (Codex 전용, 실험적). Codex가 `tdd-team`을 지휘하고 단계 에이전트를 cmux 탭의 역할별 Claude 워커 3개(RED·GREEN·REFACTOR)가 수행하는 하네스, GREEN·REFACTOR는 테스트 파일 편집을 `--disallowedTools`로 거부. `tdd-team`은 수정하지 않고 단계 에이전트 실행과 피드백 주기만 대체(리뷰는 `tdd-team`대로 Codex 서브에이전트). 선행 실험으로 확인한 Codex 샌드박스 제약(cmux 소켓 차단, `CMUX_*` 미전달, 샌드박스 내 `codex queue`·`close-surface` 실패)에 맞춰 cmux 명령만 escalate(1회 승인), 화면 표시로 자기 surface 탐색, 샌드박스 밖 워치독 탭으로 대응. `scripts/check-skill-parity.sh`에 `CODEX_ONLY_SKILLS` 예외 추가 |
+| `devlife-worker` (agent) | `0.1.0` | 신규. `devlife-orchestrator`용 Claude 워커 에이전트. `tdd-team` reference 파일을 따라 한 단계씩 수행, `--permission-mode dontAsk` + 허용 목록으로 실행 |
+
 ### devlife-planning
 
 | Skill | Version | Change |
