@@ -47,6 +47,10 @@ CODEX_TOPIC_SKILLS=" devlife-codex devlife-team-starter cmux "
 #       어느 쪽이 맞는지 미결이라 제외. 결론 나면 여기서 빼면 된다.
 SKIP_SKILLS=" cmux "
 
+# Codex 에서만 실행되는 스킬 — skills/ 사본이 없는 것이 정상.
+# devlife-orchestrator: Codex 가 지휘하고 Claude 워커(agents/devlife-worker.md)에 위임.
+CODEX_ONLY_SKILLS=" devlife-orchestrator "
+
 TARGET="${1:-}"
 CLAUDE_SKILLS=$(ls skills 2>/dev/null)
 CODEX_SKILLS=$(ls codex/skills 2>/dev/null)
@@ -65,6 +69,7 @@ for s in $CLAUDE_SKILLS; do
 done
 for s in $CODEX_SKILLS; do
   case "$SKIP_SKILLS" in *" $s "*) continue ;; esac
+  case "$CODEX_ONLY_SKILLS" in *" $s "*) note "codex 전용: $s"; continue ;; esac
   echo "$CLAUDE_SKILLS" | grep -qx "$s" || bad "codex 에만 존재: $s"
 done
 pass "양쪽 모두 존재: $(echo $BOTH | wc -w | tr -d ' ')개 — 아래 검사 대상"
