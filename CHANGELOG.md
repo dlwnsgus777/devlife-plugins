@@ -4,6 +4,26 @@
 
 ---
 
+## 2026-10-01
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-subagent` | `3.0.0` | `tdd-team` → `tdd-subagent`로 이름 변경. 오케스트레이터가 서브에이전트를 순차 호출하는 구조라 Claude Code agent teams가 아님을 이름에 반영. 작업 디렉터리 `.tdd-team/` → `.tdd-subagent/`(기존 세션 재개 불가), 트리거 "TDD 팀 만들어" 제거. 동작 변경 없음 |
+| `tdd-agent-team` | `1.0.0` | 신규. agent teams 위에서 `tdd-red`·`tdd-green` 팀원이 병렬로 TDD를 진행. 내용은 md 파일·메시지는 `READ <경로>`만, RED → GREEN 직접 전달. 격리와 순서는 hook으로 강제 — `enforce-tdd-roles`(RED 구현 코드 읽기·쓰기 차단, GREEN 테스트 쓰기 차단), `gate-tdd-handoff`(넘겨주기 `SendMessage`를 실제 테스트 실행으로 검사). 실측으로 확인한 전제: 팀원 hook 입력의 `agent_type`은 팀원 이름, 팀원의 `SendMessage`도 `PreToolUse`로 차단 가능, 현 모델은 Task 도구가 기본 비활성이라 공유 태스크 리스트 대신 메시지로 조율. 메서드 단위 테스트 실행, 스텁은 리드가 일괄 생성, 사이클 리뷰 대신 게이트, 최종 리뷰어 3명 교차 반박, 사용자 확인 2회, 재개 미지원 |
+| `devlife` (hooks) | — | `allow-tdd-artifact`가 `.tdd-subagent/`·`.tdd-agent-team/`를 허용하도록 디렉터리 목록화. `enforce-tdd-roles`·`gate-tdd-handoff` 추가 |
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `plan-creator` | `1.10.0` | Step 5 핸드오프를 `tdd-subagent`(순차) / `tdd-agent-team`(병렬 팀) 선택 질문으로 변경. 템플릿·본문의 `tdd-team` 표기를 "TDD 스킬"로 일반화. Codex 사본은 `tdd-subagent`로만 핸드오프 |
+| `spec-creator` | `1.1.1` | 체인 표기 `tdd-team` → `tdd-subagent` |
+| `devlife-brainstorming` | `1.10.1` | 체인 표기 `tdd-team` → `tdd-subagent` |
+
+---
+
 ## 2026-09-29
 
 ### devlife-planning
