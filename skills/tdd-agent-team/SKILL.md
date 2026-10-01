@@ -30,15 +30,27 @@ Three mechanisms live outside the teammates, in the devlife plugin's hooks. You 
 
 | Mechanism | Where | What it does |
 |---|---|---|
-| Role paths | `hooks/enforce-tdd-roles.sh` (`PreToolUse` on Read/Write/Edit/Grep/Glob) | `tdd-red` cannot read or write production paths. `tdd-green` cannot write test paths |
+| Role paths | `hooks/enforce-tdd-roles.sh` (`PreToolUse` on Read/Write/Edit/Grep) | `tdd-red` cannot read or write production paths. `tdd-green` cannot write test paths |
 | Handoff gate | `hooks/gate-tdd-handoff.sh` (`PreToolUse` on SendMessage) | `tdd-red` → `tdd-green` `READ <task_dir>/red-result.md` is delivered only if the tests compile **and fail**. `tdd-green` → `team-lead` `READ <task_dir>/green-result.md` only if they **pass**. `tdd-red` can send `tdd-green` nothing else, and `tdd-green` cannot message `tdd-red` at all |
 | Artifact access | `hooks/allow-tdd-artifact.sh` | No permission prompts for `.tdd-agent-team/**/*.md` |
 
 The hooks identify a teammate by its **name** — they see `agent_type: "tdd-red"`. Spawn the teammates with exactly the names `tdd-red` and `tdd-green`, or nothing is enforced. They act only in a project that has `.tdd-agent-team/roles.env`, so they never touch other sessions.
 
-The hooks ship with the devlife plugin. If this skill was copied somewhere without the plugin, the hooks are absent and isolation is advisory only. Check during Setup 0 — `find ~/.claude/plugins -path '*hooks/gate-tdd-handoff.sh' 2>/dev/null | head -1` — and if it finds nothing, tell the user before Setup 5:
+### Teammate definitions
 
-> "devlife 플러그인의 hook을 찾지 못했습니다. 이대로 진행하면 RED/GREEN 경로 제한과 넘겨주기 게이트가 강제되지 않고 지시문으로만 지켜집니다. 그래도 진행할까요?"
+Every teammate's role lives in a devlife plugin agent definition, spawned by its scoped type:
+
+| Teammate name | `subagent_type` | Definition |
+|---|---|---|
+| `tdd-red` | `devlife:tdd-red` | `agents/tdd-red.md` |
+| `tdd-green` | `devlife:tdd-green` | `agents/tdd-green.md` |
+| `review-domain` / `review-test` / `review-design` | `devlife:tdd-reviewer` | `agents/tdd-reviewer.md` (lens named in the spawn prompt) |
+
+The definition body becomes the teammate's system prompt, so the role is in force from its first turn — not only once it decides to read a file. The definitions carry no `hooks`: Claude Code ignores that field for plugin agents, which is why enforcement lives in the plugin's `hooks/hooks.json` and keys on the teammate **name**.
+
+Definitions and hooks both ship with the devlife plugin; without it there is no team to spawn. Check during Setup 0 — `find ~/.claude/plugins -path '*hooks/gate-tdd-handoff.sh' 2>/dev/null | head -1`. If it finds nothing, stop:
+
+> "이 스킬은 devlife 플러그인의 팀원 정의(`agents/`)와 hook이 필요한데 찾지 못했습니다. 플러그인을 설치하거나 `tdd-subagent`로 진행해 주세요."
 
 ## Setup
 
@@ -58,15 +70,7 @@ If `.tdd-agent-team/session.md` exists, teammates from that session are gone —
 
 On yes, move everything in `.tdd-agent-team/` into `.tdd-agent-team/archive-{YYYYMMDD-HHMMSS}/`, leaving earlier archives in place. Never delete an archive.
 
-### 2. Skill Path and Artifact Directory
-
-Capture this file's parent directory as `SKILL_DIR`. The teammate instructions live at:
-
-```
-{SKILL_DIR}/references/red-teammate.md
-{SKILL_DIR}/references/green-teammate.md
-{SKILL_DIR}/references/final-review-lenses.md
-```
+### 2. Artifact Directory
 
 - `TDD_DIR` = `.tdd-agent-team` (relative to the project root, where this skill runs)
 - `TASK_DIR` = `{TDD_DIR}/tasks/{NN}` — `NN` zero-padded to two digits
@@ -163,7 +167,6 @@ SendMessage bodies are one line: READ <path>. Content goes in files.
 
 ```
 # TDD Agent Team Session: {feature}
-skill_dir: {SKILL_DIR}
 
 | # | task | status | note |
 |---|------|--------|------|
@@ -198,30 +201,22 @@ After this, you add a stub only when RED asks for one through `missing-stub.md`.
 ```
 Agent({
   name: "tdd-red",
-  subagent_type: "general-purpose",
+  subagent_type: "devlife:tdd-red",
   description: "TDD RED teammate",
-  prompt: """
-You are the tdd-red teammate.
-Read {SKILL_DIR}/references/red-teammate.md — you have permission to access this file — and follow it exactly.
-TDD_DIR={TDD_DIR}
-Start with task 01 under {TDD_DIR}/tasks/ and continue in number order.
-"""
+  prompt: "TDD_DIR={TDD_DIR}. Start with task 01 under {TDD_DIR}/tasks/ and continue in number order."
 })
 
 Agent({
   name: "tdd-green",
-  subagent_type: "general-purpose",
+  subagent_type: "devlife:tdd-green",
   description: "TDD GREEN teammate",
-  prompt: """
-You are the tdd-green teammate.
-Read {SKILL_DIR}/references/green-teammate.md — you have permission to access this file — and follow it exactly.
-TDD_DIR={TDD_DIR}
-Wait for READ messages from tdd-red.
-"""
+  prompt: "TDD_DIR={TDD_DIR}. Wait for READ messages from tdd-red."
 })
 ```
 
-The names are load-bearing — the hooks key on them. Do not add a model; teammates inherit the session's.
+The role is in the definition; the prompt carries only the session facts. The names are load-bearing — the hooks key on them. Do not add a model; teammates inherit the session's.
+
+**First report.** Each teammate's first message is `READ .tdd-agent-team/tools-{name}.md`, listing the tools it actually received. A teammate without `SendMessage`, `Write`, `Edit`, or `Bash` cannot do its role — and a missing `SendMessage` means it cannot even send that report, so a teammate silent past its first idle notification counts as missing it. Stop the team and tell the user which tool was missing rather than letting the cycle start lame.
 
 ### Lead Duties During the Cycle
 
@@ -229,6 +224,7 @@ You are off the handoff path. RED → GREEN goes direct; GREEN reports to you on
 
 | Message | Your action |
 |---|---|
+| `READ .tdd-agent-team/tools-{name}.md` | Check the role's tools are all there (see First report). Nothing else |
 | `READ {TASK_DIR}/green-result.md` (gate already passed) | Set the task `DONE` in `session.md`. Nothing else |
 | `READ {TASK_DIR}/missing-stub.md` | Add the stub, run `TEST_COMPILE_CMD`, add the signature to `context.md`, reply `READ {TASK_DIR}/task.md` to the sender |
 | `READ {TASK_DIR}/blocked.md` | If it names a missing fact, add it to `context.md` and reply `READ {TASK_DIR}/task.md`. If it is a gate that failed twice or a design problem, set `BLOCKED` and ask the user — this is the one mid-cycle escalation |
@@ -261,13 +257,15 @@ done
 wc -l < .tdd-agent-team/branch-diff.md
 ```
 
-Spawn three reviewers. Each reads `{SKILL_DIR}/references/final-review-lenses.md` and owns one lens:
+Spawn three reviewers from the one definition, each owning one lens:
 
 ```
-Agent({ name: "review-domain", subagent_type: "general-purpose", description: "Final review: domain",
-        prompt: "You are review-domain. Read {SKILL_DIR}/references/final-review-lenses.md and follow it for the domain lens. TDD_DIR={TDD_DIR}" })
-Agent({ name: "review-test",   ... same, lens: test })
-Agent({ name: "review-design", ... same, lens: design })
+Agent({ name: "review-domain", subagent_type: "devlife:tdd-reviewer", description: "Final review: domain",
+        prompt: "You are review-domain — the domain lens. TDD_DIR={TDD_DIR}" })
+Agent({ name: "review-test",   subagent_type: "devlife:tdd-reviewer", description: "Final review: test",
+        prompt: "You are review-test — the test lens. TDD_DIR={TDD_DIR}" })
+Agent({ name: "review-design", subagent_type: "devlife:tdd-reviewer", description: "Final review: design",
+        prompt: "You are review-design — the design lens. TDD_DIR={TDD_DIR}" })
 ```
 
 Each writes `{TDD_DIR}/final-review-{lens}.md`, sends it to the other two, rebuts what it receives in `{TDD_DIR}/rebuttal-{from}-to-{to}.md`, revises its own report once, and sends you `READ {TDD_DIR}/final-review-{lens}.md`. When all three have reported, merge them into `{TDD_DIR}/final-review.md`: drop findings a rebuttal refuted, keep the rest with their severity.

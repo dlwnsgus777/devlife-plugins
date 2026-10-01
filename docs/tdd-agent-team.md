@@ -19,7 +19,7 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 | 사이클 검증 | 사이클마다 리뷰어 | 넘겨주기 게이트(실제 테스트 실행) |
 | 사용자 확인 | 1번 사이클 후, 이후 선택 | 태스크 확정 시 + 최종 리뷰 반영 전 |
 | 재개 | 지원 (`session.md`) | 미지원 — 팀원이 복원되지 않음 |
-| 필요 조건 | 없음 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, 대화형 세션, devlife 플러그인 hook |
+| 필요 조건 | 없음 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, 대화형 세션, devlife 플러그인(팀원 정의 + hook) |
 
 > 구현 후 테스트를 작성하거나, 기존 테스트를 실행하거나, 테스트 실패를 디버깅하는 용도로는 사용하지 않습니다. 팀을 언급하지 않은 "TDD로 개발해줘"는 `tdd-subagent`가 맡습니다.
 
@@ -67,6 +67,19 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 3. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·red 게이트 로그 유무), `review-design`(태스크 간 중복·책임) 3명이 각자 리포트를 쓰고 서로 1회 반박한 뒤 리드가 종합합니다. Critical/Important 지적 중 승인한 것만 구현은 GREEN, 테스트는 RED가 반영합니다
 4. **종료** — 팀원 종료 요청, 요약 출력, `.tdd-agent-team/`는 git 제외 상태로 남깁니다
 
+## 팀원 정의 (devlife 플러그인 `agents/`)
+
+| 팀원 이름 | `subagent_type` | 정의 파일 |
+|---|---|---|
+| `tdd-red` | `devlife:tdd-red` | `agents/tdd-red.md` |
+| `tdd-green` | `devlife:tdd-green` | `agents/tdd-green.md` |
+| `review-domain` / `review-test` / `review-design` | `devlife:tdd-reviewer` | `agents/tdd-reviewer.md` (관점은 스폰 프롬프트로 지정) |
+
+- 역할 지시는 정의 본문에 있어 팀원의 시스템 프롬프트로 들어갑니다. 스폰 프롬프트에는 `TDD_DIR` 같은 세션 정보만 담습니다
+- 리뷰어 정의에는 `Edit`이 없습니다 — 리뷰하다가 코드를 고치지 못합니다
+- 팀원은 시작하자마자 실제로 받은 도구 목록을 `tools-{이름}.md`로 리드에게 보고합니다. 역할에 필요한 도구가 빠졌으면 리드가 팀을 멈추고 알립니다
+- 정의 파일에는 `hooks`를 넣지 않습니다. 플러그인 에이전트는 보안상 `hooks`·`mcpServers`·`permissionMode` 필드가 무시되기 때문에, 역할 제한은 아래 플러그인 hook이 팀원 이름으로 강제합니다
+
 ## hook (devlife 플러그인)
 
 | Hook | 언제 | 하는 일 |
@@ -82,7 +95,7 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 - **Bash 우회는 막지 못합니다** — RED는 테스트 실행에 Bash가 필요해서, `cat` 등으로 구현 코드를 읽는 것은 지시문으로만 막습니다
 - **게이트 대기** — 넘겨주기마다 게이트가 테스트를 돌리는 동안(수십 초) 보내는 팀원이 기다립니다
 - **red 게이트는 "하나 이상 실패"를 봅니다** — 모든 메서드가 실패해야 한다는 규칙은 RED 지시문이 맡습니다
-- **플러그인 없이 스킬만 복사하면** hook이 없어 격리가 권고 수준으로 떨어집니다. 스킬이 시작 전에 알립니다
+- **플러그인 없이 스킬만 복사하면** 팀원 정의와 hook이 모두 없어 실행할 수 없습니다. 스킬이 시작할 때 확인하고 멈춥니다
 - 실험 기능인 agent teams의 제약(대화형 세션 전용, 팀원 재개 불가)을 그대로 따릅니다
 
 ## 관련 스킬
