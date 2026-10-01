@@ -52,7 +52,7 @@ Edit the file only on an explicit yes. On no, stop and point to `tdd-subagent`. 
 
 > "팀원 정의 파일({목록})을 `~/.claude/agents/`에 설치(또는 갱신)해야 합니다. 진행할까요?"
 
-On yes, copy them. Then confirm `tdd-red`, `tdd-green`, and `tdd-reviewer` appear among the agent types your `Agent` tool lists. If they do not, the session loaded its agents before the copy — tell the user to restart Claude Code and run the skill again, and stop. On no, stop: without the definitions the teammates spawn with no role.
+On yes, copy them, then **look before you conclude anything**: Claude Code picks up new files in `~/.claude/agents/` while the session runs, and announces them as newly available agent types. Check that `tdd-red`, `tdd-green`, and `tdd-reviewer` are now among the agent types your `Agent` tool lists — usually they are, and you continue straight to Setup 1 with no restart. Only if they are still missing after the copy, tell the user to restart Claude Code and run the skill again, and stop. Never ask for a restart on the assumption that the list is stale. On no, stop: without the definitions the teammates spawn with no role.
 
 ### 1. Previous Session?
 
@@ -220,9 +220,11 @@ You are off the handoff path. RED → GREEN goes direct; GREEN reports to you on
 | `READ {TASK_DIR}/missing-stub.md` | Add the stub, run `TEST_COMPILE_CMD`, add the signature to `context.md`, reply `READ {TASK_DIR}/task.md` to the sender |
 | `READ {TASK_DIR}/blocked.md` | If it names a missing fact, add it to `context.md` and reply `READ {TASK_DIR}/task.md`. If RED's tests were refused twice or it is a design problem, set `BLOCKED` and ask the user — this is the one mid-cycle escalation |
 | `READ {TDD_DIR}/red-finished.md` | RED has written tests for every task. Note it; wait for GREEN |
-| Idle notification | Compare it against `session.md` and the result files under `tasks/`. A teammate idle with work still owed means a handoff was never sent: tell **the sender** to send it again (`READ {TASK_DIR}/task.md` to that teammate). Never send the handoff yourself — the sender owns the file it points to |
+| Idle notification | **Usually nothing — do not reply, do not inspect files.** Teammates go idle between every message, so idle is normal. Act only when *all* teammates are idle and the cycle is not finished (some task not `DONE`/`BLOCKED`, or no `red-finished.md`): then compare `session.md` with the result files under `tasks/`, find the handoff that was never sent, and tell **the sender** to send it again (`READ {TASK_DIR}/task.md` to that teammate). Never send the handoff yourself — the sender owns the file it points to |
 
 Update `session.md` after every message you act on. It is the only record of progress — there is no shared task list.
+
+**Every turn you take re-reads this whole conversation, so turns are your cost.** Answer the messages in the table above with the one action listed and end the turn; do not summarize progress, re-read files, or narrate between messages. The user is not waiting on you mid-cycle — they are waiting on the Final Review.
 
 The cycle is finished when every task is `DONE` or `BLOCKED` and RED has sent `red-finished.md`.
 
