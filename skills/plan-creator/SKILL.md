@@ -8,7 +8,7 @@ description: Writes a structured Markdown plan document for any task, feature, o
 
 # Plan Creator
 
-<!-- Chain: devlife-brainstorming → spec-creator → plan-creator → tdd-team -->
+<!-- Chain: devlife-brainstorming → spec-creator → plan-creator → tdd-subagent -->
 
 ## Process
 
@@ -139,7 +139,7 @@ Write **business invariants** as complete declarative sentences: "If X, then Y m
 > Bad: `No amount change after approval`
 > Good: `The amount of an approved contract can never be changed under any circumstances. Allowing this causes settlement discrepancies and audit failures.`
 
-Give each invariant a stable **ID** (`INV-001`, …) and an **출처** tag. Section 8 then references the ID instead of restating the sentence, and tdd-team can carry the same IDs into its invariant table and its final coverage check — so "every invariant has a test" becomes a lookup rather than a judgment call.
+Give each invariant a stable **ID** (`INV-001`, …) and an **출처** tag. Section 8 then references the ID instead of restating the sentence, and tdd-subagent can carry the same IDs into its invariant table and its final coverage check — so "every invariant has a test" becomes a lookup rather than a judgment call.
 
 | 출처 | Means | Review weight |
 |------|-------|---------------|
@@ -147,7 +147,7 @@ Give each invariant a stable **ID** (`INV-001`, …) and an **출처** tag. Sect
 | `[사용자확인]` | Answered by the user in Step 2 | Low |
 | `[코드추론]` | Read off a guard clause or enum, motivation not confirmed | **Highest — flag these for the user explicitly** |
 
-**Isolation invariants.** When the feature runs alongside an existing parallel implementation — its own tables, its own flow, the legacy one still live — write the separation as invariants in both directions: the new path must not touch the old store, *and* the old path must not pull in the new one. Structural separation (different tables) is an argument for why it holds, not evidence that it does; a shared query or a chained side effect breaks it just the same. These land as invariants rather than prose because tdd-team inherits the IDs and tests each one on both sides, so writing them here is what makes them verified rather than asserted.
+**Isolation invariants.** When the feature runs alongside an existing parallel implementation — its own tables, its own flow, the legacy one still live — write the separation as invariants in both directions: the new path must not touch the old store, *and* the old path must not pull in the new one. Structural separation (different tables) is an argument for why it holds, not evidence that it does; a shared query or a chained side effect breaks it just the same. These land as invariants rather than prose because tdd-subagent inherits the IDs and tests each one on both sides, so writing them here is what makes them verified rather than asserted.
 
 Also extract invariants from code discovered in Step 1 — enum state transitions, validation annotations, and guard clauses are all domain rules in disguise. But they land as `[코드추론]`: code shows the constraint exists, not why it exists or what it protects. Never promote one to `[사용자확인]` without an actual answer.
 
@@ -204,7 +204,7 @@ After writing the document, run these six checks and fix what you can inline —
 - FAIL 6번 (불변성 커버리지): INV-005를 검증하는 테스트가 섹션 8에 없음 — 확인 필요
 ```
 
-A check you fixed is reported as fixed. **A check you could not fix without a decision blocks the handoff**: do not proceed to Step 5 until it is resolved, and say so in Step 4 rather than passing an incomplete plan to tdd-team.
+A check you fixed is reported as fixed. **A check you could not fix without a decision blocks the handoff**: do not proceed to Step 5 until it is resolved, and say so in Step 4 rather than passing an incomplete plan to tdd-subagent.
 
 ### Step 4: Request Feedback (Mandatory)
 
@@ -219,10 +219,10 @@ If `0-2` has an entry, ask about it in the same message and delete it from the d
 
 Do NOT proceed to implementation without explicit approval.
 
-### Step 5: Hand Off to tdd-team (Terminal State)
+### Step 5: Hand Off to tdd-subagent (Terminal State)
 
 Once approved, ask:
 
-> "계획 문서가 완성되었습니다. tdd-team으로 이어서 구현을 시작할까요, 아니면 여기서 마칠까요?"
+> "계획 문서가 완성되었습니다. tdd-subagent으로 이어서 구현을 시작할까요, 아니면 여기서 마칠까요?"
 
-If they continue and `tdd-team` is available, read its `SKILL.md` and pass the plan document path as input. If it is unavailable, or they choose to stop, say so and share the plan path.
+If they continue and `tdd-subagent` is available, read its `SKILL.md` and pass the plan document path as input. If it is unavailable, or they choose to stop, say so and share the plan path.

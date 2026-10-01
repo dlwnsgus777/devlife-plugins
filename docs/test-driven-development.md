@@ -1,7 +1,7 @@
 # test-driven-development
 
 Java/Spring Boot 환경에서 TDD를 직접 구현할 때의 원칙과 가이드라인입니다.  
-`tdd-team`이 에이전트 자동화 방식이라면, 이 스킬은 직접 코드를 작성할 때의 TDD 규칙을 명시합니다.
+`tdd-subagent`이 에이전트 자동화 방식이라면, 이 스킬은 직접 코드를 작성할 때의 TDD 규칙을 명시합니다.
 
 ## 핵심 원칙
 
@@ -92,4 +92,4 @@ FittingContract contract = fittingContractRepository.save(
 
 ## 관련 스킬
 
-- [tdd-team](./tdd-team.md) — 에이전트가 RED/GREEN/REFACTOR를 자동 실행
+- [tdd-subagent](./tdd-subagent.md) — 에이전트가 RED/GREEN/REFACTOR를 자동 실행

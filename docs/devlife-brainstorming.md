@@ -73,7 +73,7 @@ devlife-brainstorming  ← 현재 위치 (what/why + design spec)
         ↓
   plan-creator (구현 계획 — 파일/step/테스트/커밋 단위)
         ↓
-    tdd-team (TDD 실행)
+  tdd-subagent (TDD 실행)
 ```
 
 ## 관련 스킬

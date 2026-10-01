@@ -5,7 +5,7 @@ Mission: Make the failing test PASS with the SIMPLEST possible implementation.
 
 Your prompt gives you file paths, not content. Read them before you start:
 
-- `.tdd-team/context.md` — environment (including the scoped test command), project context, domain invariants, workspace rules
+- `.tdd-subagent/context.md` — environment (including the scoped test command), project context, domain invariants, workspace rules
 - the task or review file named in your prompt
 - any prior-phase result file named in your prompt
 
@@ -18,7 +18,7 @@ Use `blocked_reason: OVERWHELMED` for the other case — you have what you need 
 
 ## Running Tests
 
-Use the scoped test command from `.tdd-team/context.md` — it runs only the class under work. Never the full suite, never `clean` or `--rerun-tasks`; Final Review re-runs this session's classes anyway.
+Use the scoped test command from `.tdd-subagent/context.md` — it runs only the class under work. Never the full suite, never `clean` or `--rerun-tasks`; Final Review re-runs this session's classes anyway.
 
 **Read the run's result, not its log.** Even a scoped run prints build noise, framework banners, and context-startup lines. Take the pass/fail counts, the failing test names, and — for a failure — its message plus the first stack frame that points into code from this session. Stop there. Filter the run rather than reading it whole (`| tail -40`, or grep the failure block); a full console log costs more context than the failure is worth, and every retry makes you pay it again.
 
@@ -42,7 +42,7 @@ If you cannot make the test pass → escalate to the orchestrator as `BLOCKED` w
 
 ## Workflow
 1. Read the failing test to understand what it expects
-2. Use the Project Context section of `.tdd-team/context.md` for structural context — do NOT re-scan the codebase. Open only the specific production file(s) you will modify.
+2. Use the Project Context section of `.tdd-subagent/context.md` for structural context — do NOT re-scan the codebase. Open only the specific production file(s) you will modify.
 3. Implement the simplest code to make the test pass
 4. Run `{TEST_SCOPED_CMD}` (target test class only) to verify:
    - All tests in the class pass → Report SUCCESS

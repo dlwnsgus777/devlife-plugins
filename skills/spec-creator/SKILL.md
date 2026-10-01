@@ -20,7 +20,7 @@ Write a Spec for a large-scale feature or initiative.
 The Spec sits above `plan-creator` in the hierarchy: it defines the overall background, goals, and scope,
 and enumerates each sub-task.
 
-<!-- Chain: devlife-brainstorming → spec-creator → plan-creator → tdd-team -->
+<!-- Chain: devlife-brainstorming → spec-creator → plan-creator → tdd-subagent -->
 
 ## Process
 

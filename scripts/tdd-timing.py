@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# tdd-team 세션의 단계별 소요 시간을 Claude Code 트랜스크립트에서 뽑는다.
+# tdd-subagent 세션의 단계별 소요 시간을 Claude Code 트랜스크립트에서 뽑는다.
 #
 #   ./scripts/tdd-timing.py ~/Desktop/develop/acuvue-posm   프로젝트의 최신 세션
 #   ./scripts/tdd-timing.py <경로>.jsonl                    트랜스크립트 직접 지정
@@ -115,7 +115,7 @@ def main():
         over = sum(1 for _, m, _ in phases if m > CACHE_TTL_MIN)
         print(f"  └ {len(phases)}개 중 {over}개가 {CACHE_TTL_MIN}분 초과\n")
     else:
-        print("Agent 디스패치가 없습니다 — tdd-team 세션이 아닐 수 있습니다.\n")
+        print("Agent 디스패치가 없습니다 — tdd-subagent 세션이 아닐 수 있습니다.\n")
 
     totals = {}
     for _, name, _, secs in rows:
