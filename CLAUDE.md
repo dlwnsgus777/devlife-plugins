@@ -117,11 +117,3 @@ chore: update allowed permissions in settings.local.json
 
 - subject는 소문자로 시작, 명령형으로 작성 (add/update/remove/sync 등)
 - 하나의 커밋에는 하나의 관심사만 담기 — 여러 스킬을 동시에 바꿨다면 스킬별로 커밋 분리 고려
-
-## 마켓플레이스
-
-`.claude-plugin/marketplace.json`과 `plugin.json`이 설정되어 있어 아래 명령으로 설치 가능합니다.
-
-```
-/install-marketplace https://github.com/dlwnsgus777/devlife-plugins
-```
