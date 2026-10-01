@@ -64,7 +64,7 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 
 1. **테스트 코드 정리** — 모든 태스크가 끝난 뒤 RED가 테스트 파일을 한 번에 정리합니다(사이클 중에는 두 팀원이 같은 테스트 파일을 건드리지 않도록 GREEN은 구현 코드만 정리)
 2. **최종 테스트** — 세션의 모든 메서드 + `[REGRESSION]` 클래스를 리드가 한 번에 실행. 팀원이 스스로 하지 않는 유일한 테스트 실행이라, GREEN이 통과 없이 완료를 보고한 경우를 여기서 잡습니다. 실패 시 GREEN에 수정 요청(최대 2라운드)
-3. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임) 3명이 각자 리포트를 쓰고 서로 1회 반박한 뒤 리드가 종합합니다. Critical/Important 지적 중 승인한 것만 구현은 GREEN, 테스트는 RED가 반영합니다
+3. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임) 3명이 각자 리포트를 씁니다. Critical/Important 지적이 있는 리뷰어만 다른 두 명에게 그 지적에 대한 반박을 1회 받고 수정하며, Minor뿐이면 반박 없이 바로 보고합니다. 리드가 종합합니다. Critical/Important 지적 중 승인한 것만 구현은 GREEN, 테스트는 RED가 반영합니다
 4. **종료** — 팀원 종료 요청, 요약 출력, `.tdd-agent-team/`는 git 제외 상태로 남깁니다
 
 ## 팀원 정의 (`skills/tdd-agent-team/agents/` → `~/.claude/agents/`)

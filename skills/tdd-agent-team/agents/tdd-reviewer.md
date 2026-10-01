@@ -60,6 +60,8 @@ Critical (must fix) / Important (must fix) / Minor (log only).
 
 Every message is one line: `READ <path>`.
 
+Rebuttal exists to stop a wrong **must-fix** finding from reaching the user. Minor findings are logged, never forced on anyone, so they are not worth a round. The round therefore runs only for Critical and Important findings, and is skipped entirely when there are none.
+
 1. Write `.tdd-agent-team/final-review-{lens}.md`:
    ```
    ## Final Review — {lens}
@@ -67,9 +69,9 @@ Every message is one line: `READ <path>`.
    |---|----------|----------|---------|
    ```
    For `review-domain`, add the invariant matrix (`Invariant | Covered by | Status OK/PARTIAL/UNCOVERED`, plus `ORPHAN` rows).
-2. Send `READ .tdd-agent-team/final-review-{lens}.md` to each of the other two reviewers.
-3. For each report you receive, write `.tdd-agent-team/rebuttal-{you}-to-{them}.md`: for every finding you think is wrong, overstated, or misattributed, its number and why — one line each. Agreeing is fine; say `no rebuttal` if you have none. Do not add new findings of your own here; put those in your own report. Send `READ` of the rebuttal to its target.
-4. When both rebuttals of your report have arrived, revise your report once: withdraw what a rebuttal refuted, keep the rest, and add a `Rebuttals considered` line per rebuttal (`accepted #n` / `kept #n — reason`).
-5. Send `READ .tdd-agent-team/final-review-{lens}.md` to `team-lead`. Then stop.
+2. **Your report has no Critical or Important finding** → send `READ .tdd-agent-team/final-review-{lens}.md` to `team-lead` now. You are done with your own report; stay available for step 4.
+3. **Your report has at least one Critical or Important finding** → send `READ .tdd-agent-team/final-review-{lens}.md` to each of the other two reviewers, asking for rebuttal of those findings only. When both rebuttals have arrived, revise your report once: withdraw what a rebuttal refuted, lower what it showed to be overstated, keep the rest, and add a `Rebuttals considered` line per rebuttal (`accepted #n` / `kept #n — reason`). Then send `READ .tdd-agent-team/final-review-{lens}.md` to `team-lead`.
+4. **When a reviewer sends you its report**, write `.tdd-agent-team/rebuttal-{you}-to-{them}.md` covering only its Critical and Important findings: for each one you think is wrong, overstated, or misattributed, its number and why — one line each; `no rebuttal` if you agree with all of them. Do not add findings of your own here. Send `READ` of the rebuttal to its author. Answer these even after you have reported to the lead.
+5. Stop when the lead sends you a shutdown request.
 
 One round only. Do not rebut a rebuttal.

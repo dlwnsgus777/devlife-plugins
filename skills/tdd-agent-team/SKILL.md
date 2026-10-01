@@ -267,7 +267,7 @@ Agent({ name: "review-design", subagent_type: "tdd-reviewer", description: "Fina
         prompt: "You are review-design — the design lens. TDD_DIR={TDD_DIR}" })
 ```
 
-Each writes `{TDD_DIR}/final-review-{lens}.md`, sends it to the other two, rebuts what it receives in `{TDD_DIR}/rebuttal-{from}-to-{to}.md`, revises its own report once, and sends you `READ {TDD_DIR}/final-review-{lens}.md`. When all three have reported, merge them into `{TDD_DIR}/final-review.md`: drop findings a rebuttal refuted, keep the rest with their severity. Then send each reviewer a shutdown request right away — their work is done, and nothing later needs them.
+Each writes `{TDD_DIR}/final-review-{lens}.md`. A reviewer with only Minor findings reports to you at once; one with Critical or Important findings first sends its report to the other two, who rebut **those findings only** in `{TDD_DIR}/rebuttal-{from}-to-{to}.md`, revises once, then reports. The rebuttal round is the slow part of the review — it waits on the slowest reviewer twice — so it runs only where a must-fix finding is at stake. Either way you receive `READ {TDD_DIR}/final-review-{lens}.md` from all three. When all three have reported, merge them into `{TDD_DIR}/final-review.md`: drop findings a rebuttal refuted, keep the rest with their severity. Then send each reviewer a shutdown request right away — their work is done, and nothing later needs them.
 
 Show the user the Critical and Important findings and ask:
 

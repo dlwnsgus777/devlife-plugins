@@ -11,7 +11,7 @@
 | Skill | Version | Change |
 |-------|---------|--------|
 | `tdd-subagent` | `3.0.0` | `tdd-team` → `tdd-subagent`로 이름 변경. 오케스트레이터가 서브에이전트를 순차 호출하는 구조라 Claude Code agent teams가 아님을 이름에 반영. 작업 디렉터리 `.tdd-team/` → `.tdd-subagent/`(기존 세션 재개 불가), 트리거 "TDD 팀 만들어" 제거. 동작 변경 없음 |
-| `tdd-agent-team` | `1.0.0` | 신규. agent teams 위에서 `tdd-red`·`tdd-green` 팀원이 병렬로 TDD를 진행(RED-(N+1)과 GREEN-N 동시). 내용은 md 파일·메시지는 `READ <경로>`만, RED → GREEN 직접 전달하고 리드는 관리만. 팀원 역할은 user 범위 에이전트 정의(`tdd-red`·`tdd-green`·`tdd-reviewer`)로 시스템 프롬프트에 주입하고 `tools`로 제한 — 스킬이 Setup에서 `~/.claude/agents/`에 설치. 플러그인 에이전트로 두지 않은 이유: agent teams는 project·user·managed 범위 정의만 팀원에 적용하고 플러그인 정의는 오류 없이 무시함(실제 실행에서 확인). 경로 단위 격리(RED 구현 코드 읽기 금지, GREEN 테스트 수정 금지)와 실패 확인은 hook 없이 지시문 + GREEN의 red check로 운영하고, 리드의 최종 테스트와 리뷰어가 사후 확인. 메서드 단위 테스트 실행, 스텁은 리드가 일괄 생성, 최종 리뷰어 3명 교차 반박, 사용자 확인 2회, 시작 시 실제 받은 도구 목록 보고, 재개 미지원 |
+| `tdd-agent-team` | `1.0.0` | 신규. agent teams 위에서 `tdd-red`·`tdd-green` 팀원이 병렬로 TDD를 진행(RED-(N+1)과 GREEN-N 동시). 내용은 md 파일·메시지는 `READ <경로>`만, RED → GREEN 직접 전달하고 리드는 관리만. 팀원 역할은 user 범위 에이전트 정의(`tdd-red`·`tdd-green`·`tdd-reviewer`)로 시스템 프롬프트에 주입하고 `tools`로 제한 — 스킬이 Setup에서 `~/.claude/agents/`에 설치. 플러그인 에이전트로 두지 않은 이유: agent teams는 project·user·managed 범위 정의만 팀원에 적용하고 플러그인 정의는 오류 없이 무시함(실제 실행에서 확인). 경로 단위 격리(RED 구현 코드 읽기 금지, GREEN 테스트 수정 금지)와 실패 확인은 hook 없이 지시문 + GREEN의 red check로 운영하고, 리드의 최종 테스트와 리뷰어가 사후 확인. 메서드 단위 테스트 실행, 스텁은 리드가 일괄 생성, 최종 리뷰어 3명(Critical/Important 지적이 있을 때만 해당 지적 교차 반박), 사용자 확인 2회, 시작 시 실제 받은 도구 목록 보고, 재개 미지원 |
 | `devlife` (hooks) | — | `allow-tdd-artifact`가 `.tdd-subagent/`·`.tdd-agent-team/`를 허용하도록 디렉터리 목록화 |
 
 ### devlife-planning
