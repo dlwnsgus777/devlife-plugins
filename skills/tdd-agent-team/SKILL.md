@@ -48,7 +48,7 @@ Every teammate's role lives in a devlife plugin agent definition, spawned by its
 
 The definition body becomes the teammate's system prompt, so the role is in force from its first turn — not only once it decides to read a file. The definitions carry no `hooks`: Claude Code ignores that field for plugin agents, which is why enforcement lives in the plugin's `hooks/hooks.json` and keys on the teammate **name**.
 
-Definitions and hooks both ship with the devlife plugin; without it there is no team to spawn. Check during Setup 0 — `find ~/.claude/plugins -path '*hooks/gate-tdd-handoff.sh' 2>/dev/null | head -1`. If it finds nothing, stop:
+Definitions and hooks both ship with the devlife plugin; without it there is no team to spawn. Check during Setup 0: `devlife:tdd-red`, `devlife:tdd-green`, and `devlife:tdd-reviewer` must appear among the agent types your `Agent` tool lists. That holds however the plugin was loaded — marketplace install or `--plugin-dir` — and the hooks come with the same plugin. If any is missing, stop:
 
 > "이 스킬은 devlife 플러그인의 팀원 정의(`agents/`)와 hook이 필요한데 찾지 못했습니다. 플러그인을 설치하거나 `tdd-subagent`로 진행해 주세요."
 
