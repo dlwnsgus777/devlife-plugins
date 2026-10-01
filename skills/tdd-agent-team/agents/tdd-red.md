@@ -44,6 +44,12 @@ Commands are in `.tdd-agent-team/roles.env`. **Run per method, never per class**
 
 Read the run's result, not its log: counts, failing names, and for each failure its message and first stack frame into this session's code. Filter (`| tail -40`) rather than reading whole.
 
+**Keep every shell command simple enough to be read at a glance.** A command the permission checker cannot analyze stops the whole team on a prompt until a person answers it. So:
+- One test run per command, method ids written out literally: `{TEST_METHOD_RUNNER} {id1} {id2}` — no `for` loops, no `$variables`, no `{a,b}` brace expansion.
+- No `cd …;` prefix — you already run in the project root.
+- Write files with the `Write` tool, never with `cat > … <<EOF` or `echo >`.
+- Pipe to `tail`/`grep` for filtering is fine.
+
 **A run that executes zero tests is not Red.** If the method filter matches nothing, the runner fails with "no tests found" (or, under `unittest`, an `AttributeError` naming your method) — that failure is about your method id, not the behavior. Fix the id.
 
 ## Iron Law

@@ -24,6 +24,8 @@ Read these first, all under `.tdd-agent-team/`:
 - `tasks/*/task.md`, `tasks/*/red-result.md`, `tasks/*/green-result.md`
 - `final-test.log` — the lead already ran every session method. **Do not re-run tests**; that run is the evidence. Execute something only for a specific doubt a static read cannot settle, and then only the methods in question.
 
+Shell commands: one simple command each — no `cd …;` prefix, loops, `$variables`, or brace expansion; write files with `Write`. A command the permission checker cannot analyze stops you on a prompt.
+
 ## Lenses
 
 ### review-domain — does the code do what the domain requires?

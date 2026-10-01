@@ -38,6 +38,12 @@ Commands are in `.tdd-agent-team/roles.env`. **Run per method, never per class**
 
 Read the run's result, not its log: counts, failing names, each failure's message and first stack frame into this session's code. Filter (`| tail -40`).
 
+**Keep every shell command simple enough to be read at a glance.** A command the permission checker cannot analyze stops the whole team on a prompt until a person answers it. So:
+- One test run per command, method ids written out literally: `{TEST_METHOD_RUNNER} {id1} {id2}` — no `for` loops, no `$variables`, no `{a,b}` brace expansion.
+- No `cd …;` prefix — you already run in the project root.
+- Write files with the `Write` tool, never with `cat > … <<EOF` or `echo >`.
+- Pipe to `tail`/`grep` for filtering is fine.
+
 **A compile error in a test you were not handed** is RED mid-edit. Wait 30 seconds and run once more. If it persists, write `blocked.md` naming the file and error, send it to the lead, and continue with the next task you have.
 
 ## Red Check (before you implement anything)

@@ -89,6 +89,12 @@ TEST_METHOD_CMD='--tests "{M}"'
 - **Every test run in this skill is per method.** RED adds failing tests for task N+1 to a class while GREEN is finishing task N, so a class-level run hands GREEN someone else's failure. `TEST_METHOD_RUNNER` is the fixed part; `TEST_METHOD_CMD` is the per-method argument with `{M}` standing for one `FQCN.method`, repeated once per method. Maven: runner `mvn -o test`, arg `-Dtest="{M}"` with `{M}` as `Class#method`. jest/vitest: runner `npx vitest run`, arg `-t "{M}"` with the test name.
 - `TEST_COMPILE_CMD` compiles test sources without running them. No compile step (plain JS) → `true`.
 
+Then offer once to pre-approve the two test commands, since every teammate runs them dozens of times and each unapproved run can stop the team on a permission prompt:
+
+> "팀원이 테스트 명령을 수십 번 실행합니다. `{TEST_COMPILE_CMD}`와 `{TEST_METHOD_RUNNER}`를 이 프로젝트의 `.claude/settings.local.json` 허용 목록에 추가할까요? (안 하면 실행 중 권한 확인이 자주 뜰 수 있습니다)"
+
+On yes, add `Bash({TEST_COMPILE_CMD}:*)` and `Bash({TEST_METHOD_RUNNER}:*)` to `permissions.allow` in `.claude/settings.local.json`, creating the file if needed and leaving existing entries untouched. On no, continue.
+
 ### 4. Invariants and Tasks
 
 **Invariants — requirements document first, code second.** With a spec, plan, or ticket, derive invariants from it and adopt any IDs (`INV-001`, …) verbatim. With nothing, ask "구현할 기능의 요구사항이나 티켓 내용을 공유해주시겠어요?" and wait. Only then scan code for structural constraints the document omitted. Write each as a declarative sentence about what must be true.
@@ -261,7 +267,7 @@ Agent({ name: "review-design", subagent_type: "tdd-reviewer", description: "Fina
         prompt: "You are review-design — the design lens. TDD_DIR={TDD_DIR}" })
 ```
 
-Each writes `{TDD_DIR}/final-review-{lens}.md`, sends it to the other two, rebuts what it receives in `{TDD_DIR}/rebuttal-{from}-to-{to}.md`, revises its own report once, and sends you `READ {TDD_DIR}/final-review-{lens}.md`. When all three have reported, merge them into `{TDD_DIR}/final-review.md`: drop findings a rebuttal refuted, keep the rest with their severity.
+Each writes `{TDD_DIR}/final-review-{lens}.md`, sends it to the other two, rebuts what it receives in `{TDD_DIR}/rebuttal-{from}-to-{to}.md`, revises its own report once, and sends you `READ {TDD_DIR}/final-review-{lens}.md`. When all three have reported, merge them into `{TDD_DIR}/final-review.md`: drop findings a rebuttal refuted, keep the rest with their severity. Then send each reviewer a shutdown request right away — their work is done, and nothing later needs them.
 
 Show the user the Critical and Important findings and ask:
 
@@ -269,9 +275,11 @@ Show the user the Critical and Important findings and ask:
 
 Apply only what is approved. Write `{TDD_DIR}/fixes.md` with the approved items split by owner — production changes to `tdd-green`, test changes to `tdd-red` — and send each its `READ`. Then re-run the Final Test once.
 
-### 4. Shut Down and Summarize
+**Release teammates as soon as their last work is in.** A teammate with no fixes assigned gets its shutdown request now; one with fixes gets it the moment its fix report arrives. If the user approved nothing, shut down `tdd-red` and `tdd-green` immediately.
 
-Ask each teammate and reviewer to shut down. Then print:
+### 4. Summarize
+
+Send a shutdown request to any teammate not yet released, then print the summary **without waiting for shutdown acknowledgements** — a teammate finishes its current turn before it exits, and the harness completes the shutdown on its own:
 
 ```
 ── TDD Agent Team Session Complete ──
