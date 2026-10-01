@@ -1,7 +1,7 @@
 #!/bin/sh
-# Grants permission for the md files tdd-subagent's agents use to talk to each other.
+# Grants permission for the md files the TDD skills (tdd-subagent, tdd-agent-team) use to talk to each other.
 #
-# Every artifact the skill writes lives under a .tdd-subagent/ directory: the session
+# Every artifact those skills write lives under .tdd-subagent/ or .tdd-agent-team/: the session
 # file, the shared context, per-task specs, phase results and review reports. They
 # are scratch files excluded from git, so prompting for each one only interrupts
 # the cycle. Anything else is left to the normal permission flow.

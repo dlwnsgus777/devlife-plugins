@@ -11,6 +11,8 @@
 
 > 구현 후 테스트를 작성하거나, 기존 테스트를 실행하거나, 테스트 실패를 디버깅하는 용도로는 사용하지 않습니다.
 
+> RED·GREEN을 계속 살아 있는 팀원으로 병렬 진행하고 싶다면 [tdd-agent-team](./tdd-agent-team.md)을 씁니다. 이 스킬은 단계마다 새 서브에이전트를 순차로 호출합니다.
+
 ## 트리거 문구
 
 ```
@@ -198,5 +200,6 @@ Tests: 5 passed, 0 failed
 ## 관련 스킬
 
 - [plan-creator](./plan-creator.md) — 요구사항 문서로 쓸 수 있는 태스크 계획 문서 생성
+- [tdd-agent-team](./tdd-agent-team.md) — 같은 TDD 원칙을 agent teams 병렬 실행으로
 - [test-driven-development](./test-driven-development.md) — 직접 TDD 구현 시 원칙 가이드
 - [spec-creator](./spec-creator.md) — tdd-subagent 실행 전 기술 명세 작성

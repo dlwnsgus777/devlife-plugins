@@ -1,5 +1,5 @@
 {
-  "description": "Skips the permission prompt for the md files tdd-subagent's agents use to communicate, under .tdd-subagent/.",
+  "description": "TDD skill hooks: skip permission prompts for tdd-subagent / tdd-agent-team artifact md files, keep tdd-agent-team's RED and GREEN teammates inside their paths, and gate their handoffs on a real test run.",
   "hooks": {
     "PreToolUse": [
       {
@@ -9,6 +9,26 @@
             "type": "command",
             "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/allow-tdd-artifact.sh\"",
             "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Write|Edit|MultiEdit|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/enforce-tdd-roles.sh\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "SendMessage",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/gate-tdd-handoff.sh\"",
+            "timeout": 600
           }
         ]
       }

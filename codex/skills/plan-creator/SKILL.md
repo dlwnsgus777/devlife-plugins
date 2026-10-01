@@ -222,10 +222,10 @@ If `0-2` has an entry, ask about it in the same message and delete it from the d
 
 Do NOT proceed to implementation without explicit approval.
 
-### Step 5: Hand Off to tdd-subagent (Terminal State)
+### Step 5: Hand Off to a TDD Skill (Terminal State)
 
 Once approved, ask:
 
-> "계획 문서가 완성되었습니다. tdd-subagent으로 이어서 구현을 시작할까요, 아니면 여기서 마칠까요?"
+> "계획 문서가 완성되었습니다. tdd-subagent로 이어서 구현을 시작할까요, 아니면 여기서 마칠까요?"
 
 If they continue and `tdd-subagent` is available, read its `SKILL.md` and pass the plan document path as input. If it is unavailable, or they choose to stop, say so and share the plan path.
