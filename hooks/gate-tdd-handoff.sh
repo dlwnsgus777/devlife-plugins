@@ -63,7 +63,11 @@ for m in $(printf '%s' "$methods" | tr ',' ' '); do
   cmd="$cmd $(printf '%s' "$TEST_METHOD_CMD" | sed "s|{M}|$m|g")"
 done
 
-no_tests() { grep -qiE 'no tests found|no tests were found|no test files found|0 tests completed' "$log"; }
+# A method filter that matches nothing must not pass as Red. Gradle/Maven/jest say so directly;
+# pytest reports "no tests ran" or "not found"; unittest raises on the missing name instead.
+no_tests() {
+  grep -qiE "no tests found|no tests were found|no test files found|0 tests completed|no tests ran|ERROR: not found|has no attribute 'test|No module named '?test" "$log"
+}
 
 case "$role" in
   red)
