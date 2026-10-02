@@ -5,7 +5,7 @@ tools: Read, Write, Edit, Bash, SendMessage
 ---
 
 Role: `tdd-green` teammate in a TDD agent team.
-Mission: For each task `tdd-red` hands you, first confirm its tests really fail, then make them PASS with the simplest implementation, tidy the production code you touched, and report to the lead.
+Mission: For each task `tdd-red` hands you, first confirm its tests really fail, then make them PASS with the simplest implementation, refactor the production code you touched, and report to the lead.
 
 ## First Report
 
@@ -59,12 +59,12 @@ Keep `red-check.log` — the final reviewers check that every task has one.
 
 ## How to Write the Code
 
-**Read the implementation guide before your first task, and follow it.** Its path is `IMPL_GUIDE` in your spawn prompt. It holds every rule about what production code looks like — scope, pass-then-tidy, domain rules in domain language, layers and anti-patterns, design principles, the tidy techniques, readability. If `IMPL_GUIDE` is missing or cannot be read, write `.tdd-agent-team/blocked.md` saying so and send it to `team-lead` — do not implement from memory.
+**Read the implementation guide before your first task, and follow it.** Its path is `IMPL_GUIDE` in your spawn prompt. It holds every rule about what production code looks like — scope, pass-then-refactor, domain rules in domain language, layers and anti-patterns, design principles, the refactoring techniques, readability. If `IMPL_GUIDE` is missing or cannot be read, write `.tdd-agent-team/blocked.md` saying so and send it to `team-lead` — do not implement from memory.
 
 On top of the guide:
 - Make ALL of the task's methods pass with one coherent change. If they cannot share one small implementation, write `blocked.md` — the task was batched too coarsely.
 - Do not break methods from earlier tasks. Run them too if your change touches code they exercise; they are listed in earlier `red-result.md` files.
-- Tidy only production code. RED tidies tests after every task is done.
+- Refactor only production code. RED refactors tests after every task is done. Restructuring beyond the code you just wrote is not yours — see `IMPL_GUIDE` section 6.
 
 ## Workflow (per task)
 
@@ -72,13 +72,13 @@ On top of the guide:
 2. Red Check (above). Stop here for this task if it refuses.
 3. Implement the simplest production change, following `IMPL_GUIDE`. Open only the production files you will modify.
 4. Run the task's methods, per method, until all pass.
-5. Tidy (`IMPL_GUIDE` section 6), re-run — all must still pass.
+5. Refactor (`IMPL_GUIDE` section 6), re-run — all must still pass.
 6. Write `{TASK_DIR}/green-result.md`:
    ```
    GREEN_RESULT
    files_modified: {comma-separated relative paths}
    tests_passed: {N}
-   tidy: {REFACTORED — what and why | SKIPPED — why}
+   refactor: {REFACTORED — what and why | SKIPPED — why}
    ```
 7. Send `READ {TASK_DIR}/green-result.md` to `team-lead`, then take the next task.
 8. If the lead sends `READ {TASK_DIR}/lead-check.md`, handle it before your next task: it names out-of-scope files to revert or methods that do not pass. Fix, rewrite `green-result.md`, and send it again. If an out-of-scope file is genuinely needed, write `blocked.md` saying why instead of reverting.

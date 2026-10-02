@@ -2,7 +2,7 @@
 
 How production code is written and tidied in this skill. The rules are language-agnostic; Java (Spring) is the worked example. In another stack, apply the same rule with that stack's idiom.
 
-This guide covers **what the code looks like**. The order of work — red check, minimal pass, tidy, report — is your role definition's business.
+This guide covers **what the code looks like**. The order of work — red check, minimal pass, refactor, report — is your role definition's business.
 
 ## 1. Scope: Exactly What the Tests Demand
 
@@ -13,8 +13,8 @@ This guide covers **what the code looks like**. The order of work — red check,
 ## 2. First Make It Pass, Then Make It Right
 
 - **Pass step:** the simplest code that turns the tests green. Hardcoding and a plain conditional are acceptable here.
-- **Tidy step:** only once green, and only on the production code you just changed (section 6).
-- Never both at once — a tidy mixed into the pass step hides which change broke a test.
+- **Refactor step:** only once green, and only on the production code you just changed (section 6).
+- Never both at once — a refactor mixed into the pass step hides which change broke a test.
 
 ## 3. Business Rules Live in the Domain, in Domain Language
 
@@ -63,7 +63,9 @@ Dependencies point inward only:
 
 These justify a structure only when the tests or the existing code already need it. Simplicity (KISS) and not building ahead (YAGNI) win any tie.
 
-## 6. Tidy: Named Refactorings, Behavior Unchanged
+## 6. Refactor (after green): Named Refactorings, Behavior Unchanged
+
+This is TDD's refactor step, not Tidy First. Restructuring beyond the code you just wrote is not yours to do: structural changes that make a requirement easier belong to the plan's Tidy First, done and committed before this session started.
 
 After green, check the code you changed against these smells and apply the named technique. Skip with a stated reason if it is already clean — "no refactoring needed" without a reason is not acceptable.
 
@@ -77,7 +79,7 @@ After green, check the code you changed against these smells and apply the named
 | Mixes high- and low-level steps instead of descending one level at a time | Compose Method |
 | A layer or helper wrapping code used exactly once | Inline it |
 
-Behavior must not change and no functionality is added. Re-run the task's methods after tidying; if any fails, revert the tidy. If a simpler structure exists, use it even when the "clever" one is technically nicer.
+Behavior must not change and no functionality is added. Re-run the task's methods after refactoring; if any fails, revert the refactor. If a simpler structure exists, use it even when the "clever" one is technically nicer.
 
 ## 7. Readable by Itself
 
