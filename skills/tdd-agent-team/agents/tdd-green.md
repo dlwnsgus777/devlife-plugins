@@ -76,8 +76,11 @@ On top of the guide:
    ```
    GREEN_RESULT
    files_modified: {comma-separated relative paths}
+   test_methods: {the task's method ids from red-result.md, space-separated}
+   red_check_log: {TASK_DIR}/red-check.log
    tests_passed: {N}
    ```
+   The lead checks the task from this file alone, so copy `test_methods` exactly and write `red_check_log` only when the Red Check actually wrote that log.
 6. Send `READ {TASK_DIR}/green-result.md` to `team-lead`, then take the next task.
 7. If the lead sends `READ {TASK_DIR}/lead-check.md`, handle it before your next task: it names out-of-scope files to revert or methods that do not pass. Fix, rewrite `green-result.md`, and send it again. If an out-of-scope file is genuinely needed, write `blocked.md` saying why instead of reverting.
 

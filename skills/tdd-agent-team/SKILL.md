@@ -23,6 +23,7 @@ Run Red-Green-Refactor with an agent team: a `tdd-red` teammate writes failing t
 - Respect system, developer, and project `CLAUDE.md` instructions above this skill.
 - The user is asked at task confirmation (Setup 5), after the Tidy First phase when there is one (to commit it separately), and before applying final-review fixes (Final Stage 4). Project instructions that ask for feedback after each stage are honored at these two points — the cycle runs in parallel and has no stage boundary to pause at.
 - **Files through file tools, shell commands kept simple — yours too.** Create files with `Write`, change them with `Edit` (a `session.md` status flip is one `Edit`), read them with `Read`. Use Bash only to run commands, one simple command at a time: no `cd …;` prefix, no heredocs, no `sed -i`, no loops, no `$(…)` or `$variables`, no brace expansion. The permission checker cannot analyze those, so each one stops the session on a prompt — the `.tdd-agent-team/*.md` artifacts pass without one only when written through the file tools.
+- **Java is the example, not the target.** Java/JUnit constructs in this skill (`@DisplayName`, `@Nested`, `UnsupportedOperationException`, Gradle commands) are examples. In another stack, use that language's equivalent everywhere — in the files you write and on the screens you show the user (the Other Stacks table in `references/test-writing.md` maps the test constructs).
 - **Teammate content travels in files, never in messages.** Every `SendMessage` body — yours and every teammate's — is one line: `READ <path>`. The file holds the substance. A message with prose in it skips the checks the files carry and leaks context the reader was not meant to have.
 
 ### Teammate definitions
@@ -44,7 +45,7 @@ Each role is a **user-scope** agent definition that ships with this skill and is
 
 ### 0. Agent Teams Enabled?
 
-Agent teams need `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Check the **effective** value with `echo "$CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"` — settings files' `env` blocks are applied to the session, and project or local settings override `~/.claude/settings.json`, so reading the user file alone gives the wrong answer. If it is not `1`:
+Agent teams need `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Check the **effective** value with `printenv CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` (empty output means unset) — not `echo "$…"`, whose variable the permission checker cannot analyze, so it stops the session on a prompt. Settings files' `env` blocks are applied to the session, and project or local settings override `~/.claude/settings.json`, so reading the user file alone gives the wrong answer. If it is not `1`:
 
 > "이 스킬은 Claude Code agent teams 기능이 필요한데 지금 꺼져 있습니다(`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`). `~/.claude/settings.json`의 `env`에 `"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"`을 넣어드릴까요? 켜면 이름을 붙인 서브에이전트가 팀원으로 실행되는 등 다른 작업에도 영향이 있습니다. 원치 않으시면 `tdd-subagent`로 진행할 수 있습니다."
 
@@ -69,14 +70,13 @@ On yes, move everything in `.tdd-agent-team/` into `.tdd-agent-team/archive-{YYY
 - `TDD_DIR` = `.tdd-agent-team` (relative to the project root, where this skill runs)
 - `TASK_DIR` = `{TDD_DIR}/tasks/{NN}` — `NN` zero-padded to two digits
 
-```bash
-mkdir -p .tdd-agent-team/tasks
-git rev-parse --git-dir >/dev/null 2>&1 \
-  && ! grep -qxF '.tdd-agent-team/' "$(git rev-parse --git-dir)/info/exclude" 2>/dev/null \
-  && echo '.tdd-agent-team/' >> "$(git rev-parse --git-dir)/info/exclude"
-```
+1. `mkdir -p .tdd-agent-team/tasks`
+2. `git rev-parse --git-dir` — prints the git directory (usually `.git`). If it fails, this is not a git repository; skip step 3.
+3. `Read` `{git dir}/info/exclude`. If it has no `.tdd-agent-team/` line, add one with `Edit` (or `Write` the file if it does not exist).
 
 Use `.git/info/exclude`, never `.gitignore`.
+
+Create only `tasks/` here. Each `tasks/{NN}/` comes into existence when you `Write` its `task.md` (Setup 6) — never `mkdir` them ahead, since the task count is not settled until Setup 5.
 
 ### 3. Detect Environment and Write `roles.env`
 
@@ -156,7 +156,7 @@ After this answer, do not ask again until Final Stage 4 — except the Tidy Firs
 
 ## Project Context (captured once — do NOT re-explore the codebase)
 - Package / directory layout: {source & test packages}
-- Test conventions: {JUnit version, assertion style, // arrange·act·assert, @Nested usage}
+- Test conventions: {only what existing tests or project instructions show — JUnit version, assertion style, naming, // arrange·act·assert, @Nested usage; none → "none — follow TEST_GUIDE"}
 - Fixture pattern: {builder location & usage}
 - Signatures RED may call: {ClassName → public method signatures, including the stubs from Stubs and Start}
 - Domain anchors: {aggregate/entity files + invariants that apply here}
@@ -173,6 +173,8 @@ Do not commit. The lead and the user own the commit history.
 Invariant IDs are session bookkeeping — never write them into production or test code.
 SendMessage bodies are one line: READ <path>. Content goes in files.
 ```
+
+**Test conventions are observed, never invented.** A project convention overrides `TEST_GUIDE` (naming included), so record only what the existing tests or project instructions actually show. With no existing tests, there is no project convention — do not make one up; RED and the `review-test` lens then hold to the guide.
 
 **"Signatures RED may call" is RED's only window into production code** — its definition forbids reading production files. Every type, constructor, and method a test will touch must be listed with its exact signature. A missing signature costs a `missing-stub` round trip per task.
 
@@ -278,13 +280,13 @@ You are off the handoff path. RED → GREEN goes direct; GREEN reports to you on
 
 ### Task Check (on every `green-result.md`)
 
-Nothing outside the teammates enforces the role boundaries, so each finished task gets three mechanical checks from you — cheap now, expensive once later tasks have been built on top of a bad one. Read only what each check needs; never `cat` whole files into your context.
+Nothing outside the teammates enforces the role boundaries, so each finished task gets three mechanical checks from you — cheap now, expensive once later tasks have been built on top of a bad one. `green-result.md` carries everything the checks need: read it and nothing else — no `red-result.md`, no `ls`, never `cat` whole files into your context.
 
 | Check | How | If it fails |
 |---|---|---|
-| 1. Red-first evidence | `{TASK_DIR}/red-check.log` exists (`ls {TASK_DIR}`) | The code is already built, so red can no longer be proven — do not bounce. Note `red-first unverified` in the task's `session.md` row; the `review-test` lens reports it |
+| 1. Red-first evidence | `green-result.md` has a `red_check_log:` line naming `{TASK_DIR}/red-check.log` | The code is already built, so red can no longer be proven — do not bounce. Note `red-first unverified` in the task's `session.md` row; the `review-test` lens reports it |
 | 2. Scope | the `files_modified` line of `green-result.md` names only paths under "In-scope files" in `context.md` | Write `{TASK_DIR}/lead-check.md` naming the out-of-scope paths and send `READ {TASK_DIR}/lead-check.md` to `tdd-green`: revert them, or explain in `blocked.md` why the task needs them |
-| 3. Really passes | run the task's `test_methods` yourself, ids written out literally, `\| tail -5` | Write `lead-check.md` with the failing names and send it to `tdd-green` |
+| 3. Really passes | run the `test_methods` from `green-result.md` yourself, ids written out literally, `\| tail -5` | Write `lead-check.md` with the failing names and send it to `tdd-green` |
 
 All three pass → `DONE`. A bounced task comes back as a new `green-result.md` and is checked again; after two bounces of the same task, set `BLOCKED` and ask the user. Do not judge the code itself here — design and test quality belong to the Final Review.
 
@@ -333,11 +335,19 @@ Agent({ name: "review-design", subagent_type: "tdd-reviewer", description: "Fina
 
 Each writes `{TDD_DIR}/final-review-{lens}.md`. A reviewer with only Minor findings reports to you at once; one with Critical or Important findings first sends its report to the other two, who rebut **those findings only** in `{TDD_DIR}/rebuttal-{from}-to-{to}.md`, revises once, then reports. The rebuttal round is the slow part of the review — it waits on the slowest reviewer twice — so it runs only where a must-fix finding is at stake. Either way you receive `READ {TDD_DIR}/final-review-{lens}.md` from all three. When all three have reported, merge them into `{TDD_DIR}/final-review.md`: drop findings a rebuttal refuted, keep the rest with their severity. Then send each reviewer a shutdown request right away — their work is done, and nothing later needs them.
 
-Show the user the Critical and Important findings and ask:
+Show the user the findings and ask — always, unless there are none at all:
 
-> "최종 리뷰 결과입니다: {Critical/Important 목록}. 어떤 항목을 반영할까요? (전부 / 번호 선택 / 반영 안 함)"
+- **Critical or Important findings** — list them, then any Minor findings below them, one line each, numbered in the same sequence:
 
-Apply only what is approved. Write `{TDD_DIR}/fixes.md` with the approved items split by owner — test changes to `tdd-red`, design and readability findings (`review-design`) to `tdd-refactor`, other production changes (missing or wrong behavior) to `tdd-green` — and send each its `READ`. Then re-run the Final Test once.
+  > "최종 리뷰 결과입니다: {Critical/Important 목록} / Minor: {번호. 한 줄 요약}. 어떤 항목을 반영할까요? (전부 / 번호 선택 / 반영 안 함)"
+
+- **Only Minor findings** — ask briefly, one line per finding:
+
+  > "최종 리뷰에서 Minor {N}건이 나왔습니다: {번호. 한 줄 요약}. 반영할까요? (전부 / 번호 선택 / 반영 안 함)"
+
+- **No findings** — skip the question and go to Summarize.
+
+Keep `tdd-red`, `tdd-green`, and `tdd-refactor` running until the answer is in — any of them may own a fix. Apply only what is approved. Write `{TDD_DIR}/fixes.md` with the approved items split by owner — test changes to `tdd-red`, design and readability findings (`review-design`) to `tdd-refactor`, other production changes (missing or wrong behavior) to `tdd-green` — and send each its `READ`. Then re-run the Final Test once.
 
 **Release teammates as soon as their last work is in.** A teammate with no fixes assigned gets its shutdown request now; one with fixes gets it the moment its fix report arrives. If the user approved nothing, shut down `tdd-red`, `tdd-green`, and `tdd-refactor` immediately.
 
