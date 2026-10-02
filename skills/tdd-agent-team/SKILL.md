@@ -22,6 +22,7 @@ Run Red-Green-Refactor with an agent team: a `tdd-red` teammate writes failing t
 
 - Respect system, developer, and project `CLAUDE.md` instructions above this skill.
 - The user is asked exactly twice: at task confirmation (Setup 5) and before applying final-review fixes (Final Review 3). Project instructions that ask for feedback after each stage are honored at these two points — the cycle runs in parallel and has no stage boundary to pause at.
+- **Files through file tools, shell commands kept simple — yours too.** Create files with `Write`, change them with `Edit` (a `session.md` status flip is one `Edit`), read them with `Read`. Use Bash only to run commands, one simple command at a time: no `cd …;` prefix, no heredocs, no `sed -i`, no loops, no `$(…)` or `$variables`, no brace expansion. The permission checker cannot analyze those, so each one stops the session on a prompt — the `.tdd-agent-team/*.md` artifacts pass without one only when written through the file tools.
 - **Teammate content travels in files, never in messages.** Every `SendMessage` body — yours and every teammate's — is one line: `READ <path>`. The file holds the substance. A message with prose in it skips the checks the files carry and leaks context the reader was not meant to have.
 
 ### Teammate definitions
@@ -242,19 +243,16 @@ GREEN refactored production code as it went; test code has not been touched sinc
 
 ### 2. Final Test
 
-This is the only test run nobody on the team performs for themselves — it is what catches a GREEN that reported done without passing. Run every session method in one invocation — all `test_methods` from every `red-result.md`, plus the `[REGRESSION]` classes — with `TEST_METHOD_RUNNER` and one `TEST_METHOD_CMD` per method. Redirect the output to `{TDD_DIR}/final-test.log` and read only the counts and failing names. If anything fails, write the failures to `{TDD_DIR}/final-test-failures.md` and send `READ` to `tdd-green`; at most 2 rounds, then ask the user.
+This is the only test run nobody on the team performs for themselves — it is what catches a GREEN that reported done without passing. Run every session method in one invocation — all `test_methods` from every `red-result.md`, plus the `[REGRESSION]` classes — with `TEST_METHOD_RUNNER` and one `TEST_METHOD_CMD` per method. Collect the ids by reading the `red-result.md` files, then **write them out literally in the command**: `{TEST_METHOD_RUNNER} {id1} {id2} …`. Never pass them through a shell variable or `$(…)` — a quoted variable turns the whole list into one argument, and the runner reports a single nonexistent test instead of running yours. Redirect the output to `{TDD_DIR}/final-test.log` and read only the counts and failing names. If anything fails, write the failures to `{TDD_DIR}/final-test-failures.md` and send `READ` to `tdd-green`; at most 2 rounds, then ask the user.
 
 ### 3. Parallel Final Review ← user checkpoint 2
 
-Build the diff into a file first — it must never pass through your context:
+Build the diff into a file first — it must never pass through your context. One simple command per step:
 
-```bash
-git diff > .tdd-agent-team/branch-diff.md
-git ls-files --others --exclude-standard | while read -r f; do
-  git diff --no-index /dev/null "$f" >> .tdd-agent-team/branch-diff.md
-done
-wc -l < .tdd-agent-team/branch-diff.md
-```
+1. `git diff > .tdd-agent-team/branch-diff.md` — changes to tracked files.
+2. `git ls-files --others --exclude-standard` — the files this session created. Skip build output it lists (`__pycache__/`, `build/`, `target/`, `node_modules/`).
+3. For each remaining file, one command: `git diff --no-index /dev/null <file> >> .tdd-agent-team/branch-diff.md` — new files are untracked, so step 1 alone would hand the reviewers a diff with the new test class missing.
+4. `wc -l .tdd-agent-team/branch-diff.md` — confirm it is not empty.
 
 Spawn three reviewers from the one definition, each owning one lens:
 
