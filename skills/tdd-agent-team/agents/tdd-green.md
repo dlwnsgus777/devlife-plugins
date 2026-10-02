@@ -26,7 +26,8 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 |---|---|---|
 | from `tdd-red` | `READ {TASK_DIR}/red-result.md` | A task is ready |
 | to `tdd-red` | `READ {TASK_DIR}/gate.md` | Your red check refused it — the tests must be fixed |
-| to `team-lead` | `READ {TASK_DIR}/green-result.md` | Task done |
+| to `team-lead` | `READ {TASK_DIR}/green-result.md` | Task done — the lead checks it |
+| from `team-lead` | `READ {TASK_DIR}/lead-check.md` | The lead's task check bounced it — fix and resend `green-result.md` |
 | to `team-lead` | `READ {TASK_DIR}/blocked.md` | You cannot proceed |
 | from `team-lead` | `READ .tdd-agent-team/final-test-failures.md` / `READ .tdd-agent-team/fixes.md` | Final-stage work |
 
@@ -91,6 +92,7 @@ Do not change behavior and do not add functionality — a new behavior is a new 
    tidy: {REFACTORED — what and why | SKIPPED — why}
    ```
 7. Send `READ {TASK_DIR}/green-result.md` to `team-lead`, then take the next task.
+8. If the lead sends `READ {TASK_DIR}/lead-check.md`, handle it before your next task: it names out-of-scope files to revert or methods that do not pass. Fix, rewrite `green-result.md`, and send it again. If an out-of-scope file is genuinely needed, write `blocked.md` saying why instead of reverting.
 
 ## Final Test Failures / Fixes
 

@@ -18,7 +18,7 @@ Run Red-Green-Refactor with an agent team: a `tdd-red` teammate writes failing t
 
 ## Execution Rules
 
-**You are the team lead.** Setup, the two user checkpoints, unblocking, and the final stages are yours. The cycle itself is not: once the teammates are running, RED and GREEN pass work between themselves and you stay off that path. Never relay a handoff, never re-run a teammate's test to double-check it. After Setup, the only source edits you make are stubs a teammate asks for in `missing-stub.md`; you never edit test files.
+**You are the team lead.** Setup, the two user checkpoints, unblocking, the per-task check, and the final stages are yours. The handoffs are not: once the teammates are running, RED and GREEN pass work between themselves and you stay off that path. Never relay a handoff. After Setup, the only source edits you make are stubs a teammate asks for in `missing-stub.md`; you never edit test files.
 
 - Respect system, developer, and project `CLAUDE.md` instructions above this skill.
 - The user is asked exactly twice: at task confirmation (Setup 5) and before applying final-review fixes (Final Review 3). Project instructions that ask for feedback after each stage are honored at these two points — the cycle runs in parallel and has no stage boundary to pause at.
@@ -223,11 +223,23 @@ You are off the handoff path. RED → GREEN goes direct; GREEN reports to you on
 | Message | Your action |
 |---|---|
 | `READ .tdd-agent-team/tools-{name}.md` | Check the role's tools are all there (see First report). Nothing else |
-| `READ {TASK_DIR}/green-result.md` | Set the task `DONE` in `session.md`. Nothing else |
+| `READ {TASK_DIR}/green-result.md` | Run the **Task Check** below, then set the task `DONE` (or bounce it) in `session.md` |
 | `READ {TASK_DIR}/missing-stub.md` | Add the stub, run `TEST_COMPILE_CMD`, add the signature to `context.md`, reply `READ {TASK_DIR}/task.md` to the sender |
 | `READ {TASK_DIR}/blocked.md` | If it names a missing fact, add it to `context.md` and reply `READ {TASK_DIR}/task.md`. If RED's tests were refused twice or it is a design problem, set `BLOCKED` and ask the user — this is the one mid-cycle escalation |
 | `READ {TDD_DIR}/red-finished.md` | RED has written tests for every task. Note it; wait for GREEN |
 | Idle notification | **Usually nothing — do not reply, do not inspect files.** Teammates go idle between every message, so idle is normal. Act only when *all* teammates are idle and the cycle is not finished (some task not `DONE`/`BLOCKED`, or no `red-finished.md`): then compare `session.md` with the result files under `tasks/`, find the handoff that was never sent, and tell **the sender** to send it again (`READ {TASK_DIR}/task.md` to that teammate). Never send the handoff yourself — the sender owns the file it points to |
+
+### Task Check (on every `green-result.md`)
+
+Nothing outside the teammates enforces the role boundaries, so each finished task gets three mechanical checks from you — cheap now, expensive once later tasks have been built on top of a bad one. Read only what each check needs; never `cat` whole files into your context.
+
+| Check | How | If it fails |
+|---|---|---|
+| 1. Red-first evidence | `{TASK_DIR}/red-check.log` exists (`ls {TASK_DIR}`) | The code is already built, so red can no longer be proven — do not bounce. Note `red-first unverified` in the task's `session.md` row; the `review-test` lens reports it |
+| 2. Scope | the `files_modified` line of `green-result.md` names only paths under "In-scope files" in `context.md` | Write `{TASK_DIR}/lead-check.md` naming the out-of-scope paths and send `READ {TASK_DIR}/lead-check.md` to `tdd-green`: revert them, or explain in `blocked.md` why the task needs them |
+| 3. Really passes | run the task's `test_methods` yourself, ids written out literally, `\| tail -5` | Write `lead-check.md` with the failing names and send it to `tdd-green` |
+
+All three pass → `DONE`. A bounced task comes back as a new `green-result.md` and is checked again; after two bounces of the same task, set `BLOCKED` and ask the user. Do not judge the code itself here — design and test quality belong to the Final Review.
 
 Update `session.md` after every message you act on. It is the only record of progress — there is no shared task list.
 
@@ -243,7 +255,7 @@ GREEN refactored production code as it went; test code has not been touched sinc
 
 ### 2. Final Test
 
-This is the only test run nobody on the team performs for themselves — it is what catches a GREEN that reported done without passing. Run every session method in one invocation — all `test_methods` from every `red-result.md`, plus the `[REGRESSION]` classes — with `TEST_METHOD_RUNNER` and one `TEST_METHOD_CMD` per method. Collect the ids by reading the `red-result.md` files, then **write them out literally in the command**: `{TEST_METHOD_RUNNER} {id1} {id2} …`. Never pass them through a shell variable or `$(…)` — a quoted variable turns the whole list into one argument, and the runner reports a single nonexistent test instead of running yours. Redirect the output to `{TDD_DIR}/final-test.log` and read only the counts and failing names. If anything fails, write the failures to `{TDD_DIR}/final-test-failures.md` and send `READ` to `tdd-green`; at most 2 rounds, then ask the user.
+Each task passed its own Task Check; this run proves they still pass **together** — a later task's change can break an earlier task's methods. Run every session method in one invocation — all `test_methods` from every `red-result.md`, plus the `[REGRESSION]` classes — with `TEST_METHOD_RUNNER` and one `TEST_METHOD_CMD` per method. Collect the ids by reading the `red-result.md` files, then **write them out literally in the command**: `{TEST_METHOD_RUNNER} {id1} {id2} …`. Never pass them through a shell variable or `$(…)` — a quoted variable turns the whole list into one argument, and the runner reports a single nonexistent test instead of running yours. Redirect the output to `{TDD_DIR}/final-test.log` and read only the counts and failing names. If anything fails, write the failures to `{TDD_DIR}/final-test-failures.md` and send `READ` to `tdd-green`; at most 2 rounds, then ask the user.
 
 ### 3. Parallel Final Review ← user checkpoint 2
 

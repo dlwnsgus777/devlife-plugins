@@ -57,7 +57,7 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 ```
 
 - **메시지 본문은 `READ <경로>` 한 줄뿐**입니다. 내용은 `.tdd-agent-team/` 아래 md 파일에 씁니다
-- 리드는 넘겨주기 경로에 끼지 않습니다. `green-result.md` 보고마다 `session.md`를 갱신하고, `missing-stub.md`(스텁 추가)·`blocked.md`(사실 보충 또는 사용자에게 에스컬레이션)만 처리합니다
+- 리드는 넘겨주기 경로에 끼지 않습니다. 대신 GREEN의 `green-result.md` 보고마다 **태스크 검수** 3가지를 합니다 — `red-check.log`가 있는지(없으면 기록만 하고 최종 리뷰가 지적), 수정 파일이 In-scope 안인지(벗어나면 GREEN에 되돌림), 해당 메서드가 실제로 통과하는지(직접 실행, 실패하면 되돌림). 같은 태스크가 두 번 되돌려지면 BLOCKED로 두고 사용자에게 묻습니다. `missing-stub.md`·`blocked.md`도 리드가 처리합니다
 - GREEN의 red check가 같은 태스크를 두 번 거절하면 RED가 `blocked.md`를 써서 리드에게 보냅니다
 
 ### 마무리
