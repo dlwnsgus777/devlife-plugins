@@ -97,15 +97,25 @@ Then offer once to pre-approve the two test commands, since every teammate runs 
 
 On yes, add `Bash({TEST_COMPILE_CMD}:*)` and `Bash({TEST_METHOD_RUNNER}:*)` to `permissions.allow` in `.claude/settings.local.json`, creating the file if needed and leaving existing entries untouched. On no, continue.
 
-### 4. Invariants and Tasks
+### 4. Invariants, Scope, and Tasks
 
-**Invariants — requirements document first, code second.** With a spec, plan, or ticket, derive invariants from it and adopt any IDs (`INV-001`, …) verbatim. With nothing, ask "구현할 기능의 요구사항이나 티켓 내용을 공유해주시겠어요?" and wait. Only then scan code for structural constraints the document omitted. Write each as a declarative sentence about what must be true.
+Everything below comes from the requirements document **when it says so, and from your own exploration when it does not**. A plan-creator document answers most of it; a ticket or a spoken description answers little. Never leave a gap empty or fill it by guessing — derive it, then show it at Setup 5 for confirmation.
+
+**Explore once, here.** Read the feature area a single time — the code the change will modify, its callers, its existing tests. This one pass feeds the invariants, the scope, the regression set, the tidy candidates, and later `context.md`; do not re-explore for each.
+
+**Invariants — requirements document first, code second.** With a spec, plan, or ticket, derive invariants from it and adopt any IDs (`INV-001`, …) verbatim; if it gives none, number them yourself from `INV-001`. With nothing at all, ask "구현할 기능의 요구사항이나 티켓 내용을 공유해주시겠어요?" and wait. Only then add structural constraints the code shows and the document omitted. Write each as a declarative sentence about what must be true.
+
+**Scope.** In-scope files, out-of-scope items, and known pitfalls (defects in the code the change imitates, each with what to do instead) — take them from the document if it lists them; otherwise set them from the tasks and the exploration. In-scope files are what the Task Check and the Refactor Check hold the team to, so they must be concrete paths.
+
+**Regression set.** The existing tests that must keep passing: those the document says already cover part of the requirement (plan-creator tags them `[REGRESSION]`), **plus every existing test class that exercises a file in scope** — find these in the exploration, whatever the document says. The regression set runs in the final test and is the safety net of the Tidy First and refactor phases; without the second half, a refactor that breaks existing behavior has nothing to catch it.
 
 **Tidy First items.** Read the requirements document for work that must change structure without changing behavior, *before* the requested change, to make that change easier — whatever the document calls it (Tidy First, refactor first, 코드 정비) and wherever it puts it. Extracting an abstraction counts: it is extracted from the cases that already exist, and the new case it will receive is a task. Each such item becomes a **tidy item**, not a task — it changes no behavior, so it can never be Red. Recognize items by what they ask, not by their position in the document (a plan-creator document, for example, keeps them in its Section 0 and orders them first in its implementation steps).
 
-For each tidy item, capture what blocks the change today, the restructuring to apply, and where the change lands afterwards. If the document leaves one of these unsaid, ask in Setup 5 rather than guessing. Take only what the document names — the team does not invent restructuring.
+For each tidy item, capture what blocks the change today, the restructuring to apply, and where the change lands afterwards. If the document leaves one of these unsaid, ask in Setup 5 rather than guessing.
 
-**Tasks.** Adopt the document's ordered task list if it has one. Items the document says are already covered by existing tests (plan-creator tags them `[REGRESSION]`) are not tasks — they are the **regression set**: they run in the final test, and as the safety net in the Tidy First and refactor phases. Name each task as a domain rule sentence; RED turns it into `@DisplayName`.
+**No tidy items in the document?** Then look for them yourself: read `{SKILL_DIR}/references/tidy-first-scan.md` and apply it to the code in scope. What it finds are **candidates** — shown at Setup 5, and only the ones the user approves become tidy items. If the document already names tidy items, skip the scan; do not second-guess a plan that made this decision.
+
+**Tasks.** Adopt the document's ordered task list if it has one; otherwise decompose the invariants yourself. Items already covered by existing tests are not tasks — they belong to the regression set. Name each task as a domain rule sentence; RED turns it into `@DisplayName`.
 
 - **Batch scenarios that share one implementation change** into one task — one guard clause, one branch, one small function. A task maps to a unit of implementation work, not to a test method.
 - **Coverage floor, never a cap:** per invariant, the case that violates it, the nearest case that satisfies it, and every state the rule itself names; plus one happy path per touched class. An edge case with no test is an unbuilt behavior, because GREEN builds exactly what the tests demand.
@@ -114,7 +124,7 @@ For each tidy item, capture what blocks the change today, the restructuring to a
 
 ### 5. Confirm Tasks ← user checkpoint 1
 
-Present the tidy items (if any), invariants, and tasks together, with the test names, and wait for confirmation:
+Present together, and wait for confirmation: the tidy items — marking which came from the document and which are your **candidates** for the user to approve or drop — the in-scope files, the regression set, the invariants, and the tasks with their test names:
 
 ```
 TDD 태스크 목록
@@ -132,7 +142,7 @@ After this answer, do not ask again until Final Stage 4 — except the Tidy Firs
 
 ### 6. Context, Session, and Task Files
 
-**`{TDD_DIR}/context.md`** — explore the feature area once and write only what you verified this session:
+**`{TDD_DIR}/context.md`** — write it from the Setup 4 exploration, only what you verified this session; the scope and pitfalls are the ones the user confirmed at Setup 5:
 
 ```
 # TDD Session Context
