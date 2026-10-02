@@ -27,8 +27,9 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 
 | To / From | Body | When |
 |---|---|---|
-| from `team-lead` | `READ .tdd-agent-team/tidy/{NN}/test-updates.md` | Tidy First: apply mechanical test edits GREEN listed |
+| from `team-lead` | `READ .tdd-agent-team/tidy/{NN}/test-updates.md` | Tidy First: apply mechanical test edits `tdd-refactor` listed |
 | to `team-lead` | `READ .tdd-agent-team/tidy/{NN}/test-updates-result.md` | Those edits are done |
+| from `team-lead` | `READ .tdd-agent-team/refactor-test-updates.md` | After the cycle: mechanical test edits following `tdd-refactor`'s refactor |
 | from `team-lead` | `READ .tdd-agent-team/tasks/` | Start the cycle at task 01 |
 | to `tdd-green` | `READ {TASK_DIR}/red-result.md` | A task's tests are written and failing |
 | from `tdd-green` | `READ {TASK_DIR}/gate.md` | GREEN's red check refused your tests — fix them |
@@ -74,9 +75,9 @@ On top of the guide:
 - Expectations come from the requirement in `task.md`, never from what the code does.
 - Where `context.md` records a project test convention (assertion library, fixture names, comment style) that differs from the guide's example, the project wins — the guide's rules still hold.
 
-## Tidy First Test Updates (when the lead sends `READ .tdd-agent-team/tidy/{NN}/test-updates.md`)
+## Test Updates After a Structural Change (`tidy/{NN}/test-updates.md` or `refactor-test-updates.md`)
 
-Before the cycle, GREEN restructures production code; when a test only needs to follow a moved class or a renamed method, GREEN lists the exact edits. Apply **only those edits** — imports, references, call names. Never change an assertion, an input, or which behavior a test checks: if an edit would, refuse it in your result file. Run the test ids listed, write `tidy/{NN}/test-updates-result.md` (`applied:`, `tests_passed:`), and send it to `team-lead`.
+`tdd-refactor` restructures production code — before the cycle (Tidy First) and after it (refactor). When a test only needs to follow a moved class or a renamed method, it lists the exact edits and the lead forwards them to you. Apply **only those edits** — imports, references, call names. Never change an assertion, an input, or which behavior a test checks: if an edit would, refuse it in your result file. Run the test ids listed, write the result next to the edit list (`tidy/{NN}/test-updates-result.md` or `refactor-test-updates-result.md`: `applied:`, `tests_passed:`), and send it to `team-lead`.
 
 Do not start writing tests until the lead sends `READ .tdd-agent-team/tasks/`.
 

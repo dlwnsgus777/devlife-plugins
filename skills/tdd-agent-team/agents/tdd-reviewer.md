@@ -43,9 +43,9 @@ Judge the tests against the test-writing guide at `TEST_GUIDE` (path in your spa
 
 ### review-design — is the production code fit to keep?
 
-Judge the production code against the implementation guide at `IMPL_GUIDE` (path in your spawn prompt) — it is the rulebook GREEN wrote it by. Cite its section when a finding rests on it.
+Judge the production code against the implementation guide at `IMPL_GUIDE` (GREEN's rules: scope, the right layer, anti-patterns) and the refactoring guide at `REFACTOR_GUIDE` (`tdd-refactor`'s rules: smells, design principles, readability) — paths in your spawn prompt. Cite the guide and section when a finding rests on it.
 
-- Duplication across tasks — GREEN tidied per task, so cross-task duplication is where it hides.
+- Duplication across tasks — GREEN wrote each task's minimum in isolation and `tdd-refactor` made one pass over all of them; check that pass left nothing between tasks.
 - Naming aligned with the domain language of the invariants.
 - Responsibilities: a class doing too much, logic in the wrong layer, leaked implementation details.
 - Leftover debug code, TODOs, commented-out blocks.

@@ -40,11 +40,11 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 0. **agent teams 확인** — `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`가 `1`이 아니면 `~/.claude/settings.json` 수정을 제안하고, 동의할 때만 고칩니다. 거절하면 `tdd-subagent`를 안내하고 마칩니다
 1. **이전 세션** — `.tdd-agent-team/session.md`가 있으면 팀원이 복원되지 않아 이어갈 수 없음을 알리고, 보관(`archive-*/`) 후 새로 시작할지 묻습니다
 2. **`roles.env` 작성** — 컴파일 명령과 **메서드 단위** 테스트 명령. 팀원이 이 파일에서 명령을 읽습니다. RED가 같은 클래스에 다음 태스크의 실패 테스트를 추가하는 동안 GREEN이 돌기 때문에, 클래스 단위로 돌리면 남의 실패가 섞입니다
-3. **정비 항목·불변성·태스크 도출** — 계획 문서의 Tidy First(0-1) 항목은 태스크가 아니라 **정비 항목**으로 따로 잡습니다(실패하는 테스트를 만들 수 없으므로). 요구사항 문서 우선, 커버리지 하한(불변성마다 어기는/지키는 경계 + 클래스당 해피패스), 하나의 구현 변경으로 통과하는 시나리오는 한 태스크로 병합, 의존하는 태스크는 뒤로
+3. **정비 항목·불변성·태스크 도출** — 계획 문서 섹션 8의 "1단계: 코드 정비"(0-1 정비 + **승인된** 0-2 추상화)는 태스크가 아니라 **정비 항목**으로 따로 잡습니다(실패하는 테스트를 만들 수 없으므로). 요구사항 문서 우선, 커버리지 하한(불변성마다 어기는/지키는 경계 + 클래스당 해피패스), 하나의 구현 변경으로 통과하는 시나리오는 한 태스크로 병합, 의존하는 태스크는 뒤로
 4. **태스크 확정** ← 사용자 확인 1
 5. **`context.md`·`session.md`·`tasks/NN/task.md` 작성** — `context.md`의 「RED가 호출할 수 있는 시그니처」는 구현 코드를 못 읽는 RED의 유일한 창구입니다
 6. **팀원 생성** — RED는 리드가 시작 신호를 줄 때까지 대기합니다
-7. **Tidy First (정비 항목이 있을 때만)** — 항목마다: 리드가 기존 테스트(안전망)를 먼저 돌려 통과를 확인 → GREEN이 계획에 적힌 정비만 수행(동작 변경 금지) → 테스트가 이동·이름 변경을 따라가야 하면 GREEN이 기계적 수정 목록을 쓰고 RED가 그대로 반영(assertion 불변) → 리드가 안전망 재통과·범위를 검수. 모두 끝나면 ← **사용자 확인**: `refactor` 커밋을 따로 할지(리드가 커밋 / 직접 / 커밋 없이)
+7. **Tidy First (정비 항목이 있을 때만)** — `tdd-refactor`를 띄우고, 항목마다: 리드가 기존 테스트(안전망)를 먼저 돌려 통과를 확인 → `tdd-refactor`가 계획에 적힌 정비만 수행(동작 변경 금지) → 테스트가 이동·이름 변경을 따라가야 하면 `tdd-refactor`가 기계적 수정 목록을 쓰고 RED가 그대로 반영(assertion 불변) → 리드가 안전망 재통과·범위를 검수. 모두 끝나면 ← **사용자 확인**: `refactor` 커밋을 따로 할지(리드가 커밋 / 직접 / 커밋 없이)
 8. **스텁 일괄 생성 후 시작** — 정비된 구조 위에 리드가 계획 문서 시그니처로 스텁을 만들고(`UnsupportedOperationException`), RED에게 `READ tasks/`로 사이클 시작을 알립니다
 
 ### 사이클
@@ -64,10 +64,11 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 
 ### 마무리
 
-1. **테스트 코드 정리** — 모든 태스크가 끝난 뒤 RED가 테스트 파일을 한 번에 정리합니다(사이클 중에는 두 팀원이 같은 테스트 파일을 건드리지 않도록 GREEN은 구현 코드만 정리)
-2. **최종 테스트** — 세션의 모든 메서드 + `[REGRESSION]` 클래스를 리드가 한 번에 실행. 팀원이 스스로 하지 않는 유일한 테스트 실행이라, GREEN이 통과 없이 완료를 보고한 경우를 여기서 잡습니다. 실패 시 GREEN에 수정 요청(최대 2라운드)
-3. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임) 3명이 각자 리포트를 씁니다. Critical/Important 지적이 있는 리뷰어만 다른 두 명에게 그 지적에 대한 반박을 1회 받고 수정하며, Minor뿐이면 반박 없이 바로 보고합니다. 리드가 종합합니다. Critical/Important 지적 중 승인한 것만 구현은 GREEN, 테스트는 RED가 반영합니다
-4. **종료** — 팀원 종료 요청, 요약 출력, `.tdd-agent-team/`는 git 제외 상태로 남깁니다
+1. **구현 코드 리팩터링** — `tdd-refactor`가 세션에서 바뀐 구현 파일 전체를 한 번에 정리합니다. GREEN은 태스크마다 최소 코드만 썼으므로 태스크 사이의 중복·하드코딩·책임 위치가 주 대상입니다. 리드가 안전망(세션 전체 메서드 + `[REGRESSION]`) 통과와 범위를 검수
+2. **테스트 코드 정리** — 그다음 RED가 최종 구조에 맞춰 테스트 파일을 한 번에 정리합니다(사이클 중에는 두 팀원이 같은 파일을 건드리지 않도록 정리를 모두 사이클 뒤로 미룸)
+3. **최종 테스트** — 세션의 모든 메서드 + `[REGRESSION]` 클래스를 리드가 한 번에 실행. 팀원이 스스로 하지 않는 유일한 테스트 실행이라, GREEN이 통과 없이 완료를 보고한 경우를 여기서 잡습니다. 실패 시 GREEN에 수정 요청(최대 2라운드)
+4. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임) 3명이 각자 리포트를 씁니다. Critical/Important 지적이 있는 리뷰어만 다른 두 명에게 그 지적에 대한 반박을 1회 받고 수정하며, Minor뿐이면 반박 없이 바로 보고합니다. 리드가 종합합니다. Critical/Important 지적 중 승인한 것만 반영합니다 — 테스트는 RED, 설계·가독성(`review-design`)은 `tdd-refactor`, 동작 누락·오류는 GREEN
+5. **종료** — 팀원 종료 요청, 요약 출력, `.tdd-agent-team/`는 git 제외 상태로 남깁니다
 
 ## 팀원 정의 (`skills/tdd-agent-team/agents/` → `~/.claude/agents/`)
 
@@ -75,6 +76,7 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 |---|---|---|---|
 | `tdd-red` | `tdd-red` | `agents/tdd-red.md` | Read, Write, Edit, Bash, SendMessage |
 | `tdd-green` | `tdd-green` | `agents/tdd-green.md` | Read, Write, Edit, Bash, SendMessage |
+| `tdd-refactor` | `tdd-refactor` | `agents/tdd-refactor.md` | Read, Write, Edit, Bash, SendMessage |
 | `review-domain` / `review-test` / `review-design` | `tdd-reviewer` | `agents/tdd-reviewer.md` (관점은 스폰 프롬프트로 지정) | Read, Write, Bash, SendMessage — `Edit` 없음 |
 
 - 스킬이 Setup 0에서 정의 파일을 `~/.claude/agents/`에 설치(또는 갱신)할지 묻습니다. 설치 직후 에이전트 목록에 안 보이면 Claude Code를 다시 시작해야 합니다
@@ -89,11 +91,17 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 - RED와 `review-test` 리뷰어가 같은 파일을 읽습니다. 리드가 스폰 프롬프트에 `TEST_GUIDE` 경로로 넘깁니다(정의 파일에 경로를 박지 않아 설치 위치와 무관)
 - 실행 시점·순서 같은 진행 규칙은 넣지 않았습니다 — 그건 팀원 정의의 몫입니다
 
-### 구현 가이드 (`references/implementation.md`)
+### 구현 가이드 (`references/implementation.md`) — GREEN
 
-- 구현 코드를 어떻게 쓰고 정리하는지에 대한 규칙입니다. 언어와 무관한 원칙에 Java(Spring) 예시
-- 담긴 규칙: 범위(테스트가 요구하는 것만, 부풀면 더 단순하게 다시), 통과 먼저·정리는 나중, 도메인 규칙은 도메인 언어로(불변성 ID 금지), 계층·의존 방향과 안티패턴, SOLID는 실제 필요할 때만, 정리 기법 표, 이름·메서드 순서(public → private), 테스트 수정 금지 — 글로벌 CLAUDE.md §2·§5·§6 반영
-- GREEN과 `review-design` 리뷰어가 같은 파일을 읽습니다. 리드가 `IMPL_GUIDE` 경로로 넘깁니다
+- GREEN이 **테스트를 통과하는 최소 코드**를 쓰는 규칙입니다. 언어와 무관한 원칙에 Java(Spring) 예시
+- 담긴 규칙: 범위(테스트가 요구하는 것만), 최소 구현 후 **리팩터링하지 않음**, 최소여도 지킬 것(도메인 규칙은 도메인에·도메인 언어로, 계층·의존 방향, 안티패턴), 테스트 수정 금지 — 글로벌 CLAUDE.md §5 범위·§6 반영
+- GREEN과 `review-design`이 읽고, `tdd-refactor`에게는 남기는 코드의 하한선입니다
+
+### 리팩터링 가이드 (`references/refactoring.md`) — tdd-refactor
+
+- 동작을 바꾸지 않고 구조·품질을 바꾸는 규칙입니다. Tidy First(사이클 전, 계획 항목만)와 리팩터링(사이클 후, 세션에서 바뀐 구현 파일) 두 시점을 다룹니다
+- 담긴 규칙: Tidy First 범위(계획에 적힌 것만, 승인된 0-2는 기존 케이스로만 추출), 코드 냄새→기법 표(태스크 사이 중복·하드코딩 일반화 포함), 일괄 적용 후 실패 시 하나씩, SOLID는 필요할 때만, 가독성·메서드 순서, 테스트가 따라가야 할 때의 기계적 수정 목록 — 글로벌 CLAUDE.md §2·§5·§6 반영
+- `tdd-refactor`와 `review-design`이 읽습니다. 리드가 `REFACTOR_GUIDE` 경로로 넘깁니다
 
 ### 무엇이 강제되고 무엇이 아닌가
 
