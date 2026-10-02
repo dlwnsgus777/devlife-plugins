@@ -21,7 +21,7 @@ Run Red-Green-Refactor with an agent team: a `tdd-red` teammate writes failing t
 **You are the team lead.** Setup, the two user checkpoints, unblocking, the per-task check, and the final stages are yours. The handoffs are not: once the teammates are running, RED and GREEN pass work between themselves and you stay off that path. Never relay a handoff. After Setup, the only source edits you make are stubs a teammate asks for in `missing-stub.md`; you never edit test files.
 
 - Respect system, developer, and project `CLAUDE.md` instructions above this skill.
-- The user is asked exactly twice: at task confirmation (Setup 5) and before applying final-review fixes (Final Review 3). Project instructions that ask for feedback after each stage are honored at these two points — the cycle runs in parallel and has no stage boundary to pause at.
+- The user is asked at task confirmation (Setup 5), after the Tidy First phase when there is one (to commit it separately), and before applying final-review fixes (Final Review 3). Project instructions that ask for feedback after each stage are honored at these two points — the cycle runs in parallel and has no stage boundary to pause at.
 - **Files through file tools, shell commands kept simple — yours too.** Create files with `Write`, change them with `Edit` (a `session.md` status flip is one `Edit`), read them with `Read`. Use Bash only to run commands, one simple command at a time: no `cd …;` prefix, no heredocs, no `sed -i`, no loops, no `$(…)` or `$variables`, no brace expansion. The permission checker cannot analyze those, so each one stops the session on a prompt — the `.tdd-agent-team/*.md` artifacts pass without one only when written through the file tools.
 - **Teammate content travels in files, never in messages.** Every `SendMessage` body — yours and every teammate's — is one line: `READ <path>`. The file holds the substance. A message with prose in it skips the checks the files carry and leaks context the reader was not meant to have.
 
@@ -100,7 +100,9 @@ On yes, add `Bash({TEST_COMPILE_CMD}:*)` and `Bash({TEST_METHOD_RUNNER}:*)` to `
 
 **Invariants — requirements document first, code second.** With a spec, plan, or ticket, derive invariants from it and adopt any IDs (`INV-001`, …) verbatim. With nothing, ask "구현할 기능의 요구사항이나 티켓 내용을 공유해주시겠어요?" and wait. Only then scan code for structural constraints the document omitted. Write each as a declarative sentence about what must be true.
 
-**Tasks.** Adopt the document's ordered task list if it has one; `[REGRESSION]` items are not tasks — they run in the final test. Name each task as a domain rule sentence; RED turns it into `@DisplayName`.
+**Tidy First items.** If the plan has a Tidy First section (plan-creator `0-1`), each entry — the blocker, the restructuring technique, and where the requirement lands afterwards — becomes a **tidy item**, not a task. A tidy item changes structure and no behavior, so it can never be Red; it runs in the Tidy First phase before the cycle. Take only what the plan names: the team does not invent restructuring.
+
+**Tasks.** Adopt the document's ordered task list if it has one; `[REGRESSION]` items are not tasks — they run in the final test, and in the Tidy First phase as the safety net. Name each task as a domain rule sentence; RED turns it into `@DisplayName`.
 
 - **Batch scenarios that share one implementation change** into one task — one guard clause, one branch, one small function. A task maps to a unit of implementation work, not to a test method.
 - **Coverage floor, never a cap:** per invariant, the case that violates it, the nearest case that satisfies it, and every state the rule itself names; plus one happy path per touched class. An edge case with no test is an unbuilt behavior, because GREEN builds exactly what the tests demand.
@@ -109,7 +111,7 @@ On yes, add `Bash({TEST_COMPILE_CMD}:*)` and `Bash({TEST_METHOD_RUNNER}:*)` to `
 
 ### 5. Confirm Tasks ← user checkpoint 1
 
-Present invariants and tasks together, with the test names, and wait for confirmation:
+Present the tidy items (if any), invariants, and tasks together, with the test names, and wait for confirmation:
 
 ```
 TDD 태스크 목록
@@ -123,7 +125,7 @@ TDD 태스크 목록
 
 > "태스크를 확정하면 팀원이 끝까지 자동으로 진행하고, 최종 리뷰 결과가 나오면 다시 확인받습니다. 이대로 진행할까요?"
 
-After this answer, do not ask again until Final Review 3 — except for the escalations named under Lead Duties.
+After this answer, do not ask again until Final Review 3 — except the Tidy First commit question, when there are tidy items, and the escalations named under Lead Duties.
 
 ### 6. Context, Session, and Task Files
 
@@ -143,7 +145,7 @@ After this answer, do not ask again until Final Review 3 — except for the esca
 - Package / directory layout: {source & test packages}
 - Test conventions: {JUnit version, assertion style, // arrange·act·assert, @Nested usage}
 - Fixture pattern: {builder location & usage}
-- Signatures RED may call: {ClassName → public method signatures, including the stubs from Setup 7}
+- Signatures RED may call: {ClassName → public method signatures, including the stubs from Stubs and Start}
 - Domain anchors: {aggregate/entity files + invariants that apply here}
 - In-scope files: {paths this session may modify}
 - Out of scope: {what this task deliberately does not change}
@@ -184,13 +186,7 @@ scenarios:
 - {scenario sentence}
 ```
 
-Decide `test_class` here, not in RED — the stubs below and the per-method commands both need it.
-
-### 7. Stubs
-
-RED does not write production files, so every production type and method the tests will call must exist before RED starts. Create them now from the plan document's signatures (or the task scenarios): bodies `throw new UnsupportedOperationException("Not implemented yet")` — never a silent `null` or default. Then run `TEST_COMPILE_CMD` and confirm it passes. Add each stub's signature to `context.md` "Signatures RED may call".
-
-After this, you add a stub only when RED asks for one through `missing-stub.md`.
+Decide `test_class` here, not in RED — the stubs (Stubs and Start) and the per-method commands both need it.
 
 ## Running the Team
 
@@ -201,20 +197,45 @@ Agent({
   name: "tdd-red",
   subagent_type: "tdd-red",
   description: "TDD RED teammate",
-  prompt: "TDD_DIR={TDD_DIR}. TEST_GUIDE={SKILL_DIR}/references/test-writing.md. Start with task 01 under {TDD_DIR}/tasks/ and continue in number order."
+  prompt: "TDD_DIR={TDD_DIR}. TEST_GUIDE={SKILL_DIR}/references/test-writing.md. Wait for READ messages from team-lead."
 })
 
 Agent({
   name: "tdd-green",
   subagent_type: "tdd-green",
   description: "TDD GREEN teammate",
-  prompt: "TDD_DIR={TDD_DIR}. IMPL_GUIDE={SKILL_DIR}/references/implementation.md. Wait for READ messages from tdd-red."
+  prompt: "TDD_DIR={TDD_DIR}. IMPL_GUIDE={SKILL_DIR}/references/implementation.md. Wait for READ messages."
 })
 ```
 
 The role is in the definition; the prompt carries only the session facts. `TEST_GUIDE` and `IMPL_GUIDE` point at the rules in this skill's `references/` — `test-writing.md` for RED and the `review-test` lens, `implementation.md` for GREEN and the `review-design` lens. A path rather than a copy, so each rulebook lives in one file that its writer and its reviewer both read. Teammates address each other by these names, so keep them exact. Do not add a model; teammates inherit the session's.
 
 **First report.** `tdd-red` and `tdd-green` each open with `READ .tdd-agent-team/tools-{name}.md`, listing the tools they actually received. Reviewers do not report: they live for one review, and a reviewer whose definition failed to apply loses only its missing `Edit` — not worth three extra messages on every run. A list that includes tools outside its definition (`Agent`, `Skill`, MCP tools) means the definition did not apply — stop and re-check the install. A teammate without `SendMessage`, `Write`, `Edit`, or `Bash` cannot do its role — and a missing `SendMessage` means it cannot even send that report, so a teammate silent past its first idle notification counts as missing it. Stop the team and tell the user which tool was missing rather than letting the cycle start lame.
+
+### Tidy First (only when the plan has tidy items)
+
+Structure first, behavior second, in separate commits — the CLAUDE.md Tidy First rule. The team does the restructuring; nothing else runs meanwhile, because RED writing new tests against a structure GREEN is moving would collide.
+
+For each tidy item, in plan order:
+
+1. **Baseline.** Pick the safety net: the `[REGRESSION]` test classes and every existing test class that exercises the files the item touches. Run them — ids written out literally — redirecting to `{TDD_DIR}/tidy/{NN}/baseline.log`. They must pass now; if they do not, stop and tell the user — a red baseline cannot prove the restructuring preserved behavior.
+2. **Hand it to GREEN.** Write `{TDD_DIR}/tidy/{NN}/tidy.md` — the plan entry verbatim (blocker, technique, landing spot), the in-scope files, and the safety-net test ids — and send `READ {TDD_DIR}/tidy/{NN}/tidy.md` to `tdd-green`.
+3. **Test-side follow-up.** If GREEN reports that tests must change mechanically (a moved class, a renamed method), it lists the exact edits in `tidy/{NN}/test-updates.md`. Send `READ {TDD_DIR}/tidy/{NN}/test-updates.md` to `tdd-red`. RED applies only those edits — assertions untouched.
+4. **Tidy Check.** On `tidy-result.md` (and RED's `test-updates-result.md` when there was one): the safety-net tests pass again; changed files are within the item's in-scope files; test changes are only the listed mechanical edits. Any failure → write `tidy/{NN}/lead-check.md` to the owner; after two bounces, ask the user.
+
+When every item passed, ask once ← **user checkpoint (Tidy First only)**:
+
+> "구조 정비(Tidy First)가 끝났습니다: {항목 요약}. 기존 테스트는 정비 전후 모두 통과합니다. 기능 작업과 섞이지 않도록 지금 `refactor` 커밋을 따로 해 두는 게 좋습니다. 제가 커밋할까요, 직접 하실까요, 커밋 없이 진행할까요?"
+
+Commit only on "제가 커밋" — stage just the files the tidy items changed, message `refactor: {summary}`. Then continue.
+
+### Stubs and Start
+
+RED does not write production files, so every production type and method the tests will call must exist before RED starts. Create them now — after the Tidy First phase, so they land in the restructured code — from the plan document's signatures (or the task scenarios): bodies `throw new UnsupportedOperationException("Not implemented yet")` — never a silent `null` or default. Then run `TEST_COMPILE_CMD` and confirm it passes. Add each stub's signature to `context.md` "Signatures RED may call".
+
+After this, you add a stub only when RED asks for one through `missing-stub.md`.
+
+Start the cycle: send `READ {TDD_DIR}/tasks/` to `tdd-red`. RED begins with task 01 and continues in number order; GREEN takes each task as RED hands it over.
 
 ### Lead Duties During the Cycle
 

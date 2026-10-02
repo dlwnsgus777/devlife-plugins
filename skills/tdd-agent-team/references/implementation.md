@@ -65,7 +65,7 @@ These justify a structure only when the tests or the existing code already need 
 
 ## 6. Refactor (after green): Named Refactorings, Behavior Unchanged
 
-This is TDD's refactor step, not Tidy First. Restructuring beyond the code you just wrote is not yours to do: structural changes that make a requirement easier belong to the plan's Tidy First, done and committed before this session started.
+This is TDD's refactor step, not Tidy First. Restructuring beyond the code you just wrote is not done here: structural changes that make a requirement easier come from the plan's Tidy First items, which the team runs in its own phase before the cycle — and only those items.
 
 After green, check the code you changed against these smells and apply the named technique. Skip with a stated reason if it is already clean — "no refactoring needed" without a reason is not acceptable.
 

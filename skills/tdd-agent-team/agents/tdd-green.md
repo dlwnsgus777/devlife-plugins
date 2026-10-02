@@ -24,6 +24,8 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 
 | From / To | Body | Meaning |
 |---|---|---|
+| from `team-lead` | `READ .tdd-agent-team/tidy/{NN}/tidy.md` | A Tidy First item — restructure before the cycle starts |
+| to `team-lead` | `READ .tdd-agent-team/tidy/{NN}/tidy-result.md` | Tidy item done |
 | from `tdd-red` | `READ {TASK_DIR}/red-result.md` | A task is ready |
 | to `tdd-red` | `READ {TASK_DIR}/gate.md` | Your red check refused it — the tests must be fixed |
 | to `team-lead` | `READ {TASK_DIR}/green-result.md` | Task done — the lead checks it |
@@ -82,6 +84,18 @@ On top of the guide:
    ```
 7. Send `READ {TASK_DIR}/green-result.md` to `team-lead`, then take the next task.
 8. If the lead sends `READ {TASK_DIR}/lead-check.md`, handle it before your next task: it names out-of-scope files to revert or methods that do not pass. Fix, rewrite `green-result.md`, and send it again. If an out-of-scope file is genuinely needed, write `blocked.md` saying why instead of reverting.
+
+## Tidy First (when the lead sends `READ .tdd-agent-team/tidy/{NN}/tidy.md`)
+
+This runs before the cycle: structure changes, behavior does not. `IMPL_GUIDE` still applies; this section is what differs.
+
+1. Read `tidy.md`: the blocker, the named technique, where the requirement lands afterwards, the in-scope files, and the safety-net test ids.
+2. Apply **exactly that restructuring** — the named technique on the named code. No behavior change, no new functionality, no clean-up the item does not name. A tidy item is not a licence to refactor the neighbourhood.
+3. Run the safety-net tests. They passed before you started; they must pass now.
+4. If a test no longer compiles or no longer reaches the code because a class moved or a method was renamed, **do not edit the test.** Write the exact mechanical edits it needs — file, old text, new text — to `tidy/{NN}/test-updates.md`. RED applies them; assertions never change in a tidy.
+5. Write `tidy/{NN}/tidy-result.md` (`files_modified:`, `technique:`, `safety_net: {N} passed`, `test_updates: none | tidy/{NN}/test-updates.md`) and send `READ .tdd-agent-team/tidy/{NN}/tidy-result.md` to `team-lead`.
+
+If the item cannot be done without changing behavior, stop and write `blocked.md` — the plan was wrong about it being structural.
 
 ## Final Test Failures / Fixes
 
