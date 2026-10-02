@@ -201,7 +201,7 @@ Agent({
   name: "tdd-red",
   subagent_type: "tdd-red",
   description: "TDD RED teammate",
-  prompt: "TDD_DIR={TDD_DIR}. Start with task 01 under {TDD_DIR}/tasks/ and continue in number order."
+  prompt: "TDD_DIR={TDD_DIR}. TEST_GUIDE={SKILL_DIR}/references/test-writing.md. Start with task 01 under {TDD_DIR}/tasks/ and continue in number order."
 })
 
 Agent({
@@ -212,7 +212,7 @@ Agent({
 })
 ```
 
-The role is in the definition; the prompt carries only the session facts. Teammates address each other by these names, so keep them exact. Do not add a model; teammates inherit the session's.
+The role is in the definition; the prompt carries only the session facts. `TEST_GUIDE` points RED at the test-writing rules in this skill's `references/` — a path rather than a copy, so the rules live in one file that RED and the `review-test` lens both read. Teammates address each other by these names, so keep them exact. Do not add a model; teammates inherit the session's.
 
 **First report.** `tdd-red` and `tdd-green` each open with `READ .tdd-agent-team/tools-{name}.md`, listing the tools they actually received. Reviewers do not report: they live for one review, and a reviewer whose definition failed to apply loses only its missing `Edit` — not worth three extra messages on every run. A list that includes tools outside its definition (`Agent`, `Skill`, MCP tools) means the definition did not apply — stop and re-check the install. A teammate without `SendMessage`, `Write`, `Edit`, or `Bash` cannot do its role — and a missing `SendMessage` means it cannot even send that report, so a teammate silent past its first idle notification counts as missing it. Stop the team and tell the user which tool was missing rather than letting the cycle start lame.
 
@@ -272,7 +272,7 @@ Spawn three reviewers from the one definition, each owning one lens:
 Agent({ name: "review-domain", subagent_type: "tdd-reviewer", description: "Final review: domain",
         prompt: "You are review-domain — the domain lens. TDD_DIR={TDD_DIR}" })
 Agent({ name: "review-test",   subagent_type: "tdd-reviewer", description: "Final review: test",
-        prompt: "You are review-test — the test lens. TDD_DIR={TDD_DIR}" })
+        prompt: "You are review-test — the test lens. TDD_DIR={TDD_DIR}. TEST_GUIDE={SKILL_DIR}/references/test-writing.md" })
 Agent({ name: "review-design", subagent_type: "tdd-reviewer", description: "Final review: design",
         prompt: "You are review-design — the design lens. TDD_DIR={TDD_DIR}" })
 ```

@@ -33,6 +33,8 @@ Shell commands: one simple command each — no `cd …;` prefix, loops, `$variab
 
 ### review-test — would these tests catch a regression?
 
+Judge the tests against the test-writing guide at `TEST_GUIDE` (path in your spawn prompt) — it is the rulebook RED wrote them by. Cite its section when a finding rests on it.
+
 - Assertions express requirements, not implementation details or mock call counts.
 - `@DisplayName`s are domain rule sentences; methods sequential; `@Nested` used for groups.
 - **Red-first evidence.** Each task directory has a `red-check.log` written by GREEN's red check before it implemented the task. A task without one was built without anyone confirming its tests ever failed. Flag it.

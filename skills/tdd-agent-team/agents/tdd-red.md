@@ -62,26 +62,19 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST. Your tests are what make GREEN'
 | "This case is obviously covered" | If no test names it, GREEN will not build it. |
 | "I'll just peek at the implementation to match it" | Don't. Write what the requirement says. |
 
-## Good Test vs Bad Test
+## How to Write the Tests
 
-**Good:** one behavior per test; failure reason is the missing feature, not a typo; assertion expresses a business requirement; real code, mocks only when unavoidable.
+**Read the test-writing guide before your first test, and follow it.** Its path is `TEST_GUIDE` in your spawn prompt. It holds every rule about what a test looks like — what deserves a test, one behavior per test, combining cases of the same rule, domain-sentence names, arrange·act·assert, fixtures, test strategy per layer, never deleting an existing test. If `TEST_GUIDE` is missing or the file cannot be read, write `.tdd-agent-team/blocked.md` saying so and send it to `team-lead` — do not write tests from memory.
 
-**Bad:** verifies mock call counts; tests implementation details; huge setup; copy-pasted methods differing only in input — parameterize instead.
-
-## Rules
-
-- Cover every scenario in `task.md` in one pass — one `@DisplayName` per scenario.
-- **Same rule, different data → one `@ParameterizedTest`.** Different rules → separate methods.
-- **Name tests with the domain rule sentence** via `@DisplayName`. Method names are sequential (`test01`, `test02`, …). Group with `@Nested` when a class covers several logical groups; inner class identifiers are English.
-- Follow the project's test conventions from `context.md` — structure, assertions, fixture pattern (project Fixture builders, `repository.save` wrapped in a private helper, no duplicated fixture logic).
+On top of the guide:
+- Cover every scenario in `task.md` in one pass.
 - Expectations come from the requirement in `task.md`, never from what the code does.
-- Structure every test with `// arrange`, `// act`, `// assert`.
-- Do not test constructors with no behavior, trivial accessors, or plain data holders.
+- Where `context.md` records a project test convention (assertion library, fixture names, comment style) that differs from the guide's example, the project wins — the guide's rules still hold.
 
 ## Workflow (per task, in number order)
 
 1. Read `.tdd-agent-team/context.md` and `{TASK_DIR}/task.md`. Re-read `context.md` at every task — the lead adds signatures to it.
-2. Write the failing tests in `test_class` from `task.md`.
+2. Write the failing tests in `test_class` from `task.md`, following `TEST_GUIDE`.
 3. Run `{TEST_COMPILE_CMD}` until it passes. Do not run tests while it fails.
 4. Run your methods once, per method. Every method must fail by reaching the behavior — an exception from a stub, or an assertion. A fixture that blows up in setup is not Red; fix it.
    - A method that **passes** is not Red. If production code already does it, it is coverage, not this task's work: delete it if another of your methods in this task is Red, or write `blocked.md` saying the task cannot be Red.
