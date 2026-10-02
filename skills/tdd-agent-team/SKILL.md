@@ -101,9 +101,11 @@ On yes, add `Bash({TEST_COMPILE_CMD}:*)` and `Bash({TEST_METHOD_RUNNER}:*)` to `
 
 **Invariants — requirements document first, code second.** With a spec, plan, or ticket, derive invariants from it and adopt any IDs (`INV-001`, …) verbatim. With nothing, ask "구현할 기능의 요구사항이나 티켓 내용을 공유해주시겠어요?" and wait. Only then scan code for structural constraints the document omitted. Write each as a declarative sentence about what must be true.
 
-**Tidy First items.** If the plan's implementation order has a Tidy First phase (plan-creator Section 8 "1단계: 코드 정비"), each entry becomes a **tidy item**, not a task. That phase lists the `0-1` restructurings and any **approved** `0-2` abstraction, which plan-creator says to extract here from the cases that already exist; take the blocker, technique, and landing spot of each from Section 0. A `0-2` entry not marked approved is skipped. A tidy item changes structure and no behavior, so it can never be Red; it runs in the Tidy First phase before the cycle. Take only what the plan names: the team does not invent restructuring.
+**Tidy First items.** Read the requirements document for work that must change structure without changing behavior, *before* the requested change, to make that change easier — whatever the document calls it (Tidy First, refactor first, 코드 정비) and wherever it puts it. Extracting an abstraction counts: it is extracted from the cases that already exist, and the new case it will receive is a task. Each such item becomes a **tidy item**, not a task — it changes no behavior, so it can never be Red. Recognize items by what they ask, not by their position in the document (a plan-creator document, for example, keeps them in its Section 0 and orders them first in its implementation steps).
 
-**Tasks.** Adopt the document's ordered task list if it has one; `[REGRESSION]` items are not tasks — they run in the final test, and in the Tidy First phase as the safety net. Name each task as a domain rule sentence; RED turns it into `@DisplayName`.
+For each tidy item, capture what blocks the change today, the restructuring to apply, and where the change lands afterwards. If the document leaves one of these unsaid, ask in Setup 5 rather than guessing. Take only what the document names — the team does not invent restructuring.
+
+**Tasks.** Adopt the document's ordered task list if it has one. Items the document says are already covered by existing tests (plan-creator tags them `[REGRESSION]`) are not tasks — they are the **regression set**: they run in the final test, and as the safety net in the Tidy First and refactor phases. Name each task as a domain rule sentence; RED turns it into `@DisplayName`.
 
 - **Batch scenarios that share one implementation change** into one task — one guard clause, one branch, one small function. A task maps to a unit of implementation work, not to a test method.
 - **Coverage floor, never a cap:** per invariant, the case that violates it, the nearest case that satisfies it, and every state the rule itself names; plus one happy path per touched class. An edge case with no test is an unbuilt behavior, because GREEN builds exactly what the tests demand.
@@ -209,7 +211,7 @@ Agent({
 })
 ```
 
-`tdd-refactor` is spawned only when it has work — before the Tidy First phase if the plan has tidy items, otherwise at Final Stage 1 — so it does not sit idle through the cycle:
+`tdd-refactor` is spawned only when it has work — before the Tidy First phase if there are tidy items, otherwise at Final Stage 1 — so it does not sit idle through the cycle:
 
 ```
 Agent({
@@ -226,14 +228,14 @@ The role is in the definition; the prompt carries only the session facts. `TEST_
 
 **First report.** `tdd-red`, `tdd-green`, and `tdd-refactor` each open with `READ .tdd-agent-team/tools-{name}.md`, listing the tools they actually received. Reviewers do not report: they live for one review, and a reviewer whose definition failed to apply loses only its missing `Edit` — not worth three extra messages on every run. A list that includes tools outside its definition (`Agent`, `Skill`, MCP tools) means the definition did not apply — stop and re-check the install. A teammate without `SendMessage`, `Write`, `Edit`, or `Bash` cannot do its role — and a missing `SendMessage` means it cannot even send that report, so a teammate silent past its first idle notification counts as missing it. Stop the team and tell the user which tool was missing rather than letting the cycle start lame.
 
-### Tidy First (only when the plan has tidy items)
+### Tidy First (only when there are tidy items)
 
 Structure first, behavior second, in separate commits — the CLAUDE.md Tidy First rule. `tdd-refactor` does the restructuring; nothing else runs meanwhile, because RED writing new tests against a structure being moved would collide. Spawn `tdd-refactor` now (see Spawn) if it is not running yet.
 
-For each tidy item, in plan order:
+For each tidy item, in the order the document gives:
 
-1. **Baseline.** Pick the safety net: the `[REGRESSION]` test classes and every existing test class that exercises the files the item touches. Run them — ids written out literally — redirecting to `{TDD_DIR}/tidy/{NN}/baseline.log`. They must pass now; if they do not, stop and tell the user — a red baseline cannot prove the restructuring preserved behavior.
-2. **Hand it to `tdd-refactor`.** Write `{TDD_DIR}/tidy/{NN}/tidy.md` — the plan entry verbatim (blocker, technique, landing spot), the in-scope files, and the safety-net test ids — and send `READ {TDD_DIR}/tidy/{NN}/tidy.md` to `tdd-refactor`.
+1. **Baseline.** Pick the safety net: the regression set and every existing test class that exercises the files the item touches. Run them — ids written out literally — redirecting to `{TDD_DIR}/tidy/{NN}/baseline.log`. They must pass now; if they do not, stop and tell the user — a red baseline cannot prove the restructuring preserved behavior.
+2. **Hand it to `tdd-refactor`.** Write `{TDD_DIR}/tidy/{NN}/tidy.md` — the item as the document states it (what blocks the change, the restructuring, where the change lands), the in-scope files, and the safety-net test ids — and send `READ {TDD_DIR}/tidy/{NN}/tidy.md` to `tdd-refactor`.
 3. **Test-side follow-up.** If `tdd-refactor` reports that tests must change mechanically (a moved class, a renamed method), it lists the exact edits in `tidy/{NN}/test-updates.md`. Send `READ {TDD_DIR}/tidy/{NN}/test-updates.md` to `tdd-red`. RED applies only those edits — assertions untouched.
 4. **Tidy Check.** On `tidy-result.md` (and RED's `test-updates-result.md` when there was one): the safety-net tests pass again; changed files are within the item's in-scope files; test changes are only the listed mechanical edits. Any failure → write `tidy/{NN}/lead-check.md` to the owner; after two bounces, ask the user.
 
@@ -245,7 +247,7 @@ Commit only on "제가 커밋" — stage just the files the tidy items changed, 
 
 ### Stubs and Start
 
-RED does not write production files, so every production type and method the tests will call must exist before RED starts. Create them now — after the Tidy First phase, so they land in the restructured code — from the plan document's signatures (or the task scenarios): bodies `throw new UnsupportedOperationException("Not implemented yet")` — never a silent `null` or default. Then run `TEST_COMPILE_CMD` and confirm it passes. Add each stub's signature to `context.md` "Signatures RED may call".
+RED does not write production files, so every production type and method the tests will call must exist before RED starts. Create them now — after the Tidy First phase, so they land in the restructured code — from the signatures the document gives (or the task scenarios): bodies `throw new UnsupportedOperationException("Not implemented yet")` — never a silent `null` or default. Then run `TEST_COMPILE_CMD` and confirm it passes. Add each stub's signature to `context.md` "Signatures RED may call".
 
 After this, you add a stub only when RED asks for one through `missing-stub.md`.
 
@@ -288,7 +290,7 @@ The cycle is finished when every task is `DONE` or `BLOCKED` and RED has sent `r
 
 GREEN wrote only the minimum for each task; now `tdd-refactor` makes it readable and well-designed. Spawn it if it is not running.
 
-1. Write `{TDD_DIR}/refactor.md`: every production file the session changed (the `files_modified` lines of every `green-result.md`), and the safety net — every session test method plus the `[REGRESSION]` classes, ids written out. Send `READ {TDD_DIR}/refactor.md` to `tdd-refactor`.
+1. Write `{TDD_DIR}/refactor.md`: every production file the session changed (the `files_modified` lines of every `green-result.md`), and the safety net — every session test method plus the regression set, ids written out. Send `READ {TDD_DIR}/refactor.md` to `tdd-refactor`.
 2. On `refactor-result.md`, run the **Refactor Check**: the safety net passes (run it yourself, ids literal, `\| tail -5`); `files_modified` stays within the session's production files; `changes` names a technique for each change. If it lists `refactor-test-updates.md`, send `READ {TDD_DIR}/refactor-test-updates.md` to `tdd-red` and check RED's result the same way. Any failure → `lead-check.md` back to the owner; after two bounces, ask the user.
 
 ### 2. Test Refactor
@@ -297,7 +299,7 @@ Test code has not been touched since RED wrote it, apart from mechanical updates
 
 ### 3. Final Test
 
-Each task passed its own Task Check; this run proves they still pass **together** — a later task's change can break an earlier task's methods. Run every session method in one invocation — all `test_methods` from every `red-result.md`, plus the `[REGRESSION]` classes — with `TEST_METHOD_RUNNER` and one `TEST_METHOD_CMD` per method. Collect the ids by reading the `red-result.md` files, then **write them out literally in the command**: `{TEST_METHOD_RUNNER} {id1} {id2} …`. Never pass them through a shell variable or `$(…)` — a quoted variable turns the whole list into one argument, and the runner reports a single nonexistent test instead of running yours. Redirect the output to `{TDD_DIR}/final-test.log` and read only the counts and failing names. If anything fails, write the failures to `{TDD_DIR}/final-test-failures.md` and send `READ` to `tdd-green`; at most 2 rounds, then ask the user.
+Each task passed its own Task Check; this run proves they still pass **together** — a later task's change can break an earlier task's methods. Run every session method in one invocation — all `test_methods` from every `red-result.md`, plus the regression set — with `TEST_METHOD_RUNNER` and one `TEST_METHOD_CMD` per method. Collect the ids by reading the `red-result.md` files, then **write them out literally in the command**: `{TEST_METHOD_RUNNER} {id1} {id2} …`. Never pass them through a shell variable or `$(…)` — a quoted variable turns the whole list into one argument, and the runner reports a single nonexistent test instead of running yours. Redirect the output to `{TDD_DIR}/final-test.log` and read only the counts and failing names. If anything fails, write the failures to `{TDD_DIR}/final-test-failures.md` and send `READ` to `tdd-green`; at most 2 rounds, then ask the user.
 
 ### 4. Parallel Final Review ← user checkpoint 2
 

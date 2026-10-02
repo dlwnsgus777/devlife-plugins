@@ -6,18 +6,18 @@ How `tdd-refactor` changes the structure of production code in this skill, witho
 
 | Moment | What | Scope |
 |---|---|---|
-| **Tidy First** — before the cycle | Restructure so the requirement can land in one place | Exactly the plan's tidy items, nothing else |
+| **Tidy First** — before the cycle | Restructure so the requirement can land in one place | Exactly the tidy items the requirements document names, nothing else |
 | **Refactor** — after the cycle | Make GREEN's minimal code readable and well-designed | The production files this session changed |
 
 In both, **behavior never changes and nothing is added.** The safety-net tests pass before you start and must pass after.
 
 GREEN's rules (`references/implementation.md`) still hold for what you leave behind — scope, the right layer, no anti-patterns. You never edit test files; when a test must follow a moved class or a renamed method, you list the edit for RED (section 5).
 
-## 1. Tidy First: Only What the Plan Names
+## 1. Tidy First: Only What the Document Names
 
-- A tidy item names a blocker, a technique, and where the requirement lands afterwards. Apply **that technique to that code.** A tidy item is not a licence to clean up the neighbourhood.
-- If the item cannot be done without changing behavior, stop and report it blocked — the plan was wrong about it being structural.
-- An approved abstraction (plan `0-2`) is extracted here **from the cases that already exist**. The new case it is meant to receive is behavior, and arrives in the cycle as a task.
+- A tidy item names what blocks the change, the restructuring, and where the change lands afterwards. Apply **that technique to that code.** A tidy item is not a licence to clean up the neighbourhood.
+- If the item cannot be done without changing behavior, stop and report it blocked — the document was wrong about it being structural.
+- An abstraction the document asks for is extracted here **from the cases that already exist**. The new case it is meant to receive is behavior, and arrives in the cycle as a task.
 
 ## 2. Refactor: Named Techniques Against Named Smells
 
