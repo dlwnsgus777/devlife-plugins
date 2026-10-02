@@ -43,6 +43,8 @@ Judge the tests against the test-writing guide at `TEST_GUIDE` (path in your spa
 
 ### review-design — is the production code fit to keep?
 
+Judge the production code against the implementation guide at `IMPL_GUIDE` (path in your spawn prompt) — it is the rulebook GREEN wrote it by. Cite its section when a finding rests on it.
+
 - Duplication across tasks — GREEN tidied per task, so cross-task duplication is where it hides.
 - Naming aligned with the domain language of the invariants.
 - Responsibilities: a class doing too much, logic in the wrong layer, leaked implementation details.

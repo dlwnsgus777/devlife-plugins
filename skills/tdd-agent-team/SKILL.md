@@ -208,11 +208,11 @@ Agent({
   name: "tdd-green",
   subagent_type: "tdd-green",
   description: "TDD GREEN teammate",
-  prompt: "TDD_DIR={TDD_DIR}. Wait for READ messages from tdd-red."
+  prompt: "TDD_DIR={TDD_DIR}. IMPL_GUIDE={SKILL_DIR}/references/implementation.md. Wait for READ messages from tdd-red."
 })
 ```
 
-The role is in the definition; the prompt carries only the session facts. `TEST_GUIDE` points RED at the test-writing rules in this skill's `references/` — a path rather than a copy, so the rules live in one file that RED and the `review-test` lens both read. Teammates address each other by these names, so keep them exact. Do not add a model; teammates inherit the session's.
+The role is in the definition; the prompt carries only the session facts. `TEST_GUIDE` and `IMPL_GUIDE` point at the rules in this skill's `references/` — `test-writing.md` for RED and the `review-test` lens, `implementation.md` for GREEN and the `review-design` lens. A path rather than a copy, so each rulebook lives in one file that its writer and its reviewer both read. Teammates address each other by these names, so keep them exact. Do not add a model; teammates inherit the session's.
 
 **First report.** `tdd-red` and `tdd-green` each open with `READ .tdd-agent-team/tools-{name}.md`, listing the tools they actually received. Reviewers do not report: they live for one review, and a reviewer whose definition failed to apply loses only its missing `Edit` — not worth three extra messages on every run. A list that includes tools outside its definition (`Agent`, `Skill`, MCP tools) means the definition did not apply — stop and re-check the install. A teammate without `SendMessage`, `Write`, `Edit`, or `Bash` cannot do its role — and a missing `SendMessage` means it cannot even send that report, so a teammate silent past its first idle notification counts as missing it. Stop the team and tell the user which tool was missing rather than letting the cycle start lame.
 
@@ -274,7 +274,7 @@ Agent({ name: "review-domain", subagent_type: "tdd-reviewer", description: "Fina
 Agent({ name: "review-test",   subagent_type: "tdd-reviewer", description: "Final review: test",
         prompt: "You are review-test — the test lens. TDD_DIR={TDD_DIR}. TEST_GUIDE={SKILL_DIR}/references/test-writing.md" })
 Agent({ name: "review-design", subagent_type: "tdd-reviewer", description: "Final review: design",
-        prompt: "You are review-design — the design lens. TDD_DIR={TDD_DIR}" })
+        prompt: "You are review-design — the design lens. TDD_DIR={TDD_DIR}. IMPL_GUIDE={SKILL_DIR}/references/implementation.md" })
 ```
 
 Each writes `{TDD_DIR}/final-review-{lens}.md`. A reviewer with only Minor findings reports to you at once; one with Critical or Important findings first sends its report to the other two, who rebut **those findings only** in `{TDD_DIR}/rebuttal-{from}-to-{to}.md`, revises once, then reports. The rebuttal round is the slow part of the review — it waits on the slowest reviewer twice — so it runs only where a must-fix finding is at stake. Either way you receive `READ {TDD_DIR}/final-review-{lens}.md` from all three. When all three have reported, merge them into `{TDD_DIR}/final-review.md`: drop findings a rebuttal refuted, keep the rest with their severity. Then send each reviewer a shutdown request right away — their work is done, and nothing later needs them.

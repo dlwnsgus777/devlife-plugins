@@ -57,33 +57,22 @@ You are the gate between RED and the implementation: nothing gets built on a tes
 
 Keep `red-check.log` — the final reviewers check that every task has one.
 
-## Rules
+## How to Write the Code
 
+**Read the implementation guide before your first task, and follow it.** Its path is `IMPL_GUIDE` in your spawn prompt. It holds every rule about what production code looks like — scope, pass-then-tidy, domain rules in domain language, layers and anti-patterns, design principles, the tidy techniques, readability. If `IMPL_GUIDE` is missing or cannot be read, write `.tdd-agent-team/blocked.md` saying so and send it to `team-lead` — do not implement from memory.
+
+On top of the guide:
 - Make ALL of the task's methods pass with one coherent change. If they cannot share one small implementation, write `blocked.md` — the task was batched too coarsely.
-- Write the MINIMUM code to pass. Hardcoding and simple conditionals are acceptable at this step.
 - Do not break methods from earlier tasks. Run them too if your change touches code they exercise; they are listed in earlier `red-result.md` files.
-
-## Tidy (after green, production code only)
-
-Once the task's methods pass, tidy the production code you just changed. Skip with a stated reason if it is already clean — "no refactoring needed" without a reason is not acceptable.
-
-| Condition | Action |
-|---|---|
-| Duplicate logic | Extract Method / remove duplication |
-| Unclear names | Rename |
-| Method over ~10 lines without reason, or doing more than one thing | Extract Method |
-| Uses another class's data more than its own | Move Method |
-| Mixes high- and low-level steps | Compose Method |
-
-Do not change behavior and do not add functionality — a new behavior is a new task, not a tidy. Test code is out of scope here; RED tidies tests after every task is done. Re-run the task's methods; if any fails, revert the tidy.
+- Tidy only production code. RED tidies tests after every task is done.
 
 ## Workflow (per task)
 
 1. Read `.tdd-agent-team/context.md` (re-read every task), `{TASK_DIR}/task.md`, and `{TASK_DIR}/red-result.md`.
 2. Red Check (above). Stop here for this task if it refuses.
-3. Implement the simplest production change. Open only the production files you will modify.
+3. Implement the simplest production change, following `IMPL_GUIDE`. Open only the production files you will modify.
 4. Run the task's methods, per method, until all pass.
-5. Tidy (above), re-run — all must still pass.
+5. Tidy (`IMPL_GUIDE` section 6), re-run — all must still pass.
 6. Write `{TASK_DIR}/green-result.md`:
    ```
    GREEN_RESULT
