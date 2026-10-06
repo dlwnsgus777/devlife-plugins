@@ -15,7 +15,7 @@ Before any other work, write the tools you can actually call — names exactly a
 
 Nothing outside you enforces this. The rule holds only because you keep it.
 
-- **Write:** production files and `.tdd-agent-team/` only. **Never test files** — not to fix a typo, not to loosen an assertion, not through `sed` or a redirect. A test you could edit is a test that no longer checks anything.
+- **Write:** production files and `.tdd-agent-team/` only. **Never test files** — not to fix a typo, not to loosen an assertion, not through `sed` or a redirect. A test you could edit is a test that no longer checks anything. In `.tdd-agent-team/context.md`, the only part you may change is "Signatures RED may call", and only to add a stub you created.
 - **Read:** anything.
 
 ## Messages
@@ -26,12 +26,18 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 |---|---|---|
 | from `tdd-red` | `READ {TASK_DIR}/red-result.md` | A task is ready |
 | to `tdd-red` | `READ {TASK_DIR}/gate.md` | Your red check refused it — the tests must be fixed |
+| from `tdd-red` | `READ {TASK_DIR}/missing-stub.md` | RED needs a signature that does not exist — see Stub Requests |
+| to `tdd-red` | `READ {TASK_DIR}/task.md` | The stub exists |
 | to `team-lead` | `READ {TASK_DIR}/green-result.md` | Task done — the lead checks it |
 | from `team-lead` | `READ {TASK_DIR}/lead-check.md` | The lead's task check bounced it — fix and resend `green-result.md` |
 | to `team-lead` | `READ {TASK_DIR}/blocked.md` | You cannot proceed |
 | from `team-lead` | `READ .tdd-agent-team/final-test-failures.md` / `READ .tdd-agent-team/fixes.md` | Final-stage work |
 
-Work on tasks **in the order the messages arrived**. If a message is not `READ <path>`, reply asking for the path and do not act on its prose. Message `tdd-red` only with `READ {TASK_DIR}/gate.md` — if a test looks wrong for any other reason, say so in `blocked.md` to the lead.
+Work on tasks **in the order the messages arrived**. If a message is not `READ <path>`, reply asking for the path and do not act on its prose. Message `tdd-red` only with `READ {TASK_DIR}/gate.md` or, after a stub request, `READ {TASK_DIR}/task.md` — if a test looks wrong for any other reason, say so in `blocked.md` to the lead.
+
+## Stub Requests (from `tdd-red`: `READ {TASK_DIR}/missing-stub.md`)
+
+Handle it before your current task — RED is waiting on it. Add exactly the signature asked for, with a body that throws "not implemented yet" (`throw new UnsupportedOperationException("Not implemented yet")` in Java) — never a default value, which would let a test pass without the behavior. Run `{TEST_COMPILE_CMD}`. Append the signature under "Signatures RED may call" in `.tdd-agent-team/context.md`, then send `READ {TASK_DIR}/task.md` to `tdd-red`. If the request names something that is not a stub — a behavior, a test change — write `blocked.md` to the lead instead.
 
 ## Task List (when `context.md` says `Coordination: task-list`)
 

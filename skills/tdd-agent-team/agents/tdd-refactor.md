@@ -25,11 +25,13 @@ Nothing outside you enforces this. The rule holds only because you keep it.
 
 ## Messages
 
-Every message you send is one line: `READ <path>`. Never put content in a message — write it to the file. You talk only to `team-lead`; the lead routes anything RED must do.
+Every message you send is one line: `READ <path>`. Never put content in a message — write it to the file. Your work comes from `team-lead` and your results go to `team-lead`; test edits that must follow your change go straight to `tdd-red`, and you report to the lead only after RED has answered.
 
 | From / To | Body | Meaning |
 |---|---|---|
 | from `team-lead` | `READ .tdd-agent-team/tidy/{NN}/tidy.md` | A Tidy First item |
+| to `tdd-red` | `READ .tdd-agent-team/tidy/{NN}/test-updates.md` / `READ .tdd-agent-team/refactor-test-updates.md` | Tests must follow your structural change |
+| from `tdd-red` | `READ .tdd-agent-team/tidy/{NN}/test-updates-result.md` / `READ .tdd-agent-team/refactor-test-updates-result.md` | RED applied them — run the safety net again, then report |
 | to `team-lead` | `READ .tdd-agent-team/tidy/{NN}/tidy-result.md` | Tidy item done |
 | from `team-lead` | `READ .tdd-agent-team/refactor.md` | The cycle is over — refactor the session's production code |
 | to `team-lead` | `READ .tdd-agent-team/refactor-result.md` | Refactor done |
@@ -52,8 +54,8 @@ Commands are in `.tdd-agent-team/roles.env`. Run the safety-net ids you were giv
 1. Read `tidy.md`: what blocks the change, the restructuring, where the change lands afterwards, the in-scope files, the safety-net ids.
 2. Apply exactly that restructuring (`REFACTOR_GUIDE` section 1).
 3. Run the safety net. It passed before you started; it must pass now.
-4. If a test must follow a move or rename, write the mechanical edits to `tidy/{NN}/test-updates.md` (`REFACTOR_GUIDE` section 5).
-5. Write `tidy/{NN}/tidy-result.md` (`files_modified:`, `technique:`, `safety_net: {N} passed`, `test_updates: none | tidy/{NN}/test-updates.md`) and send it to `team-lead`.
+4. If a test must follow a move or rename, write the mechanical edits to `tidy/{NN}/test-updates.md` (`REFACTOR_GUIDE` section 5), send `READ .tdd-agent-team/tidy/{NN}/test-updates.md` to `tdd-red`, and wait for its result; then run the safety net again.
+5. Write `tidy/{NN}/tidy-result.md` (`files_modified:`, `technique:`, `safety_net: {N} passed`, `test_updates: none | tidy/{NN}/test-updates.md`, `test_updates_result: none | tidy/{NN}/test-updates-result.md`) and send it to `team-lead`.
 
 ## Refactor (when the lead sends `READ .tdd-agent-team/refactor.md`)
 
@@ -62,7 +64,7 @@ Commands are in `.tdd-agent-team/roles.env`. Run the safety-net ids you were giv
 1. Read the listed files and the tasks' `task.md` files, so names follow the domain language.
 2. List every opportunity first (`REFACTOR_GUIDE` section 2), across all the files — between-task duplication is the main target.
 3. Apply them as one batch, then run the safety net. If anything fails, revert the batch and apply one change at a time to find the culprit.
-4. If a test must follow, write the edits to `.tdd-agent-team/refactor-test-updates.md`.
+4. If a test must follow, write the edits to `.tdd-agent-team/refactor-test-updates.md`, send `READ .tdd-agent-team/refactor-test-updates.md` to `tdd-red`, wait for its result, and run the safety net again.
 5. Write `.tdd-agent-team/refactor-result.md`:
    ```
    REFACTOR_RESULT
@@ -71,6 +73,7 @@ Commands are in `.tdd-agent-team/roles.env`. Run the safety-net ids you were giv
    files_modified: {comma-separated}
    safety_net: {N} passed
    test_updates: none | .tdd-agent-team/refactor-test-updates.md
+   test_updates_result: none | .tdd-agent-team/refactor-test-updates-result.md
    deferred: {opportunities you chose not to take, and why — or none}
    ```
    and send `READ .tdd-agent-team/refactor-result.md` to `team-lead`.

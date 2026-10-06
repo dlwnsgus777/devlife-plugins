@@ -18,7 +18,7 @@ Run Red-Green-Refactor with an agent team: a `tdd-red` teammate writes failing t
 
 ## Execution Rules
 
-**You are the team lead.** Setup, the two user checkpoints, unblocking, the per-task check, and the final stages are yours. The handoffs are not: once the teammates are running, RED and GREEN pass work between themselves and you stay off that path. Never relay a handoff. After Setup, the only source edits you make are stubs a teammate asks for in `missing-stub.md`; you never edit test files.
+**You are the team lead: you integrate results and handle errors.** Setup (the initial stubs included), creating the Tasks, the verification gates (Task Check, Tidy Check, Refactor Check), `blocked.md` and user escalations, the Final Test, and merging the review are yours. Communication is not: when one teammate's output is another's input — a handoff, a stub request, a list of test edits — the sender sends it straight to the receiver. Never relay a file from one teammate to another. After Setup you edit no source or test file.
 
 - Respect system, developer, and project `CLAUDE.md` instructions above this skill.
 - The user is asked at task confirmation (Setup 5), after the Tidy First phase when there is one (to commit it separately), and before applying final-review fixes (Final Stage 4). Project instructions that ask for feedback after each stage are honored at these two points — the cycle runs in parallel and has no stage boundary to pause at.
@@ -221,7 +221,7 @@ Agent({
   name: "tdd-red",
   subagent_type: "tdd-red",
   description: "TDD RED teammate",
-  prompt: "TDD_DIR={TDD_DIR}. TEST_GUIDE={SKILL_DIR}/references/test-writing.md. Wait for READ messages from team-lead."
+  prompt: "TDD_DIR={TDD_DIR}. TEST_GUIDE={SKILL_DIR}/references/test-writing.md. Wait for READ messages."
 })
 
 Agent({
@@ -239,7 +239,7 @@ Agent({
   name: "tdd-refactor",
   subagent_type: "tdd-refactor",
   description: "TDD REFACTOR teammate",
-  prompt: "TDD_DIR={TDD_DIR}. REFACTOR_GUIDE={SKILL_DIR}/references/refactoring.md. IMPL_GUIDE={SKILL_DIR}/references/implementation.md. Wait for READ messages from team-lead."
+  prompt: "TDD_DIR={TDD_DIR}. REFACTOR_GUIDE={SKILL_DIR}/references/refactoring.md. IMPL_GUIDE={SKILL_DIR}/references/implementation.md. Wait for READ messages."
 })
 ```
 
@@ -257,8 +257,8 @@ For each tidy item, in the order the document gives:
 
 1. **Baseline.** Pick the safety net: the regression set and every existing test class that exercises the files the item touches. Run them — ids written out literally — redirecting to `{TDD_DIR}/tidy/{NN}/baseline.log`. They must pass now; if they do not, stop and tell the user — a red baseline cannot prove the restructuring preserved behavior.
 2. **Hand it to `tdd-refactor`.** Write `{TDD_DIR}/tidy/{NN}/tidy.md` — the item as the document states it (what blocks the change, the restructuring, where the change lands), the in-scope files, and the safety-net test ids — and send `READ {TDD_DIR}/tidy/{NN}/tidy.md` to `tdd-refactor`. In task-list mode, first create its Task (see **Creating Tasks**) with owner `tdd-refactor`.
-3. **Test-side follow-up.** If `tdd-refactor` reports that tests must change mechanically (a moved class, a renamed method), it lists the exact edits in `tidy/{NN}/test-updates.md`. Send `READ {TDD_DIR}/tidy/{NN}/test-updates.md` to `tdd-red`. RED applies only those edits — assertions untouched.
-4. **Tidy Check.** On `tidy-result.md` (and RED's `test-updates-result.md` when there was one): the safety-net tests pass again; changed files are within the item's in-scope files; test changes are only the listed mechanical edits. Any failure → write `tidy/{NN}/lead-check.md` to the owner (task-list mode: reopen its Task to `in_progress` first); after two bounces, ask the user.
+3. **Test-side follow-up — not yours.** If tests must change mechanically (a moved class, a renamed method), `tdd-refactor` lists the exact edits in `tidy/{NN}/test-updates.md` and sends them to `tdd-red` itself; RED applies only those edits — assertions untouched — and answers `tdd-refactor`. You hear from `tdd-refactor` once, after both are done.
+4. **Tidy Check.** On `tidy-result.md` (and RED's `test-updates-result.md` it names, when there was one): the safety-net tests pass again; changed files are within the item's in-scope files; test changes are only the listed mechanical edits. Any failure → write `tidy/{NN}/lead-check.md` to the owner (task-list mode: reopen its Task to `in_progress` first); after two bounces, ask the user.
 
 When every item passed, ask once ← **user checkpoint (Tidy First only)**:
 
@@ -270,7 +270,7 @@ Commit only on "제가 커밋" — stage just the files the tidy items changed, 
 
 RED does not write production files, so every production type and method the tests will call must exist before RED starts. Create them now — after the Tidy First phase, so they land in the restructured code — from the signatures the document gives (or the task scenarios): bodies `throw new UnsupportedOperationException("Not implemented yet")` — never a silent `null` or default. Then run `TEST_COMPILE_CMD` and confirm it passes. Add each stub's signature to `context.md` "Signatures RED may call".
 
-After this, you add a stub only when RED asks for one through `missing-stub.md`.
+After this, stubs are not yours: a stub RED finds missing mid-cycle it asks `tdd-green` for through `missing-stub.md`, and GREEN adds it and its signature.
 
 In task-list mode, create one Task per `tasks/{NN}/task.md` now, owner `tdd-red` — after Tidy First, so RED cannot pick one up while the structure is still moving — and write each id into `session.md`.
 
@@ -304,7 +304,6 @@ You are off the handoff path. RED → GREEN goes direct; GREEN reports to you on
 |---|---|
 | `READ .tdd-agent-team/tools-{name}.md` | Check the role's tools are all there (see First report). Nothing else |
 | `READ {TASK_DIR}/green-result.md` | Run the **Task Check** below, then set the task `DONE` (or bounce it) in `session.md`. GREEN has already set the Task `completed`; on a bounce in task-list mode, reopen it first — `TaskUpdate({ taskId, status: "in_progress", owner: "tdd-green" })` |
-| `READ {TASK_DIR}/missing-stub.md` | Add the stub, run `TEST_COMPILE_CMD`, add the signature to `context.md`, reply `READ {TASK_DIR}/task.md` to the sender |
 | `READ {TASK_DIR}/blocked.md` | If it names a missing fact, add it to `context.md` and reply `READ {TASK_DIR}/task.md`. If RED's tests were refused twice or it is a design problem, set `BLOCKED` (task-list mode: also `metadata: { blocked: true }` on its Task) and ask the user — this is the one mid-cycle escalation |
 | `READ {TDD_DIR}/red-finished.md` | RED has written tests for every task. Note it; wait for GREEN |
 | Idle notification | **Usually nothing — do not reply, do not inspect files.** Teammates go idle between every message, so idle is normal. Act only when *all* teammates are idle and the cycle is not finished (some task not `DONE`/`BLOCKED`, or no `red-finished.md`): then find the handoff that was never sent — in task-list mode from `TaskList` (an open Task whose owner has no message to act on), in messages mode by comparing `session.md` with the result files under `tasks/` — and tell **the sender** to send it again (`READ {TASK_DIR}/task.md` to that teammate). Never send the handoff yourself — the sender owns the file it points to |
@@ -334,7 +333,7 @@ The cycle is finished when every task is `DONE` or `BLOCKED` and RED has sent `r
 GREEN wrote only the minimum for each task; now `tdd-refactor` makes it readable and well-designed. Spawn it if it is not running.
 
 1. Write `{TDD_DIR}/refactor.md`: every production file the session changed (the `files_modified` lines of every `green-result.md`), and the safety net — every session test method plus the regression set, ids written out. In task-list mode, create its Task (owner `tdd-refactor`, blocked by every cycle Task). Send `READ {TDD_DIR}/refactor.md` to `tdd-refactor`.
-2. On `refactor-result.md`, run the **Refactor Check**: the safety net passes (run it yourself, ids literal, `\| tail -5`); `files_modified` stays within the session's production files; `changes` names a technique for each change. If it lists `refactor-test-updates.md`, send `READ {TDD_DIR}/refactor-test-updates.md` to `tdd-red` and check RED's result the same way. Any failure → `lead-check.md` back to the owner (task-list mode: reopen its Task to `in_progress` first); after two bounces, ask the user.
+2. On `refactor-result.md`, run the **Refactor Check**: the safety net passes (run it yourself, ids literal, `\| tail -5`); `files_modified` stays within the session's production files; `changes` names a technique for each change. If tests had to follow, `tdd-refactor` sent `refactor-test-updates.md` to `tdd-red` itself and reports only after RED's result came back — check that result the same way (only the listed mechanical edits). Any failure → `lead-check.md` back to the owner (task-list mode: reopen its Task to `in_progress` first); after two bounces, ask the user.
 
 ### 2. Test Refactor
 

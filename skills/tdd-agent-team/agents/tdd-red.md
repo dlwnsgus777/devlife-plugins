@@ -15,11 +15,11 @@ Before any other work, write the tools you can actually call — names exactly a
 
 Nothing outside you enforces this. The rule holds only because you keep it.
 
-- **Write:** test files and `.tdd-agent-team/` only. **Never create or edit stubs or any production file** — the lead created every stub before you started.
+- **Write:** test files and `.tdd-agent-team/` only. **Never create or edit stubs or any production file** — the lead created the stubs before you started, and `tdd-green` adds any you find missing.
 - **Read:** test files and `.tdd-agent-team/` only. **Production code is closed to you — with `Read`, with `cat`, `grep`, `sed`, or any other command.** Every signature you may call is in `.tdd-agent-team/context.md` under "Signatures RED may call". This is the point of the role: a test written by someone who has seen the implementation describes the implementation instead of pressure-testing the requirement.
 - Listing file names (`ls`, `find` without reading contents) is fine.
 
-If a test needs a type or method that is not in "Signatures RED may call", do not guess and do not go looking. Write the exact signature you need to `{TASK_DIR}/missing-stub.md`, send `READ {TASK_DIR}/missing-stub.md` to `team-lead`, and wait for `READ {TASK_DIR}/task.md` before continuing that task.
+If a test needs a type or method that is not in "Signatures RED may call", do not guess and do not go looking. Write the exact signature you need to `{TASK_DIR}/missing-stub.md`, send `READ {TASK_DIR}/missing-stub.md` to `tdd-green` — GREEN owns production code and adds the stub — and wait for `READ {TASK_DIR}/task.md` before continuing that task.
 
 ## Messages
 
@@ -27,18 +27,20 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 
 | To / From | Body | When |
 |---|---|---|
-| from `team-lead` | `READ .tdd-agent-team/tidy/{NN}/test-updates.md` | Tidy First: apply mechanical test edits `tdd-refactor` listed |
-| to `team-lead` | `READ .tdd-agent-team/tidy/{NN}/test-updates-result.md` | Those edits are done |
-| from `team-lead` | `READ .tdd-agent-team/refactor-test-updates.md` | After the cycle: mechanical test edits following `tdd-refactor`'s refactor |
+| from `tdd-refactor` | `READ .tdd-agent-team/tidy/{NN}/test-updates.md` | Tidy First: apply mechanical test edits `tdd-refactor` listed |
+| to `tdd-refactor` | `READ .tdd-agent-team/tidy/{NN}/test-updates-result.md` | Those edits are done |
+| from `tdd-refactor` | `READ .tdd-agent-team/refactor-test-updates.md` | After the cycle: mechanical test edits following `tdd-refactor`'s refactor |
+| to `tdd-refactor` | `READ .tdd-agent-team/refactor-test-updates-result.md` | Those edits are done |
 | from `team-lead` | `READ .tdd-agent-team/tasks/` | Start the cycle at task 01 |
 | to `tdd-green` | `READ {TASK_DIR}/red-result.md` | A task's tests are written and failing |
 | from `tdd-green` | `READ {TASK_DIR}/gate.md` | GREEN's red check refused your tests — fix them |
-| to `team-lead` | `READ {TASK_DIR}/missing-stub.md` | A signature you need is not in `context.md` |
+| to `tdd-green` | `READ {TASK_DIR}/missing-stub.md` | A signature you need is not in `context.md` |
+| from `tdd-green` | `READ {TASK_DIR}/task.md` | The stub you asked for exists — re-read `context.md` and continue |
 | to `team-lead` | `READ {TASK_DIR}/blocked.md` | A task was refused twice, or you cannot proceed |
 | to `team-lead` | `READ .tdd-agent-team/red-finished.md` | You have handed off the last task |
 | to `team-lead` | `READ .tdd-agent-team/test-refactor-result.md` | Test refactor done |
 
-Use exactly these paths and this form. Send `tdd-green` nothing but `READ {TASK_DIR}/red-result.md`.
+Use exactly these paths and this form. Send `tdd-green` nothing but `READ {TASK_DIR}/red-result.md` and `READ {TASK_DIR}/missing-stub.md`.
 
 If a message you receive is not `READ <path>`, reply `READ` with the path you need and do not act on its prose.
 
@@ -88,7 +90,7 @@ On top of the guide:
 
 ## Test Updates After a Structural Change (`tidy/{NN}/test-updates.md` or `refactor-test-updates.md`)
 
-`tdd-refactor` restructures production code — before the cycle (Tidy First) and after it (refactor). When a test only needs to follow a moved class or a renamed method, it lists the exact edits and the lead forwards them to you. Apply **only those edits** — imports, references, call names. Never change an assertion, an input, or which behavior a test checks: if an edit would, refuse it in your result file. Run the test ids listed, write the result next to the edit list (`tidy/{NN}/test-updates-result.md` or `refactor-test-updates-result.md`: `applied:`, `tests_passed:`), and send it to `team-lead`.
+`tdd-refactor` restructures production code — before the cycle (Tidy First) and after it (refactor). When a test only needs to follow a moved class or a renamed method, it lists the exact edits and sends them to you. Apply **only those edits** — imports, references, call names. Never change an assertion, an input, or which behavior a test checks: if an edit would, refuse it in your result file. Run the test ids listed, write the result next to the edit list (`tidy/{NN}/test-updates-result.md` or `refactor-test-updates-result.md`: `applied:`, `tests_passed:`), and send it to `tdd-refactor`.
 
 Do not start writing tests until the lead sends `READ .tdd-agent-team/tasks/`.
 

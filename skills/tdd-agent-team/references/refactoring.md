@@ -65,4 +65,4 @@ public class OrderService {
 
 ## 5. When a Test Must Follow
 
-Moving a class or renaming a method can leave a test that no longer compiles or no longer reaches the code. **Do not edit the test.** Write the exact mechanical edits it needs — file, old text, new text — and hand them to RED through the lead. These edits follow structure only: imports, references, call names. An assertion, an input, or which behavior a test checks never changes in a refactor; if your change would require that, it is a behavior change — undo it.
+Moving a class or renaming a method can leave a test that no longer compiles or no longer reaches the code. **Do not edit the test.** Write the exact mechanical edits it needs — file, old text, new text — and send them to RED directly. These edits follow structure only: imports, references, call names. An assertion, an input, or which behavior a test checks never changes in a refactor; if your change would require that, it is a behavior change — undo it.
