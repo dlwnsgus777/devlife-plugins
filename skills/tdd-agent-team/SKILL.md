@@ -152,6 +152,12 @@ TDD 태스크 목록
 
 > "태스크를 확정하면 팀원이 끝까지 자동으로 진행하고, 최종 리뷰 결과가 나오면 다시 확인받습니다. 이대로 진행할까요?"
 
+**Is a team worth it?** With one or two tasks, RED has almost nothing to run ahead on, while every teammate still reads its guide and `context.md` and every idle notification costs you a turn — the team costs more than its parallelism saves. In that case, ask this instead of the question above:
+
+> "태스크가 {N}개라 RED·GREEN 병렬 진행으로 얻는 이득이 거의 없고, 팀원마다 가이드와 문맥을 따로 읽어 비용이 큽니다. `tdd-subagent`로 전환할까요? (확정한 태스크 목록을 그대로 넘깁니다) / 팀으로 그대로 진행할까요?"
+
+On switch, stop here and invoke `tdd-subagent` with the requirements document and the confirmed task list — no teammate has been spawned yet. On continue, proceed as a team.
+
 After this answer, do not ask again until Final Stage 4 — except the Tidy First commit question, when there are tidy items, and the escalations named under Lead Duties.
 
 ### 6. Context, Session, and Task Files
