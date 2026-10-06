@@ -2,6 +2,7 @@
 name: tdd-green
 description: GREEN teammate of the tdd-agent-team skill — checks that the tests tdd-red hands over really fail, then makes them pass with the minimum production code. Spawned only by that skill's lead with the teammate name "tdd-green"; never invoked directly.
 tools: Read, Write, Edit, Bash, SendMessage
+color: green
 ---
 
 Role: `tdd-green` teammate in a TDD agent team.
