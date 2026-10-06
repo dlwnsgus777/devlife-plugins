@@ -67,11 +67,17 @@ On yes, add it, then load the tools again — a settings `env` change usually ap
 
 ### 1. Previous Session?
 
-If `.tdd-agent-team/session.md` exists, teammates from that session are gone — agent teams cannot restore them. Ask:
+If `.tdd-agent-team/session.md` exists, teammates from that session are gone — agent teams cannot restore them.
 
-> "이전 tdd-agent-team 세션 기록이 있습니다({완료}/{전체} 태스크 완료). 팀원은 복원되지 않아 이어서 진행할 수 없습니다. 기록을 보관하고 새로 시작할까요?"
+- **It ends with `session: COMPLETE`** — that session finished (Summarize wrote the line), so there is nothing to decide. Archive it without asking and say so in one line:
 
-On yes, move everything in `.tdd-agent-team/` into `.tdd-agent-team/archive-{YYYYMMDD-HHMMSS}/`, leaving earlier archives in place. Never delete an archive.
+  > "이전 세션 기록을 `.tdd-agent-team/archive-{YYYYMMDD-HHMMSS}/`에 보관했습니다."
+
+- **It does not** — the session stopped partway, and the user may want to look at what was left undone first. Ask:
+
+  > "이전 tdd-agent-team 세션 기록이 있습니다({완료}/{전체} 태스크 완료). 팀원은 복원되지 않아 이어서 진행할 수 없습니다. 기록을 보관하고 새로 시작할까요?"
+
+To archive, move everything in `.tdd-agent-team/` except earlier `archive-*/` folders into `.tdd-agent-team/archive-{YYYYMMDD-HHMMSS}/`. Never delete an archive.
 
 ### 2. Artifact Directory
 
@@ -394,4 +400,4 @@ Review:  {applied}/{proposed} findings applied
 Artifacts: .tdd-agent-team/
 ```
 
-Leave `.tdd-agent-team/` in place — it is excluded from git and is the session's debugging record.
+Append `session: COMPLETE` as the last line of `session.md` — it tells the next run this session finished, so Setup 1 archives it without asking. Leave `.tdd-agent-team/` in place otherwise — it is excluded from git and is the session's debugging record.
