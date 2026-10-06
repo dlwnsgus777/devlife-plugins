@@ -26,7 +26,7 @@ devlife-brainstorming  (what/why + design spec)
         ↓
    plan-creator        (구현 계획 — 파일/step/테스트/커밋 단위)
         ↓
-     tdd-team          (TDD execution)
+   tdd-subagent        (TDD execution)
 ```
 
 ---

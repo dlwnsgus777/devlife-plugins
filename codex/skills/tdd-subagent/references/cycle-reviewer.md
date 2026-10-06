@@ -10,7 +10,7 @@ You are an independent reviewer — no context from the implementer. Evaluate on
 
 Your prompt gives you file paths, not content. Read them before you start:
 
-- `.tdd-team/context.md` — environment (including the scoped test command), project context, domain invariants, workspace rules
+- `.tdd-subagent/context.md` — environment (including the scoped test command), project context, domain invariants, workspace rules
 - the task or review file named in your prompt
 - any prior-phase result file named in your prompt
 

@@ -40,7 +40,7 @@ spec-creator (기술 명세 + 하위 작업 분해)
      ↓
 plan-creator (태스크별 구현 계획)
      ↓
-tdd-team (TDD 실행)
+tdd-subagent (TDD 실행)
 ```
 
 ## 관련 스킬

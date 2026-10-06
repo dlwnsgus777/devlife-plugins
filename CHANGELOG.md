@@ -4,6 +4,39 @@
 
 ---
 
+## 2026-10-06
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-agent-team` | `1.3.0` | 실사용 회고 반영. 태스크가 1~2개면 Setup 5에서 `tdd-subagent` 전환을 제안(병렬 이득보다 팀 비용이 큼, 확정 태스크를 그대로 넘김). 팀원 첫 작업은 `tools-{name}.md` 첫 보고를 받은 뒤에만 전송(막 뜬 팀원의 메시지 유실·재전송에 따른 중복 보고 방지), 재전송 전 Task owner·상태 또는 결과 파일로 착수 여부 확인 |
+| `tdd-agent-team` | `1.2.1` | 팀원 정의에 표시 색 추가 — `tdd-red`는 `color: red`, `tdd-green`은 `color: green`(작업 목록·대화 기록 표시). 동작 변경 없음 |
+| `tdd-agent-team` | `1.2.0` | 완료된 세션을 다음 실행에서 묻지 않고 보관 — 종료 시 `session.md` 끝에 `session: COMPLETE`를 남기고, Setup 1은 이 표시가 있으면 바로 `archive-{시각}/`으로 옮긴 뒤 한 줄로 알림. 표시가 없는(중단된) 세션만 보관 여부를 물음. 기존에는 정상 종료한 세션도 매번 질문함 |
+| `tdd-agent-team` | `1.1.0` | Task 도구(`TaskCreate`·`TaskGet`·`TaskList`·`TaskUpdate`)가 있으면 공유 작업 목록 사용 — 작업 md 하나에 Task 하나, description은 `READ <경로>` 한 줄. 사이클 Task는 RED·GREEN이 owner를 바꿔 가며 공유하고 GREEN이 `completed`, 리드는 사후 검수 후 실패 시 다시 엶. owner 변경은 알림이 아니라 `READ` 메시지는 유지. Task 도구가 없으면 `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` 추가를 제안하고 거절 시 메시지 방식. `session.md`는 유지. 리드는 결과 통합·검수·에러 처리만 맡고 팀원끼리 직접 소통 — 사이클 중 스텁 요청은 RED → GREEN, 테스트 수정 목록은 `tdd-refactor` ↔ RED. 리팩터링에 클래스당 책임 하나 점검 추가(한 문장 서술·필드/의존성 묶음·변경 이유, 둘 이상이면 Extract Class 또는 미룬 이유), 이미 있는 책임 분리는 YAGNI 위반이 아님을 명시, 리드 Refactor Check가 `responsibilities` 기록을 확인 |
+
+---
+
+## 2026-10-01
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-subagent` | `3.0.0` | `tdd-team` → `tdd-subagent`로 이름 변경. 오케스트레이터가 서브에이전트를 순차 호출하는 구조라 Claude Code agent teams가 아님을 이름에 반영. 작업 디렉터리 `.tdd-team/` → `.tdd-subagent/`(기존 세션 재개 불가), 트리거 "TDD 팀 만들어" 제거. 동작 변경 없음 |
+| `tdd-agent-team` | `1.0.0` | 신규. agent teams 위에서 `tdd-red`·`tdd-green` 팀원이 병렬로 TDD를 진행(RED-(N+1)과 GREEN-N 동시). 내용은 md 파일·메시지는 `READ <경로>`만, RED → GREEN 직접 전달하고 리드는 관리만. 팀원 역할은 user 범위 에이전트 정의(`tdd-red`·`tdd-green`·`tdd-reviewer`)로 시스템 프롬프트에 주입하고 `tools`로 제한 — 스킬이 Setup에서 `~/.claude/agents/`에 설치. 플러그인 에이전트로 두지 않은 이유: agent teams는 project·user·managed 범위 정의만 팀원에 적용하고 플러그인 정의는 오류 없이 무시함(실제 실행에서 확인). 경로 단위 격리(RED 구현 코드 읽기 금지, GREEN 테스트 수정 금지)와 실패 확인은 hook 없이 지시문 + GREEN의 red check로 운영하고, 리드가 태스크마다 기계적 검수(`red-check.log` 존재·수정 파일 범위·메서드 재실행)로 확인, 최종 테스트와 리뷰어가 사후 확인. 메서드 단위 테스트 실행, 스텁은 리드가 일괄 생성, 최종 리뷰어 3명(Critical/Important 지적이 있을 때만 해당 지적 교차 반박), 사용자 확인 2회, 시작 시 실제 받은 도구 목록 보고, 재개 미지원. 입력 문서에 없는 항목은 리드가 탐색으로 정하고 태스크 확정 때 확인 — In-scope·Out of scope·함정, 회귀 테스트 묶음(수정 파일을 다루는 기존 테스트는 항상 포함), 불변성 ID. GREEN은 테스트를 통과하는 최소 코드만 쓰고, 구조·품질은 `tdd-refactor` 팀원이 맡음 — 사이클 전 Tidy First 정비(문서 양식이 아니라 "동작 유지·구조 선변경"이라는 내용으로 식별, 문서에 없으면 리드가 `references/tidy-first-scan.md`로 후보를 찾아 사용자 승인분만), 사이클 후 세션 구현 코드 일괄 리팩터링(동시 수정 충돌을 피하려 사이클 중에는 정리하지 않음), 테스트가 따라가야 하면 기계적 수정 목록을 RED가 반영, 리드가 안전망 전후 통과로 검수, Tidy First 뒤 `refactor` 커밋 분리 여부 확인. 규칙 문서는 `references/test-writing.md`(RED·`review-test`), `implementation.md`(GREEN), `refactoring.md`(`tdd-refactor`)로 분리, `review-design`은 뒤의 둘을 참조(모두 언어 무관 원칙 + Java 예시, 글로벌 CLAUDE.md 규칙 반영, Java가 아니면 그 언어 표현 사용). 테스트 컨벤션은 기존 테스트·프로젝트 지침에서 확인한 것만 기록(없으면 가이드를 따름). 리드 태스크 검수는 `green-result.md`(메서드 id·`red-check.log` 경로 포함)만 읽음. 최종 리뷰 반영 질문에 Minor도 한 줄 요약으로 함께 보여 주고(Minor뿐이어도 질문), 답을 받을 때까지 팀원 유지. 환경 변수 확인은 `printenv`, git exclude 등록은 `Read`/`Edit`로, 태스크 폴더는 `task.md` 작성 시 생성(권한 프롬프트 감소) |
+| `devlife` (hooks) | — | `allow-tdd-artifact`가 `.tdd-subagent/`·`.tdd-agent-team/`를 허용하도록 디렉터리 목록화 |
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `plan-creator` | `1.10.0` | Step 5 핸드오프를 `tdd-subagent`(순차) / `tdd-agent-team`(병렬 팀) 선택 질문으로 변경. 템플릿·본문의 `tdd-team` 표기를 "TDD 스킬"로 일반화. Codex 사본은 `tdd-subagent`로만 핸드오프 |
+| `spec-creator` | `1.1.1` | 체인 표기 `tdd-team` → `tdd-subagent` |
+| `devlife-brainstorming` | `1.10.1` | 체인 표기 `tdd-team` → `tdd-subagent` |
+
+---
+
 ## 2026-09-29
 
 ### devlife-planning

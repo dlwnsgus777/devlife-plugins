@@ -1,5 +1,5 @@
 {
-  "description": "Skips the permission prompt for the md files tdd-team's agents use to communicate, under .tdd-team/.",
+  "description": "Skips the permission prompt for the md files the TDD skills (tdd-subagent, tdd-agent-team) use to communicate, under .tdd-subagent/ and .tdd-agent-team/.",
   "hooks": {
     "PreToolUse": [
       {

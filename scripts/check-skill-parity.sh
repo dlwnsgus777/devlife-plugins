@@ -2,7 +2,7 @@
 # skills/ (Claude) 와 codex/skills/ (Codex) 의 동기화 상태를 검사한다.
 #
 #   ./scripts/check-skill-parity.sh            전체 검사
-#   ./scripts/check-skill-parity.sh tdd-team   특정 스킬만
+#   ./scripts/check-skill-parity.sh tdd-subagent   특정 스킬만
 #
 # exit 0 = 통과, exit 1 = 동기화 깨짐
 # bash 3.2 (macOS 기본) 에서 동작한다 — mapfile/연관배열 사용 금지.

@@ -64,7 +64,7 @@ devlife-brainstorming (선택)
         ↓
   plan-creator (태스크별 구현 계획)
         ↓
-    tdd-team (TDD 실행)
+  tdd-subagent (TDD 실행)
 ```
 
 ## 관련 스킬
