@@ -261,9 +261,11 @@ The role is in the definition; the prompt carries only the session facts. `TEST_
 
 **First report.** `tdd-red`, `tdd-green`, and `tdd-refactor` each open with `READ .tdd-agent-team/tools-{name}.md`, listing the tools they actually received. Reviewers do not report: they live for one review, and a reviewer whose definition failed to apply loses only its missing `Edit` — not worth three extra messages on every run. A list that includes tools outside its definition (`Agent`, `Skill`, MCP tools) means the definition did not apply — stop and re-check the install. `SendMessage` and, in task-list mode, `TaskCreate`, `TaskGet`, `TaskList`, and `TaskUpdate` are not outside it: Claude Code adds them to every teammate. In task-list mode, a teammate whose list lacks the Task tools (a split-pane teammate decides them by its own model) means the team cannot share the list — switch `context.md` to `Coordination: messages` before the cycle starts. A teammate without `SendMessage`, `Write`, `Edit`, or `Bash` cannot do its role — and a missing `SendMessage` means it cannot even send that report, so a teammate silent past its first idle notification counts as missing it. Stop the team and tell the user which tool was missing rather than letting the cycle start lame.
 
+**First work only after the first report.** A teammate that is still starting can miss a message sent to it, and resending afterwards makes it report finished work twice. So send a teammate its first `READ` — `tasks/` to `tdd-red`, `tidy.md` or `refactor.md` to a newly spawned `tdd-refactor` — only after its `tools-{name}.md` report has arrived. If a teammate seems not to have acted on a message, check before resending: in task-list mode its Task's `owner` and `status` (`TaskGet`), in messages mode whether its result file exists. Resend only when neither shows the work started.
+
 ### Tidy First (only when there are tidy items)
 
-Structure first, behavior second, in separate commits — the CLAUDE.md Tidy First rule. `tdd-refactor` does the restructuring; nothing else runs meanwhile, because RED writing new tests against a structure being moved would collide. Spawn `tdd-refactor` now (see Spawn) if it is not running yet.
+Structure first, behavior second, in separate commits — the CLAUDE.md Tidy First rule. `tdd-refactor` does the restructuring; nothing else runs meanwhile, because RED writing new tests against a structure being moved would collide. Spawn `tdd-refactor` now (see Spawn) if it is not running yet, and wait for its first report before step 2.
 
 For each tidy item, in the order the document gives:
 
@@ -286,7 +288,7 @@ After this, stubs are not yours: a stub RED finds missing mid-cycle it asks `tdd
 
 In task-list mode, create one Task per `tasks/{NN}/task.md` now, owner `tdd-red` — after Tidy First, so RED cannot pick one up while the structure is still moving — and write each id into `session.md`.
 
-Start the cycle: send `READ {TDD_DIR}/tasks/` to `tdd-red`. RED begins with task 01 and continues in number order; GREEN takes each task as RED hands it over.
+Start the cycle — once `tdd-red`'s first report is in: send `READ {TDD_DIR}/tasks/` to `tdd-red`. RED begins with task 01 and continues in number order; GREEN takes each task as RED hands it over.
 
 ### Creating Tasks (task-list mode)
 
@@ -342,7 +344,7 @@ The cycle is finished when every task is `DONE` or `BLOCKED` and RED has sent `r
 
 ### 1. Refactor
 
-GREEN wrote only the minimum for each task; now `tdd-refactor` makes it readable and well-designed. Spawn it if it is not running.
+GREEN wrote only the minimum for each task; now `tdd-refactor` makes it readable and well-designed. Spawn it if it is not running, and wait for its first report before sending `refactor.md`.
 
 1. Write `{TDD_DIR}/refactor.md`: every production file the session changed (the `files_modified` lines of every `green-result.md`), and the safety net — every session test method plus the regression set, ids written out. In task-list mode, create its Task (owner `tdd-refactor`, blocked by every cycle Task). Send `READ {TDD_DIR}/refactor.md` to `tdd-refactor`.
 2. On `refactor-result.md`, run the **Refactor Check**: the safety net passes (run it yourself, ids literal, `\| tail -5`); `files_modified` stays within the session's production files; `changes` names a technique for each change; `responsibilities` has one line per production class the session changed, and a line that names more than one responsibility has a matching Extract Class in `changes` or an entry in `deferred` — you check that the record is there, not whether the split is right (`review-design` judges that). If tests had to follow, `tdd-refactor` sent `refactor-test-updates.md` to `tdd-red` itself and reports only after RED's result came back — check that result the same way (only the listed mechanical edits). Any failure → `lead-check.md` back to the owner (task-list mode: reopen its Task to `in_progress` first); after two bounces, ask the user.
