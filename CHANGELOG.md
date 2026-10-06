@@ -10,6 +10,7 @@
 
 | Skill | Version | Change |
 |-------|---------|--------|
+| `tdd-agent-team` | `1.2.1` | `tdd-red` 팀원 정의에 `color: red` 추가 — 작업 목록·대화 기록에서 빨간색으로 표시. 동작 변경 없음 |
 | `tdd-agent-team` | `1.2.0` | 완료된 세션을 다음 실행에서 묻지 않고 보관 — 종료 시 `session.md` 끝에 `session: COMPLETE`를 남기고, Setup 1은 이 표시가 있으면 바로 `archive-{시각}/`으로 옮긴 뒤 한 줄로 알림. 표시가 없는(중단된) 세션만 보관 여부를 물음. 기존에는 정상 종료한 세션도 매번 질문함 |
 | `tdd-agent-team` | `1.1.0` | Task 도구(`TaskCreate`·`TaskGet`·`TaskList`·`TaskUpdate`)가 있으면 공유 작업 목록 사용 — 작업 md 하나에 Task 하나, description은 `READ <경로>` 한 줄. 사이클 Task는 RED·GREEN이 owner를 바꿔 가며 공유하고 GREEN이 `completed`, 리드는 사후 검수 후 실패 시 다시 엶. owner 변경은 알림이 아니라 `READ` 메시지는 유지. Task 도구가 없으면 `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` 추가를 제안하고 거절 시 메시지 방식. `session.md`는 유지. 리드는 결과 통합·검수·에러 처리만 맡고 팀원끼리 직접 소통 — 사이클 중 스텁 요청은 RED → GREEN, 테스트 수정 목록은 `tdd-refactor` ↔ RED. 리팩터링에 클래스당 책임 하나 점검 추가(한 문장 서술·필드/의존성 묶음·변경 이유, 둘 이상이면 Extract Class 또는 미룬 이유), 이미 있는 책임 분리는 YAGNI 위반이 아님을 명시, 리드 Refactor Check가 `responsibilities` 기록을 확인 |
 
