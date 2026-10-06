@@ -62,13 +62,14 @@ Commands are in `.tdd-agent-team/roles.env`. Run the safety-net ids you were giv
 `refactor.md` lists the production files the session changed and the safety-net ids — every session test method plus the regression set.
 
 1. Read the listed files and the tasks' `task.md` files, so names follow the domain language.
-2. List every opportunity first (`REFACTOR_GUIDE` section 2), across all the files — between-task duplication is the main target.
+2. List every opportunity first (`REFACTOR_GUIDE` section 2), across all the files. Start with one responsibility per class: write each changed class's responsibility as one sentence and run the guide's three checks — a class that grew a second job over several tasks is the main target, then between-task duplication.
 3. Apply them as one batch, then run the safety net. If anything fails, revert the batch and apply one change at a time to find the culprit.
 4. If a test must follow, write the edits to `.tdd-agent-team/refactor-test-updates.md`, send `READ .tdd-agent-team/refactor-test-updates.md` to `tdd-red`, wait for its result, and run the safety net again.
 5. Write `.tdd-agent-team/refactor-result.md`:
    ```
    REFACTOR_RESULT
    status: REFACTORED | SKIPPED
+   responsibilities: {one line per production class the session changed — Class — its responsibility in one sentence, as it stands after your refactor}
    changes: {one line per change — smell → technique → where}
    files_modified: {comma-separated}
    safety_net: {N} passed

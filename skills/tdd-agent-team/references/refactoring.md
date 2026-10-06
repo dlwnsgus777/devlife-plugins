@@ -21,10 +21,23 @@ GREEN's rules (`references/implementation.md`) still hold for what you leave beh
 
 ## 2. Refactor: Named Techniques Against Named Smells
 
+### One responsibility per class — check this first
+
+Before the smell table, go through every class the session changed:
+
+1. **State its responsibility in one sentence.** If the sentence needs "and" — it validates *and* calculates *and* notifies — the class has more than one.
+2. **Group its methods by the fields and dependencies they use.** Two or more groups that share nothing are two classes sharing a file.
+3. **Count the reasons it would change.** A policy change and a storage change landing in the same class are two reasons.
+
+Any one of these showing more than one responsibility makes the class a candidate: Extract Class, one class per reason, or record why it stays (`deferred`). Short, well-named methods do not make a class clean — this check exists because each task's minimum lands in the same service, and no method-level smell sees the responsibilities pile up.
+
+### Smell → technique
+
 After the cycle, check every production file the session changed against these smells and apply the named technique. Look across tasks: GREEN wrote each task's minimum in isolation, so duplication and misplaced responsibility hide **between** tasks. Skip a file with a stated reason if it is already clean — "no refactoring needed" without a reason is not acceptable.
 
 | Smell | Technique |
 |---|---|
+| A class changes for more than one reason (Large Class / Divergent Change) | Extract Class — one class per reason |
 | Duplicate logic | Extract Method / remove duplication (DRY) |
 | Hardcoded value or special case that a general form now covers | Replace with the general form the tests already demand |
 | Unclear or misleading names | Rename Variable / Rename Method |
@@ -45,6 +58,8 @@ Identify all opportunities first, then apply them as one batch and run the safet
 - **DIP** — depend on abstractions at layer boundaries.
 
 These justify a structure only when the code already needs it. Simplicity (KISS) and not building ahead (YAGNI) win any tie.
+
+Splitting a responsibility that already exists is not building ahead. YAGNI applies to extension points nobody needs yet — an interface with one implementation, a hook for a case that does not exist — never to separating what a class already does. A class with two responsibilities is not a tie.
 
 ## 4. Readable by Itself
 
