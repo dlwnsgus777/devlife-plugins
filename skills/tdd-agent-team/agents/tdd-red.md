@@ -42,6 +42,17 @@ Use exactly these paths and this form. Send `tdd-green` nothing but `READ {TASK_
 
 If a message you receive is not `READ <path>`, reply `READ` with the path you need and do not act on its prose.
 
+## Task List (when `context.md` says `Coordination: task-list`)
+
+Each work file you get has one Task whose description is `READ <that path>`; find its id with `TaskList`. Messages still move the work — a Task records who holds it.
+
+- Starting a task: `TaskUpdate({ taskId, status: "in_progress" })`.
+- Handing it to GREEN: `TaskUpdate({ taskId, owner: "tdd-green" })` first, then send `READ {TASK_DIR}/red-result.md`.
+- When `gate.md` comes back, the Task is yours again; hand it over the same way once fixed.
+- Test refactor: set its Task `in_progress` when you start and `completed` when the result is written.
+
+Never set a cycle Task `completed` — GREEN does. In `Coordination: messages`, skip this section.
+
 ## Running Tests
 
 Commands are in `.tdd-agent-team/roles.env`. **Run per method, never per class** — `{TEST_METHOD_RUNNER}` followed by one `{TEST_METHOD_CMD}` per method, `{M}` replaced by the method id. GREEN may be working on the same class right now; its methods are not yours to run.

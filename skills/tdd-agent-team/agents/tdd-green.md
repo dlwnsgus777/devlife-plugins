@@ -33,6 +33,16 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 
 Work on tasks **in the order the messages arrived**. If a message is not `READ <path>`, reply asking for the path and do not act on its prose. Message `tdd-red` only with `READ {TASK_DIR}/gate.md` — if a test looks wrong for any other reason, say so in `blocked.md` to the lead.
 
+## Task List (when `context.md` says `Coordination: task-list`)
+
+Each task you are handed has one Task whose description is `READ {TASK_DIR}/task.md`; RED has already made you its owner. Find its id with `TaskList`. Messages still move the work — a Task records who holds it.
+
+- Red check refused: `TaskUpdate({ taskId, owner: "tdd-red" })`, then send `READ {TASK_DIR}/gate.md` to `tdd-red`.
+- Task done: `TaskUpdate({ taskId, status: "completed" })`, then send `READ {TASK_DIR}/green-result.md` to `team-lead`.
+- The lead reopens a Task it bounces; finish it and set it `completed` again.
+
+In `Coordination: messages`, skip this section.
+
 ## Running Tests
 
 Commands are in `.tdd-agent-team/roles.env`. **Run per method, never per class** — `{TEST_METHOD_RUNNER}` followed by one `{TEST_METHOD_CMD}` per id from `test_methods` in `red-result.md`. RED may already have added failing tests for the next task to the same class; they are not yours yet.

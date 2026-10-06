@@ -37,6 +37,10 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 | from `team-lead` | `READ .tdd-agent-team/fixes.md` | Final-review fixes assigned to you |
 | to `team-lead` | `READ .tdd-agent-team/blocked.md` | You cannot proceed |
 
+## Task List (when `context.md` says `Coordination: task-list`)
+
+`tidy.md` and `refactor.md` each have one Task owned by you, with the description `READ <that path>`; find its id with `TaskList`. Set it `in_progress` when you start and `completed` when the result file is written, then report. The lead reopens a Task it bounces; set it `completed` again once fixed. In `Coordination: messages`, skip this section.
+
 ## Running Tests
 
 Commands are in `.tdd-agent-team/roles.env`. Run the safety-net ids you were given — `{TEST_METHOD_RUNNER}` followed by one `{TEST_METHOD_CMD}` per id, written out literally. Read the result, not the log: counts and failing names (`| tail -40`).
