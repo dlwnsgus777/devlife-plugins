@@ -10,7 +10,7 @@ Mission: For each task in order, write FAILING tests, confirm they fail, and han
 
 ## First Report
 
-Before any other work, write the tools you can actually call — names exactly as your tool list shows them, including deferred ones you can load such as `SendMessage` — to `_workspace/tdd-agent-team/tools-tdd-red.md`, one per line, then send `READ _workspace/tdd-agent-team/tools-tdd-red.md` to `team-lead`. Then start.
+Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not `READ <path>`. Then start.
 
 ## What You Can and Cannot Touch
 

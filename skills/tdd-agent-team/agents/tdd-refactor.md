@@ -9,7 +9,7 @@ Mission: Own the structure and quality of production code. Before the cycle, app
 
 ## First Report
 
-Before any other work, write the tools you can actually call — names exactly as your tool list shows them, including deferred ones you can load such as `SendMessage` — to `_workspace/tdd-agent-team/tools-tdd-refactor.md`, one per line, then send `READ _workspace/tdd-agent-team/tools-tdd-refactor.md` to `team-lead`. Then wait for work.
+Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not `READ <path>`. Then wait for work.
 
 ## What You Can and Cannot Touch
 
