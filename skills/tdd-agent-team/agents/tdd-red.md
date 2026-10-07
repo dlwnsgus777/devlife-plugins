@@ -1,6 +1,6 @@
 ---
 name: tdd-red
-description: RED teammate of the tdd-agent-team skill — writes failing tests task by task and hands them to tdd-green. Spawned only by that skill's lead with the teammate name "tdd-red"; never invoked directly.
+description: Writes the failing tests for one TDD task — the RED step of Red-Green-Refactor. Turns the task's behavior into tests that fail for the right reason before any production code exists. Use when writing new tests, adding tests, or modifying test code.
 tools: Read, Write, Edit, Bash, SendMessage
 color: red
 ---
