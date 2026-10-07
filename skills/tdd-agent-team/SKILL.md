@@ -34,12 +34,12 @@ Each role is a **user-scope** agent definition that ships with this skill and is
 
 | Teammate name | `subagent_type` | Source | `tools` |
 |---|---|---|---|
-| `tdd-red` | `tdd-red` | `{SKILL_DIR}/agents/tdd-red.md` | Read, Write, Edit, Bash, SendMessage |
-| `tdd-green` | `tdd-green` | `{SKILL_DIR}/agents/tdd-green.md` | Read, Write, Edit, Bash, SendMessage |
-| `tdd-refactor` | `tdd-refactor` | `{SKILL_DIR}/agents/tdd-refactor.md` | Read, Write, Edit, Bash, SendMessage |
-| `review-domain` / `review-test` / `review-design` | `tdd-reviewer` | `{SKILL_DIR}/agents/tdd-reviewer.md` | Read, Write, Bash, SendMessage — no `Edit` |
+| `tdd-red` | `tdd-red` | `{PLUGIN_ROOT}/agents/tdd-red.md` | Read, Write, Edit, Bash, SendMessage |
+| `tdd-green` | `tdd-green` | `{PLUGIN_ROOT}/agents/tdd-green.md` | Read, Write, Edit, Bash, SendMessage |
+| `tdd-refactor` | `tdd-refactor` | `{PLUGIN_ROOT}/agents/tdd-refactor.md` | Read, Write, Edit, Bash, SendMessage |
+| `review-domain` / `review-test` / `review-design` | `tdd-reviewer` | `{PLUGIN_ROOT}/agents/tdd-reviewer.md` | Read, Write, Bash, SendMessage — no `Edit` |
 
-`SKILL_DIR` is this file's parent directory. The definition body becomes the teammate's system prompt, so the role is in force from its first turn. User scope is deliberate: agent teams accept teammate definitions from the project, user, or managed scope only — a definition shipped as a plugin agent is silently ignored, and the teammate spawns as a default agent with no role and no tool limit.
+`SKILL_DIR` is this file's parent directory; `PLUGIN_ROOT` is two levels above it (`{SKILL_DIR}/../..`). The definition body becomes the teammate's system prompt, so the role is in force from its first turn. User scope is deliberate: agent teams accept teammate definitions from the project, user, or managed scope only — a definition shipped as a plugin agent is silently ignored, and the teammate spawns as a default agent with no role and no tool limit.
 
 **What is and is not enforced.** The tool lists are enforced: reviewers have no `Edit`. Everything finer is the teammates' own discipline — `tools` cannot limit paths, and RED and GREEN both need `Bash` to run tests. So RED not reading production code, GREEN and `tdd-refactor` not editing tests, GREEN not refactoring, and GREEN's red check before implementing all rest on the definitions' instructions. The final test and the `review-test` lens are the independent checks that catch a lapse.
 
@@ -53,7 +53,7 @@ Agent teams need `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Check the **effective
 
 Edit the file only on an explicit yes. On no, stop and point to `tdd-subagent`. Agent teams also need an interactive session — in `-p` / SDK mode, teammates never spawn; stop and say so.
 
-**Install the teammate definitions.** For each file in `{SKILL_DIR}/agents/`, compare it with `~/.claude/agents/{same name}`. If any is missing or differs, ask once:
+**Install the teammate definitions.** For each `tdd-*.md` file in `{PLUGIN_ROOT}/agents/`, compare it with `~/.claude/agents/{same name}`. If any is missing or differs, ask once:
 
 > "팀원 정의 파일({목록})을 `~/.claude/agents/`에 설치(또는 갱신)해야 합니다. 진행할까요?"
 
