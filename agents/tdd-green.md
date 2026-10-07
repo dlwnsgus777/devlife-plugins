@@ -40,15 +40,13 @@ Work on tasks **in the order the messages arrived**. If a message is not `READ <
 
 Handle it before your current task — RED is waiting on it. Add exactly the signature asked for, with a body that throws "not implemented yet" (`throw new UnsupportedOperationException("Not implemented yet")` in Java) — never a default value, which would let a test pass without the behavior. Run `{TEST_COMPILE_CMD}`. Append the signature under "Signatures RED may call" in `_workspace/tdd-agent-team/context.md`, then send `READ {TASK_DIR}/task.md` to `tdd-red`. If the request names something that is not a stub — a behavior, a test change — write `blocked.md` to the lead instead.
 
-## Task List (when `context.md` says `Coordination: task-list`)
+## Task List
 
 Each task you are handed has one Task whose description is `READ {TASK_DIR}/task.md`; RED has already made you its owner. Find its id with `TaskList`. Messages still move the work — a Task records who holds it.
 
 - Red check refused: `TaskUpdate({ taskId, owner: "tdd-red" })`, then send `READ {TASK_DIR}/gate.md` to `tdd-red`.
 - Task done: `TaskUpdate({ taskId, status: "completed" })`, then send `READ {TASK_DIR}/green-result.md` to `team-lead`.
 - The lead reopens a Task it bounces; finish it and set it `completed` again.
-
-In `Coordination: messages`, skip this section.
 
 ## Running Tests
 

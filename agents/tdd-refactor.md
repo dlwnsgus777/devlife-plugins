@@ -39,9 +39,9 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 | from `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Final-review fixes assigned to you |
 | to `team-lead` | `READ _workspace/tdd-agent-team/blocked.md` | You cannot proceed |
 
-## Task List (when `context.md` says `Coordination: task-list`)
+## Task List
 
-`tidy.md` and `refactor.md` each have one Task owned by you, with the description `READ <that path>`; find its id with `TaskList`. Set it `in_progress` when you start and `completed` when the result file is written, then report. The lead reopens a Task it bounces; set it `completed` again once fixed. In `Coordination: messages`, skip this section.
+`tidy.md` and `refactor.md` each have one Task owned by you, with the description `READ <that path>`; find its id with `TaskList`. Set it `in_progress` when you start and `completed` when the result file is written, then report. The lead reopens a Task it bounces; set it `completed` again once fixed.
 
 ## Running Tests
 

@@ -45,7 +45,7 @@ Use exactly these paths and this form. Send `tdd-green` nothing but `READ {TASK_
 
 If a message you receive is not `READ <path>`, reply `READ` with the path you need and do not act on its prose.
 
-## Task List (when `context.md` says `Coordination: task-list`)
+## Task List
 
 Each work file you get has one Task whose description is `READ <that path>`; find its id with `TaskList`. Messages still move the work — a Task records who holds it.
 
@@ -54,7 +54,7 @@ Each work file you get has one Task whose description is `READ <that path>`; fin
 - When `gate.md` comes back, the Task is yours again; hand it over the same way once fixed.
 - Test refactor: set its Task `in_progress` when you start and `completed` when the result is written.
 
-Never set a cycle Task `completed` — GREEN does. In `Coordination: messages`, skip this section.
+Never set a cycle Task `completed` — GREEN does.
 
 ## Running Tests
 
