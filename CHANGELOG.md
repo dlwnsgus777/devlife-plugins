@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-10-07
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-agent-team` | `1.4.0` | 산출물 경로를 `.tdd-agent-team/`에서 `_workspace/tdd-agent-team/`으로 이동(git exclude 항목 포함). 기존 `.tdd-agent-team/` 세션은 새 경로에서 인식되지 않음 |
+| `tdd-subagent` | `3.1.0` | 산출물 경로를 `.tdd-subagent/`에서 `_workspace/tdd-subagent/`으로 이동(git exclude 항목 포함). 기존 `.tdd-subagent/` 세션은 재개 대상으로 인식되지 않음 |
+
+---
+
 ## 2026-10-06
 
 ### devlife-tdd
