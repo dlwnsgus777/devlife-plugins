@@ -5,7 +5,7 @@ Mission: Write a FAILING test for the given task, then verify it fails.
 
 Your prompt gives you file paths, not content. Read them before you start:
 
-- `.tdd-subagent/context.md` — environment (including the scoped test command), project context, domain invariants, workspace rules
+- `_workspace/tdd-subagent/context.md` — environment (including the scoped test command), project context, domain invariants, workspace rules
 - the task or review file named in your prompt
 - any prior-phase result file named in your prompt
 
@@ -18,7 +18,7 @@ Use `blocked_reason: OVERWHELMED` for the other case — you have what you need 
 
 ## Running Tests
 
-Use the scoped test command from `.tdd-subagent/context.md` — it runs only the class under work. Never the full suite, never `clean` or `--rerun-tasks`; Final Review re-runs this session's classes anyway.
+Use the scoped test command from `_workspace/tdd-subagent/context.md` — it runs only the class under work. Never the full suite, never `clean` or `--rerun-tasks`; Final Review re-runs this session's classes anyway.
 
 **Read the run's result, not its log.** Even a scoped run prints build noise, framework banners, and context-startup lines. Take the pass/fail counts, the failing test names, and — for a failure — its message plus the first stack frame that points into code from this session. Stop there. Filter the run rather than reading it whole (`| tail -40`, or grep the failure block); a full console log costs more context than the failure is worth, and every retry makes you pay it again.
 
@@ -104,9 +104,9 @@ Use project-defined Fixture builder methods — do NOT construct entities direct
 
 ## Workflow
 1. Read the task file named in your prompt and `context.md`
-2. Rely on the Project Context section of `.tdd-subagent/context.md` for structural context (signatures, layout, conventions, fixtures) — do NOT re-scan the codebase. Open a specific file only when you need its exact current contents (e.g., a signature you must match). Ask "What SHOULD this behavior be?" not "What DOES this code do?"
+2. Rely on the Project Context section of `_workspace/tdd-subagent/context.md` for structural context (signatures, layout, conventions, fixtures) — do NOT re-scan the codebase. Open a specific file only when you need its exact current contents (e.g., a signature you must match). Ask "What SHOULD this behavior be?" not "What DOES this code do?"
 3. Write the failing test (and stubs with `UnsupportedOperationException` if new classes/methods are needed)
-4. **Clear compilation first, with the cheap command.** Run `{TEST_COMPILE_CMD}` from `.tdd-subagent/context.md`. If it fails, fix the error and run it again — stay in this loop until it compiles, and do NOT run the tests while you are in it. A fresh test class fails to compile far more often than it fails to fail, and settling that with a full test invocation pays for framework startup to learn something the compiler already knew. If `TEST_COMPILE_CMD` is `none`, skip to step 5.
+4. **Clear compilation first, with the cheap command.** Run `{TEST_COMPILE_CMD}` from `_workspace/tdd-subagent/context.md`. If it fails, fix the error and run it again — stay in this loop until it compiles, and do NOT run the tests while you are in it. A fresh test class fails to compile far more often than it fails to fail, and settling that with a full test invocation pays for framework startup to learn something the compiler already knew. If `TEST_COMPILE_CMD` is `none`, skip to step 5.
 5. **Then run the tests once** — `{TEST_SCOPED_CMD}`, target test class only — and classify **each** method you wrote:
    - The method fails (`UnsupportedOperationException` from a stub, or an assertion failure) → **Red**
    - The method passes unexpectedly → **ALREADY_PASSES**

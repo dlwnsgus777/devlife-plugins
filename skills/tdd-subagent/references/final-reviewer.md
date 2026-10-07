@@ -12,7 +12,7 @@ You are an independent reviewer — no context from the implementer. This is the
 
 Your prompt gives you file paths, not content. Read them before you start:
 
-- `.tdd-subagent/context.md` — environment (including the scoped test command), project context, domain invariants, workspace rules
+- `_workspace/tdd-subagent/context.md` — environment (including the scoped test command), project context, domain invariants, workspace rules
 
 Do not re-scan the codebase for anything `context.md` already answers. Read these files at the start of your run — they may have been edited since the previous phase.
 

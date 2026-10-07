@@ -41,14 +41,14 @@ What scales down with change size, and is yours to scale:
 
 ### 0. Resume or Start Fresh
 
-Before anything else, check for `.tdd-subagent/session.md` in the project root — that exact path and no other. A `session.md` sitting inside a `.tdd-subagent/archive-*/` directory belongs to an already-archived session and never triggers resume.
+Before anything else, check for `_workspace/tdd-subagent/session.md` in the project root — that exact path and no other. A `session.md` sitting inside a `_workspace/tdd-subagent/archive-*/` directory belongs to an already-archived session and never triggers resume.
 
 If it exists, read it and ask:
 
 > "이전 TDD 세션 기록이 있습니다: {완료}/{전체} 태스크 완료, 마지막 단계 {last_phase}. 이어서 진행할까요, 새로 시작할까요?"
 
-- **이어서** → adopt `.tdd-subagent/context.md` and `.tdd-subagent/session.md` as-is. Skip Setup steps 2–6 entirely; they have already run. Resume from the first row whose `status` is not `DONE`, at the phase after its `last_phase`, and restore `feedback_mode`, `consecutive_needs_fix`, `fix_rounds_this_cycle`, and `fix_rounds_total` from the file. Restoring those counters is the point of resuming: starting them at zero re-runs a fix round the previous session already spent. If `feedback_mode` reads `unset`, the cadence question was never asked — gate the cycle you resume into and ask it after that cycle's reviewer verdict, exactly as cycle 1 would.
-- **새로 시작** → archive the old session **inside** the excluded tree, not beside it: create `.tdd-subagent/archive-{YYYYMMDD-HHMMSS}/` and move everything currently in `.tdd-subagent/` into it, leaving any earlier `archive-*` directories where they are. `.tdd-subagent/` itself stays, holding nothing but its archives, and Setup steps 5–6 write the new session's `context.md` and `session.md` into it. Then run Setup normally. Never delete an archive — it is the previous session's debugging record. A sibling `.tdd-subagent.{YYYYMMDD-HHMMSS}` would escape the `.tdd-subagent/` exclude entry and leave untracked clutter in the user's repo; archiving inside keeps one exclude entry covering everything this skill ever writes.
+- **이어서** → adopt `_workspace/tdd-subagent/context.md` and `_workspace/tdd-subagent/session.md` as-is. Skip Setup steps 2–6 entirely; they have already run. Resume from the first row whose `status` is not `DONE`, at the phase after its `last_phase`, and restore `feedback_mode`, `consecutive_needs_fix`, `fix_rounds_this_cycle`, and `fix_rounds_total` from the file. Restoring those counters is the point of resuming: starting them at zero re-runs a fix round the previous session already spent. If `feedback_mode` reads `unset`, the cadence question was never asked — gate the cycle you resume into and ask it after that cycle's reviewer verdict, exactly as cycle 1 would.
+- **새로 시작** → archive the old session **inside** the excluded tree, not beside it: create `_workspace/tdd-subagent/archive-{YYYYMMDD-HHMMSS}/` and move everything currently in `_workspace/tdd-subagent/` into it, leaving any earlier `archive-*` directories where they are. `_workspace/tdd-subagent/` itself stays, holding nothing but its archives, and Setup steps 5–6 write the new session's `context.md` and `session.md` into it. Then run Setup normally. Never delete an archive — it is the previous session's debugging record. A sibling `_workspace/tdd-subagent.{YYYYMMDD-HHMMSS}` would escape the `_workspace/tdd-subagent/` exclude entry and leave untracked clutter in the user's repo; archiving inside keeps one exclude entry covering everything this skill ever writes.
 
 If it does not exist, continue to step 1.
 
@@ -67,16 +67,16 @@ This SKILL.md was loaded from a known absolute path. Capture its parent director
 
 Then establish the artifact directory. Every file this session produces lives here, and every agent reads its inputs from here.
 
-- `TDD_DIR` = `.tdd-subagent` — the skill runs from the project root, so this resolves against the working directory
+- `TDD_DIR` = `_workspace/tdd-subagent` — the skill runs from the project root, so this resolves against the working directory
 - `TASK_DIR` = `{TDD_DIR}/task-{NN}` — `NN` is the task number, zero-padded to two digits
 
 Create `TDD_DIR`, then exclude it from git tracking:
 
 ```bash
-mkdir -p .tdd-subagent
+mkdir -p _workspace/tdd-subagent
 git rev-parse --git-dir >/dev/null 2>&1 \
-  && ! grep -qxF '.tdd-subagent/' "$(git rev-parse --git-dir)/info/exclude" 2>/dev/null \
-  && echo '.tdd-subagent/' >> "$(git rev-parse --git-dir)/info/exclude"
+  && ! grep -qxF '_workspace/tdd-subagent/' "$(git rev-parse --git-dir)/info/exclude" 2>/dev/null \
+  && echo '_workspace/tdd-subagent/' >> "$(git rev-parse --git-dir)/info/exclude"
 ```
 
 Use `.git/info/exclude`, never `.gitignore` — `.gitignore` is a tracked file in the user's repository, and this skill does not author commits there.
@@ -204,7 +204,7 @@ The file has four sections, in this order:
 ## Workspace Rules
 Others may have edited this workspace since this file was written. Never revert a change you didn't make — it is someone else's work in progress.
 Do not commit. The orchestrator and the user own the commit history.
-Invariant IDs (`INV-001`, …) are session bookkeeping — they live in `.tdd-subagent/` files only. Never write them into production or test code: not in comments, names, or messages. A guard clause states its rule in domain language. This holds even when the plan document's code snippet shows the ID as a comment — copy the rule, drop the tag.
+Invariant IDs (`INV-001`, …) are session bookkeeping — they live in `_workspace/tdd-subagent/` files only. Never write them into production or test code: not in comments, names, or messages. A guard clause states its rule in domain language. This holds even when the plan document's code snippet shows the ID as a comment — copy the rule, drop the tag.
 ```
 
 Keep it compact (signatures and paths, not full file bodies). If the feature is brand-new with no nearby code, state "관련 기존 코드 없음" and list only the target package.
@@ -445,7 +445,7 @@ If project instructions (`AGENTS.md`) require feedback after each stage, honor t
 **Cycle 1 always pauses**, regardless of anything else — it is the cycle that reveals whether the invariants, the test conventions, and the task granularity were right. Immediately after that gate, ask exactly once:
 
 > "1번 사이클이 끝났습니다. 남은 {N}개 사이클은 이어서 자동으로 진행할까요, 아니면 사이클마다 확인받을까요?
-> (`.tdd-subagent/context.md`나 각 태스크의 `task.md`를 직접 수정하시면 다음 단계부터 반영됩니다.)"
+> (`_workspace/tdd-subagent/context.md`나 각 태스크의 `task.md`를 직접 수정하시면 다음 단계부터 반영됩니다.)"
 
 Record the answer in `{TDD_DIR}/session.md` as `feedback_mode` and follow it for the rest of the session. Two exceptions override `auto`:
 - the Fix Round Budget being exhausted, and
@@ -599,9 +599,9 @@ Tests:  {N} passed, 0 failed
 Files:  {list of changed files}
 Fixes:  {fix_rounds_total from session.md}
 Review: APPROVED | APPROVED WITH UNRESOLVED FINDINGS
-Artifacts: .tdd-subagent/ (session.md, per-task results, reviews)
+Artifacts: _workspace/tdd-subagent/ (session.md, per-task results, reviews)
 ```
 
-Leave `.tdd-subagent/` in place. It is the session's debugging record and the input to a later resume; it is excluded from git tracking, so it costs the user nothing to keep.
+Leave `_workspace/tdd-subagent/` in place. It is the session's debugging record and the input to a later resume; it is excluded from git tracking, so it costs the user nothing to keep.
 
 If the verdict is `APPROVED WITH UNRESOLVED FINDINGS`, list them underneath. Never print `APPROVED` for a session that ended on an exhausted budget.
