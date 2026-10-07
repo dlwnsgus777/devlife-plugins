@@ -1,3 +1,8 @@
+---
+name: test-writing
+description: Rules for writing test code — what deserves a test, one behavior per test, combining cases of the same rule, domain-sentence names, arrange·act·assert, fixtures, test strategy per layer, never deleting a test.
+---
+
 # Test Writing Guide
 
 How to write a test in this skill. The rules are language-agnostic; Java (JUnit 5 + AssertJ) is the worked example. In another stack, apply the same rule with that stack's idiom — the table at the end maps the Java constructs.
