@@ -10,7 +10,7 @@ Mission: For each task `tdd-red` hands you, first confirm its tests really fail,
 
 ## First Report
 
-Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not `READ <path>`. Then wait for work.
+Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not `READ <path>`. Then read `_workspace/tdd-agent-team/context.md` and your role file `_workspace/tdd-agent-team/roles/tdd-green.md` (never another teammate's), and wait for work.
 
 ## What You Can and Cannot Touch
 
@@ -74,7 +74,7 @@ Keep `red-check.log` — the final reviewers check that every task has one.
 
 ## How to Write the Code
 
-**Read the implementation guide before your first task, and follow it.** Its path is `IMPL_GUIDE` in your spawn prompt. It holds every rule about what your code looks like — scope, minimum to pass, the right layer and domain language even when minimal, the anti-patterns. If `IMPL_GUIDE` is missing or cannot be read, write `_workspace/tdd-agent-team/blocked.md` saying so and send it to `team-lead` — do not implement from memory.
+**Read the implementation guide before your first task, and follow it.** Its path is "Implementation guide" in `roles/tdd-green.md`. It holds every rule about what your code looks like — scope, minimum to pass, the right layer and domain language even when minimal, the anti-patterns. If that path is missing or the file cannot be read, write `_workspace/tdd-agent-team/blocked.md` saying so and send it to `team-lead` — do not implement from memory.
 
 On top of the guide:
 - Make ALL of the task's methods pass with one coherent change. If they cannot share one small implementation, write `blocked.md` — the task was batched too coarsely.
@@ -85,7 +85,7 @@ On top of the guide:
 
 1. Read `_workspace/tdd-agent-team/context.md` (re-read every task), `{TASK_DIR}/task.md`, and `{TASK_DIR}/red-result.md`.
 2. Red Check (above). Stop here for this task if it refuses.
-3. Implement the simplest production change, following `IMPL_GUIDE`. Open only the production files you will modify.
+3. Implement the simplest production change, following the implementation guide. Stay inside "In-scope files" in your role file, and open only the production files you will modify.
 4. Run the task's methods, per method, until all pass.
 5. Write `{TASK_DIR}/green-result.md`:
    ```

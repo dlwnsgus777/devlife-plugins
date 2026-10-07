@@ -117,7 +117,7 @@ Everything below comes from the requirements document **when it says so, and fro
 
 **Invariants — requirements document first, code second.** With a spec, plan, or ticket, derive invariants from it and adopt any IDs (`INV-001`, …) verbatim; if it gives none, number them yourself from `INV-001`. With nothing at all, ask "구현할 기능의 요구사항이나 티켓 내용을 공유해주시겠어요?" and wait. Only then add structural constraints the code shows and the document omitted. Write each as a declarative sentence about what must be true.
 
-**Scope.** In-scope files, out-of-scope items, and known pitfalls (defects in the code the change imitates, each with what to do instead) — take them from the document if it lists them; otherwise set them from the tasks and the exploration. In-scope files are what the Task Check and the Refactor Check hold the team to, so they must be concrete paths.
+**Scope.** In-scope files, out-of-scope items, and known pitfalls (defects in the code the change imitates, each with what to do instead) — take them from the document if it lists them; otherwise set them from the tasks and the exploration. In-scope files are what the Task Check and the Refactor Check hold the team to, so they must be concrete paths. They go to GREEN's and `tdd-refactor`'s role files (Setup 6), not to the shared `context.md` — RED has no use for them.
 
 **Regression set.** The existing tests that must keep passing: those the document says already cover part of the requirement (plan-creator tags them `[REGRESSION]`), **plus every existing test class that exercises a file in scope** — find these in the exploration, whatever the document says. The regression set runs in the final test and is the safety net of the Tidy First and refactor phases; without the second half, a refactor that breaks existing behavior has nothing to catch it.
 
@@ -160,7 +160,7 @@ After this answer, do not ask again until Final Stage 4 — except the Tidy Firs
 
 ### 6. Context, Session, and Task Files
 
-**`{TDD_DIR}/context.md`** — write it from the Setup 4 exploration, only what you verified this session; the scope and pitfalls are the ones the user confirmed at Setup 5:
+**`{TDD_DIR}/context.md`** — the facts every teammate shares. Write it from the Setup 4 exploration, only what you verified this session:
 
 ```
 # TDD Session Context
@@ -174,13 +174,10 @@ After this answer, do not ask again until Final Stage 4 — except the Tidy Firs
 
 ## Project Context (captured once — do NOT re-explore the codebase)
 - Package / directory layout: {source & test packages}
-- Test conventions: {only what existing tests or project instructions show — JUnit version, assertion style, naming, // arrange·act·assert, @Nested usage; none → "none — follow TEST_GUIDE"}
+- Test conventions: {only what existing tests or project instructions show — JUnit version, assertion style, naming, // arrange·act·assert, @Nested usage; none → "none — follow the test-writing rules"}
 - Fixture pattern: {builder location & usage}
 - Signatures RED may call: {ClassName → public method signatures, including the stubs from Stubs and Start}
 - Domain anchors: {aggregate/entity files + invariants that apply here}
-- In-scope files: {paths this session may modify}
-- Out of scope: {what this task deliberately does not change}
-- Known pitfalls — do NOT copy: {defect} → {what to do instead}
 
 ## Domain Invariants
 {list, IDs verbatim}
@@ -190,9 +187,41 @@ Others may have edited this workspace since this file was written. Never revert 
 Do not commit. The lead and the user own the commit history.
 Invariant IDs are session bookkeeping — never write them into production or test code.
 SendMessage bodies are one line: READ <path>. Content goes in files.
+Your role file is roles/{your name}.md. Never open another teammate's role file.
 ```
 
-**Test conventions are observed, never invented.** A project convention overrides `TEST_GUIDE` (naming included), so record only what the existing tests or project instructions actually show. With no existing tests, there is no project convention — do not make one up; RED and the `review-test` lens then hold to the guide.
+**`{TDD_DIR}/roles/{name}.md`** — one per teammate, holding what only that role needs. The definitions read their own file at start, so the spawn prompt carries nothing; keeping each role's facts in its own file keeps RED from learning what GREEN builds against. The scope and pitfalls are the ones the user confirmed at Setup 5.
+
+`roles/tdd-red.md`:
+```
+# Role context: tdd-red
+- Test-writing rules: {SKILL_DIR}/../test-writing/SKILL.md
+- Test roots: {test roots}
+```
+
+`roles/tdd-green.md`:
+```
+# Role context: tdd-green
+- Implementation guide: {SKILL_DIR}/references/implementation.md
+- In-scope files: {paths this session may modify}
+- Out of scope: {what this task deliberately does not change}
+- Known pitfalls — do NOT copy: {defect} → {what to do instead}
+```
+
+`roles/tdd-refactor.md`:
+```
+# Role context: tdd-refactor
+- Refactoring guide: {SKILL_DIR}/references/refactoring.md
+- Implementation guide: {SKILL_DIR}/references/implementation.md
+- In-scope files: {paths this session may modify}
+- Out of scope: {what this task deliberately does not change}
+- Known pitfalls — do NOT copy: {defect} → {what to do instead}
+- Regression set: {test ids}
+```
+
+Write `{SKILL_DIR}` resolved to an absolute path, and `Read` each guide path once before writing it — a teammate that cannot read its guide stops on `blocked.md`.
+
+**Test conventions are observed, never invented.** A project convention overrides the test-writing rules (naming included), so record only what the existing tests or project instructions actually show. With no existing tests, there is no project convention — do not make one up; RED and the `review-test` lens then hold to the guide.
 
 **"Signatures RED may call" is RED's only window into production code** — its definition forbids reading production files. Every type, constructor, and method a test will touch must be listed with its exact signature. A missing signature costs a `missing-stub` round trip per task.
 
@@ -230,14 +259,14 @@ Agent({
   name: "tdd-red",
   subagent_type: "devlife:tdd-red",
   description: "TDD RED teammate",
-  prompt: "TDD_DIR={TDD_DIR}. TEST_GUIDE={SKILL_DIR}/../test-writing/SKILL.md. Wait for READ messages."
+  prompt: "Start."
 })
 
 Agent({
   name: "tdd-green",
   subagent_type: "devlife:tdd-green",
   description: "TDD GREEN teammate",
-  prompt: "TDD_DIR={TDD_DIR}. IMPL_GUIDE={SKILL_DIR}/references/implementation.md. Wait for READ messages."
+  prompt: "Start."
 })
 ```
 
@@ -248,13 +277,13 @@ Agent({
   name: "tdd-refactor",
   subagent_type: "devlife:tdd-refactor",
   description: "TDD REFACTOR teammate",
-  prompt: "TDD_DIR={TDD_DIR}. REFACTOR_GUIDE={SKILL_DIR}/references/refactoring.md. IMPL_GUIDE={SKILL_DIR}/references/implementation.md. Wait for READ messages."
+  prompt: "Start."
 })
 ```
 
 If it is spawned for Tidy First, keep it running through the cycle rather than respawning it later — its Tidy First context is useful for the refactor pass.
 
-The role is in the definition; the prompt carries only the session facts. `TEST_GUIDE`, `IMPL_GUIDE`, and `REFACTOR_GUIDE` point at the rulebooks — the `test-writing` skill (`{SKILL_DIR}/../test-writing/SKILL.md`) for RED and the `review-test` lens, `implementation.md` for GREEN (and as the floor for `tdd-refactor`), `refactoring.md` for `tdd-refactor`; the `review-design` lens reads both of the last two. A path rather than a copy, so each rulebook lives in one file that its writer and its reviewer both read. Teammates address each other by these names, so keep them exact. Do not add a model; teammates inherit the session's.
+The role is in the definition and the session facts are in files — `context.md` for everyone, `roles/{name}.md` for each teammate — so a teammate's spawn prompt is just `Start.`. Each rulebook lives in one file that its writer and its reviewer both read: the `test-writing` skill for RED and the `review-test` lens, `references/implementation.md` for GREEN (and as the floor for `tdd-refactor`), `references/refactoring.md` for `tdd-refactor`; the `review-design` lens reads the last two. Reviewers still get their lens and guide paths in the spawn prompt (Final Stage 4). Teammates address each other by these names, so keep them exact. Do not add a model; teammates inherit the session's.
 
 **First report.** `tdd-red`, `tdd-green`, and `tdd-refactor` each open with `READY`. Reviewers do not report: they live for one review and start from their spawn prompt. A teammate without `SendMessage` cannot send that report, so a teammate silent past its first idle notification counts as missing it — stop the team and tell the user rather than letting the cycle start lame.
 
@@ -326,7 +355,7 @@ Nothing outside the teammates enforces the role boundaries, so each finished tas
 | Check | How | If it fails |
 |---|---|---|
 | 1. Red-first evidence | `green-result.md` has a `red_check_log:` line naming `{TASK_DIR}/red-check.log` | The code is already built, so red can no longer be proven — do not bounce. Note `red-first unverified` in the task's `session.md` row; the `review-test` lens reports it |
-| 2. Scope | the `files_modified` line of `green-result.md` names only paths under "In-scope files" in `context.md` | Write `{TASK_DIR}/lead-check.md` naming the out-of-scope paths and send `READ {TASK_DIR}/lead-check.md` to `tdd-green`: revert them, or explain in `blocked.md` why the task needs them |
+| 2. Scope | the `files_modified` line of `green-result.md` names only paths under "In-scope files" in `roles/tdd-green.md` | Write `{TASK_DIR}/lead-check.md` naming the out-of-scope paths and send `READ {TASK_DIR}/lead-check.md` to `tdd-green`: revert them, or explain in `blocked.md` why the task needs them |
 | 3. Really passes | run the `test_methods` from `green-result.md` yourself, ids written out literally, `\| tail -5` | Write `lead-check.md` with the failing names and send it to `tdd-green` |
 
 All three pass → `DONE`. A bounced task comes back as a new `green-result.md` and is checked again; after two bounces of the same task, set `BLOCKED` and ask the user. Do not judge the code itself here — design and test quality belong to the Final Review.

@@ -10,7 +10,7 @@ Mission: For each task in order, write FAILING tests, confirm they fail, and han
 
 ## First Report
 
-Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not `READ <path>`. Then start.
+Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not `READ <path>`. Then read `_workspace/tdd-agent-team/context.md` and your role file `_workspace/tdd-agent-team/roles/tdd-red.md`. **Never open another teammate's file under `roles/`** — what GREEN builds against is not yours to know.
 
 ## What You Can and Cannot Touch
 
@@ -82,7 +82,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST. Your tests are what make GREEN'
 
 ## How to Write the Tests
 
-**Read the test-writing guide before your first test, and follow it.** Its path is `TEST_GUIDE` in your spawn prompt. It holds every rule about what a test looks like — what deserves a test, one behavior per test, combining cases of the same rule, domain-sentence names, arrange·act·assert, fixtures, test strategy per layer, never deleting an existing test. If `TEST_GUIDE` is missing or the file cannot be read, write `_workspace/tdd-agent-team/blocked.md` saying so and send it to `team-lead` — do not write tests from memory.
+**Read the test-writing rules before your first test, and follow them.** Their path is "Test-writing rules" in `roles/tdd-red.md`. It holds every rule about what a test looks like — what deserves a test, one behavior per test, combining cases of the same rule, domain-sentence names, arrange·act·assert, fixtures, test strategy per layer, never deleting an existing test. If that path is missing or the file cannot be read, write `_workspace/tdd-agent-team/blocked.md` saying so and send it to `team-lead` — do not write tests from memory.
 
 On top of the guide:
 - Cover every scenario in `task.md` in one pass.
@@ -98,7 +98,7 @@ Do not start writing tests until the lead sends `READ _workspace/tdd-agent-team/
 ## Workflow (per task, in number order)
 
 1. Read `_workspace/tdd-agent-team/context.md` and `{TASK_DIR}/task.md`. Re-read `context.md` at every task — the lead adds signatures to it.
-2. Write the failing tests in `test_class` from `task.md`, following `TEST_GUIDE`.
+2. Write the failing tests in `test_class` from `task.md`, following the test-writing rules.
 3. Run `{TEST_COMPILE_CMD}` until it passes. Do not run tests while it fails.
 4. Run your methods once, per method. Every method must fail by reaching the behavior — an exception from a stub, or an assertion. A fixture that blows up in setup is not Red; fix it.
    - A method that **passes** is not Red. If production code already does it, it is coverage, not this task's work: delete it if another of your methods in this task is Red, or write `blocked.md` saying the task cannot be Red.
