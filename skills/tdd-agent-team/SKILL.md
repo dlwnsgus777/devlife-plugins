@@ -22,7 +22,7 @@ Run Red-Green-Refactor with an agent team: a `tdd-red` teammate writes failing t
 
 - Respect system, developer, and project `CLAUDE.md` instructions above this skill.
 - The user is asked at task confirmation (Setup 5), after the Tidy First phase when there is one (to commit it separately), and before applying final-review fixes (Final Stage 4). Project instructions that ask for feedback after each stage are honored at these two points — the cycle runs in parallel and has no stage boundary to pause at.
-- **Files through file tools, shell commands kept simple — yours too.** Create files with `Write`, change them with `Edit` (a `session.md` status flip is one `Edit`), read them with `Read`. Use Bash only to run commands, one simple command at a time: no `cd …;` prefix, no heredocs, no `sed -i`, no loops, no `$(…)` or `$variables`, no brace expansion. The permission checker cannot analyze those, so each one stops the session on a prompt — the `.tdd-agent-team/*.md` artifacts pass without one only when written through the file tools.
+- **Files through file tools, shell commands kept simple — yours too.** Create files with `Write`, change them with `Edit` (a `session.md` status flip is one `Edit`), read them with `Read`. Use Bash only to run commands, one simple command at a time: no `cd …;` prefix, no heredocs, no `sed -i`, no loops, no `$(…)` or `$variables`, no brace expansion. The permission checker cannot analyze those, so each one stops the session on a prompt — the `_workspace/tdd-agent-team/*.md` artifacts pass without one only when written through the file tools.
 - **Java is the example, not the target.** Java/JUnit constructs in this skill (`@DisplayName`, `@Nested`, `UnsupportedOperationException`, Gradle commands) are examples. In another stack, use that language's equivalent everywhere — in the files you write and on the screens you show the user (the Other Stacks table in `references/test-writing.md` maps the test constructs).
 - **Teammate content travels in files, never in messages.** Every `SendMessage` body — yours and every teammate's — is one line: `READ <path>`. The file holds the substance. A message with prose in it skips the checks the files carry and leaks context the reader was not meant to have.
 - **Two coordination modes, decided once in Setup 0.** In **task-list mode** — the session has the Task tools (`TaskCreate`, `TaskGet`, `TaskList`, `TaskUpdate`) — every work file handed to a teammate (`tidy/{NN}/tidy.md`, `tasks/{NN}/task.md`, `refactor.md`, `test-refactor.md`) gets exactly one Task, and its `description` is one line: `READ <path>`. The content stays in the file, as with messages. In **messages mode** — no Task tools — the team coordinates through messages alone. Everything else in this skill is the same in both; `context.md` records which mode is in force.
@@ -67,26 +67,26 @@ On yes, add it, then load the tools again — a settings `env` change usually ap
 
 ### 1. Previous Session?
 
-If `.tdd-agent-team/session.md` exists, teammates from that session are gone — agent teams cannot restore them.
+If `_workspace/tdd-agent-team/session.md` exists, teammates from that session are gone — agent teams cannot restore them.
 
 - **It ends with `session: COMPLETE`** — that session finished (Summarize wrote the line), so there is nothing to decide. Archive it without asking and say so in one line:
 
-  > "이전 세션 기록을 `.tdd-agent-team/archive-{YYYYMMDD-HHMMSS}/`에 보관했습니다."
+  > "이전 세션 기록을 `_workspace/tdd-agent-team/archive-{YYYYMMDD-HHMMSS}/`에 보관했습니다."
 
 - **It does not** — the session stopped partway, and the user may want to look at what was left undone first. Ask:
 
   > "이전 tdd-agent-team 세션 기록이 있습니다({완료}/{전체} 태스크 완료). 팀원은 복원되지 않아 이어서 진행할 수 없습니다. 기록을 보관하고 새로 시작할까요?"
 
-To archive, move everything in `.tdd-agent-team/` except earlier `archive-*/` folders into `.tdd-agent-team/archive-{YYYYMMDD-HHMMSS}/`. Never delete an archive.
+To archive, move everything in `_workspace/tdd-agent-team/` except earlier `archive-*/` folders into `_workspace/tdd-agent-team/archive-{YYYYMMDD-HHMMSS}/`. Never delete an archive.
 
 ### 2. Artifact Directory
 
-- `TDD_DIR` = `.tdd-agent-team` (relative to the project root, where this skill runs)
+- `TDD_DIR` = `_workspace/tdd-agent-team` (relative to the project root, where this skill runs)
 - `TASK_DIR` = `{TDD_DIR}/tasks/{NN}` — `NN` zero-padded to two digits
 
-1. `mkdir -p .tdd-agent-team/tasks`
+1. `mkdir -p _workspace/tdd-agent-team/tasks`
 2. `git rev-parse --git-dir` — prints the git directory (usually `.git`). If it fails, this is not a git repository; skip step 3.
-3. `Read` `{git dir}/info/exclude`. If it has no `.tdd-agent-team/` line, add one with `Edit` (or `Write` the file if it does not exist).
+3. `Read` `{git dir}/info/exclude`. If it has no `_workspace/tdd-agent-team/` line, add one with `Edit` (or `Write` the file if it does not exist).
 
 Use `.git/info/exclude`, never `.gitignore`.
 
@@ -169,7 +169,7 @@ After this answer, do not ask again until Final Stage 4 — except the Tidy Firs
 
 ## Environment
 - Project root: {absolute path}
-- Commands: .tdd-agent-team/roles.env
+- Commands: _workspace/tdd-agent-team/roles.env
 - Coordination: {task-list | messages}
 - Production code: {source roots} — tdd-red never reads these
 - Test code: {test roots} — tdd-green never writes these
@@ -259,7 +259,7 @@ If it is spawned for Tidy First, keep it running through the cycle rather than r
 
 The role is in the definition; the prompt carries only the session facts. `TEST_GUIDE`, `IMPL_GUIDE`, and `REFACTOR_GUIDE` point at the rules in this skill's `references/` — `test-writing.md` for RED and the `review-test` lens, `implementation.md` for GREEN (and as the floor for `tdd-refactor`), `refactoring.md` for `tdd-refactor`; the `review-design` lens reads both of the last two. A path rather than a copy, so each rulebook lives in one file that its writer and its reviewer both read. Teammates address each other by these names, so keep them exact. Do not add a model; teammates inherit the session's.
 
-**First report.** `tdd-red`, `tdd-green`, and `tdd-refactor` each open with `READ .tdd-agent-team/tools-{name}.md`, listing the tools they actually received. Reviewers do not report: they live for one review, and a reviewer whose definition failed to apply loses only its missing `Edit` — not worth three extra messages on every run. A list that includes tools outside its definition (`Agent`, `Skill`, MCP tools) means the definition did not apply — stop and re-check the install. `SendMessage` and, in task-list mode, `TaskCreate`, `TaskGet`, `TaskList`, and `TaskUpdate` are not outside it: Claude Code adds them to every teammate. In task-list mode, a teammate whose list lacks the Task tools (a split-pane teammate decides them by its own model) means the team cannot share the list — switch `context.md` to `Coordination: messages` before the cycle starts. A teammate without `SendMessage`, `Write`, `Edit`, or `Bash` cannot do its role — and a missing `SendMessage` means it cannot even send that report, so a teammate silent past its first idle notification counts as missing it. Stop the team and tell the user which tool was missing rather than letting the cycle start lame.
+**First report.** `tdd-red`, `tdd-green`, and `tdd-refactor` each open with `READ _workspace/tdd-agent-team/tools-{name}.md`, listing the tools they actually received. Reviewers do not report: they live for one review, and a reviewer whose definition failed to apply loses only its missing `Edit` — not worth three extra messages on every run. A list that includes tools outside its definition (`Agent`, `Skill`, MCP tools) means the definition did not apply — stop and re-check the install. `SendMessage` and, in task-list mode, `TaskCreate`, `TaskGet`, `TaskList`, and `TaskUpdate` are not outside it: Claude Code adds them to every teammate. In task-list mode, a teammate whose list lacks the Task tools (a split-pane teammate decides them by its own model) means the team cannot share the list — switch `context.md` to `Coordination: messages` before the cycle starts. A teammate without `SendMessage`, `Write`, `Edit`, or `Bash` cannot do its role — and a missing `SendMessage` means it cannot even send that report, so a teammate silent past its first idle notification counts as missing it. Stop the team and tell the user which tool was missing rather than letting the cycle start lame.
 
 **First work only after the first report.** A teammate that is still starting can miss a message sent to it, and resending afterwards makes it report finished work twice. So send a teammate its first `READ` — `tasks/` to `tdd-red`, `tidy.md` or `refactor.md` to a newly spawned `tdd-refactor` — only after its `tools-{name}.md` report has arrived. If a teammate seems not to have acted on a message, check before resending: in task-list mode its Task's `owner` and `status` (`TaskGet`), in messages mode whether its result file exists. Resend only when neither shows the work started.
 
@@ -296,8 +296,8 @@ One Task per work file, and nothing in it but the pointer:
 
 ```
 TaskCreate({ subject: "Task {NN}: {domain rule sentence}",
-             description: "READ .tdd-agent-team/tasks/{NN}/task.md",
-             metadata: { md: ".tdd-agent-team/tasks/{NN}/task.md" } })
+             description: "READ _workspace/tdd-agent-team/tasks/{NN}/task.md",
+             metadata: { md: "_workspace/tdd-agent-team/tasks/{NN}/task.md" } })
 TaskUpdate({ taskId, owner: "tdd-red" })
 ```
 
@@ -316,7 +316,7 @@ You are off the handoff path. RED → GREEN goes direct; GREEN reports to you on
 
 | Message | Your action |
 |---|---|
-| `READ .tdd-agent-team/tools-{name}.md` | Check the role's tools are all there (see First report). Nothing else |
+| `READ _workspace/tdd-agent-team/tools-{name}.md` | Check the role's tools are all there (see First report). Nothing else |
 | `READ {TASK_DIR}/green-result.md` | Run the **Task Check** below, then set the task `DONE` (or bounce it) in `session.md`. GREEN has already set the Task `completed`; on a bounce in task-list mode, reopen it first — `TaskUpdate({ taskId, status: "in_progress", owner: "tdd-green" })` |
 | `READ {TASK_DIR}/blocked.md` | If it names a missing fact, add it to `context.md` and reply `READ {TASK_DIR}/task.md`. If RED's tests were refused twice or it is a design problem, set `BLOCKED` (task-list mode: also `metadata: { blocked: true }` on its Task) and ask the user — this is the one mid-cycle escalation |
 | `READ {TDD_DIR}/red-finished.md` | RED has written tests for every task. Note it; wait for GREEN |
@@ -361,10 +361,10 @@ Each task passed its own Task Check; this run proves they still pass **together*
 
 Build the diff into a file first — it must never pass through your context. One simple command per step:
 
-1. `git diff > .tdd-agent-team/branch-diff.md` — changes to tracked files.
+1. `git diff > _workspace/tdd-agent-team/branch-diff.md` — changes to tracked files.
 2. `git ls-files --others --exclude-standard` — the files this session created. Skip build output it lists (`__pycache__/`, `build/`, `target/`, `node_modules/`).
-3. For each remaining file, one command: `git diff --no-index /dev/null <file> >> .tdd-agent-team/branch-diff.md` — new files are untracked, so step 1 alone would hand the reviewers a diff with the new test class missing.
-4. `wc -l .tdd-agent-team/branch-diff.md` — confirm it is not empty.
+3. For each remaining file, one command: `git diff --no-index /dev/null <file> >> _workspace/tdd-agent-team/branch-diff.md` — new files are untracked, so step 1 alone would hand the reviewers a diff with the new test class missing.
+4. `wc -l _workspace/tdd-agent-team/branch-diff.md` — confirm it is not empty.
 
 Spawn three reviewers from the one definition, each owning one lens:
 
@@ -405,7 +405,7 @@ Tasks:   {DONE}/{total} ({BLOCKED} blocked)
 Tests:   {N} passed, 0 failed
 Files:   {changed files}
 Review:  {applied}/{proposed} findings applied
-Artifacts: .tdd-agent-team/
+Artifacts: _workspace/tdd-agent-team/
 ```
 
-Append `session: COMPLETE` as the last line of `session.md` — it tells the next run this session finished, so Setup 1 archives it without asking. Leave `.tdd-agent-team/` in place otherwise — it is excluded from git and is the session's debugging record.
+Append `session: COMPLETE` as the last line of `session.md` — it tells the next run this session finished, so Setup 1 archives it without asking. Leave `_workspace/tdd-agent-team/` in place otherwise — it is excluded from git and is the session's debugging record.

@@ -39,7 +39,7 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 ### 준비 단계
 
 0. **agent teams 확인** — `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`가 `1`이 아니면 `~/.claude/settings.json` 수정을 제안하고, 동의할 때만 고칩니다. 거절하면 `tdd-subagent`를 안내하고 마칩니다. 이어서 **Task 도구**(`TaskCreate`·`TaskGet`·`TaskList`·`TaskUpdate`)가 있는지 확인합니다. 일부 모델에서만 기본 제공이라, 없으면 `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` 추가를 제안하고 추가 후 다시 확인합니다(설정 `env`는 보통 실행 중 세션에 바로 적용 — 그래도 없을 때만 재시작 안내). 거절하면 **메시지 방식**으로 진행합니다. 결정한 방식은 `context.md`의 `Coordination: task-list | messages`에 기록됩니다
-1. **이전 세션** — `.tdd-agent-team/session.md`가 있을 때, 끝까지 완료된 세션(마지막 줄 `session: COMPLETE`)이면 묻지 않고 `archive-{시각}/`으로 보관한 뒤 한 줄로 알립니다. 중간에 끊긴 세션이면 팀원이 복원되지 않아 이어갈 수 없음을 알리고, 보관 후 새로 시작할지 묻습니다
+1. **이전 세션** — `_workspace/tdd-agent-team/session.md`가 있을 때, 끝까지 완료된 세션(마지막 줄 `session: COMPLETE`)이면 묻지 않고 `archive-{시각}/`으로 보관한 뒤 한 줄로 알립니다. 중간에 끊긴 세션이면 팀원이 복원되지 않아 이어갈 수 없음을 알리고, 보관 후 새로 시작할지 묻습니다
 2. **`roles.env` 작성** — 컴파일 명령과 **메서드 단위** 테스트 명령. 팀원이 이 파일에서 명령을 읽습니다. RED가 같은 클래스에 다음 태스크의 실패 테스트를 추가하는 동안 GREEN이 돌기 때문에, 클래스 단위로 돌리면 남의 실패가 섞입니다
 3. **탐색 1회 + 정비 항목·범위·회귀 테스트·불변성·태스크 도출** — 문서에 있으면 문서를, 없으면 탐색 결과로 직접 정하고 태스크 확정 때 함께 확인받습니다. In-scope 파일·Out of scope·기존 코드의 함정, 회귀 테스트 묶음(문서가 지목한 테스트 + **수정할 파일을 다루는 기존 테스트는 문서와 무관하게 항상 포함**), 불변성 ID(문서에 없으면 리드가 `INV-001`부터 부여). 요구사항 문서에서 **동작은 그대로 두고 구조만 먼저 바꾸라는 항목**(Tidy First·코드 정비·추상화 추출 등, 이름이나 위치와 무관하게 내용으로 판단)은 태스크가 아니라 **정비 항목**으로 따로 잡습니다(실패하는 테스트를 만들 수 없으므로). 항목마다 막는 지점·정비 내용·정비 후 요구사항이 들어갈 자리를 확인하고, 문서에 없으면 태스크 확정 때 묻습니다. **문서에 정비 항목이 없으면** 리드가 `references/tidy-first-scan.md` 기준(요구사항이 한 곳에 들어가지 못하게 막는 지점만, 추상화는 3조건 충족 시만)으로 직접 찾아 **후보**로 보여 주고, 사용자가 승인한 것만 정비합니다 요구사항 문서 우선, 커버리지 하한(불변성마다 어기는/지키는 경계 + 클래스당 해피패스), 하나의 구현 변경으로 통과하는 시나리오는 한 태스크로 병합, 의존하는 태스크는 뒤로
 4. **태스크 확정** ← 사용자 확인 1. 태스크가 1~2개면 병렬 이득보다 팀 비용(팀원마다 가이드·문맥 재독, idle 알림마다 리드 턴)이 커서, 확정 질문 대신 `tdd-subagent`로 전환할지 묻습니다. 전환하면 확정한 태스크 목록을 그대로 넘기고 팀원은 띄우지 않습니다
@@ -67,7 +67,7 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
                        ⋮                                    └─READ tasks/01/green-result.md─▶ 리드
 ```
 
-- **메시지 본문은 `READ <경로>` 한 줄뿐**입니다. 내용은 `.tdd-agent-team/` 아래 md 파일에 씁니다
+- **메시지 본문은 `READ <경로>` 한 줄뿐**입니다. 내용은 `_workspace/tdd-agent-team/` 아래 md 파일에 씁니다
 - 리드는 넘겨주기 경로에 끼지 않습니다. 대신 GREEN의 `green-result.md` 보고마다 **태스크 검수** 3가지를 합니다. 필요한 정보(수정 파일·메서드 id·`red-check.log` 경로)는 모두 `green-result.md`에 있어서 이 파일만 읽습니다 — `red-check.log`가 있는지(없으면 기록만 하고 최종 리뷰가 지적), 수정 파일이 In-scope 안인지(벗어나면 GREEN에 되돌림), 해당 메서드가 실제로 통과하는지(직접 실행, 실패하면 되돌림). 같은 태스크가 두 번 되돌려지면 BLOCKED로 두고 사용자에게 묻습니다. `blocked.md`도 리드가 처리합니다
 - **스텁 요청은 팀원끼리** — RED가 `context.md`에 없는 시그니처가 필요하면 `missing-stub.md`를 **GREEN에게** 보내고, GREEN이 "미구현" 예외 스텁을 만들어 `context.md`에 시그니처를 추가한 뒤 RED에게 회신합니다. 리드는 Setup 이후 소스 파일을 고치지 않습니다
 - GREEN의 red check가 같은 태스크를 두 번 거절하면 RED가 `blocked.md`를 써서 리드에게 보냅니다
@@ -78,7 +78,7 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 2. **테스트 코드 정리** — 그다음 RED가 최종 구조에 맞춰 테스트 파일을 한 번에 정리합니다(사이클 중에는 두 팀원이 같은 파일을 건드리지 않도록 정리를 모두 사이클 뒤로 미룸)
 3. **최종 테스트** — 세션의 모든 메서드 + `[REGRESSION]` 클래스를 리드가 한 번에 실행. 팀원이 스스로 하지 않는 유일한 테스트 실행이라, GREEN이 통과 없이 완료를 보고한 경우를 여기서 잡습니다. 실패 시 GREEN에 수정 요청(최대 2라운드)
 4. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임) 3명이 각자 리포트를 씁니다. Critical/Important 지적이 있는 리뷰어만 다른 두 명에게 그 지적에 대한 반박을 1회 받고 수정하며, Minor뿐이면 반박 없이 바로 보고합니다. 리드가 종합해 사용자에게 묻습니다 — Critical/Important가 있으면 그 목록과 Minor 한 줄 요약을 함께, Minor뿐이면 건마다 한 줄 요약으로 짧게 묻고, 지적이 없으면 묻지 않습니다. 답을 받을 때까지 RED·GREEN·`tdd-refactor`는 종료하지 않습니다. 승인한 것만 반영합니다 — 테스트는 RED, 설계·가독성(`review-design`)은 `tdd-refactor`, 동작 누락·오류는 GREEN
-5. **종료** — 팀원 종료 요청, 요약 출력, `session.md` 끝에 `session: COMPLETE` 기록(다음 실행이 묻지 않고 보관하도록), `.tdd-agent-team/`는 git 제외 상태로 남깁니다
+5. **종료** — 팀원 종료 요청, 요약 출력, `session.md` 끝에 `session: COMPLETE` 기록(다음 실행이 묻지 않고 보관하도록), `_workspace/tdd-agent-team/`는 git 제외 상태로 남깁니다
 
 ## 팀원 정의 (`skills/tdd-agent-team/agents/` → `~/.claude/agents/`)
 
