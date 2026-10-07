@@ -47,7 +47,7 @@ TDD 실행 워크플로우. Red/Green/Refactor 사이클을 서브에이전트 �
 
 | Hook | Event | Description |
 |------|-------|-------------|
-| `allow-tdd-artifact` | `PreToolUse` | `tdd-subagent`·`tdd-agent-team` 에이전트들이 주고받는 `.tdd-subagent/**/*.md`, `.tdd-agent-team/**/*.md` 아티팩트의 권한 프롬프트를 생략합니다. 그 외 경로는 평소대로 프롬프트가 뜹니다. |
+| `allow-tdd-artifact` | `PreToolUse` | `tdd-subagent`·`tdd-agent-team` 에이전트들이 주고받는 `_workspace/tdd-subagent/**/*.md`, `_workspace/tdd-agent-team/**/*.md` 아티팩트의 권한 프롬프트를 생략합니다. 그 외 경로는 평소대로 프롬프트가 뜹니다. |
 
 ---
 
