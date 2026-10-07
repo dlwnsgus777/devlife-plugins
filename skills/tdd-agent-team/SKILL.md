@@ -177,7 +177,7 @@ After this answer, do not ask again until Final Stage 4 — except the Tidy Firs
 - Package / directory layout: {source & test packages}
 - Test conventions: {only what existing tests or project instructions show — JUnit version, assertion style, naming, // arrange·act·assert, @Nested usage; none → "none — follow the test-writing rules"}
 - Fixture pattern: {builder location & usage}
-- Signatures RED may call: {ClassName → public method signatures, including the stubs from Stubs and Start}
+- Signatures RED may call: {ClassName → public method signatures, including the stubs from Stubs}
 - Domain anchors: {aggregate/entity files + invariants that apply here}
 
 ## Domain Invariants
@@ -253,69 +253,52 @@ Decide `test_class` and `scope_production` here, not in the teammates — the st
 
 ## Running the Team
 
+Everything a teammate needs is laid out before it exists: the files from Setup 6, the stubs, and the whole task list. Then the team is spawned and starts on its own — you send no first work.
+
+### Prepare the Work
+
+In this order:
+
+1. **Tidy items, when there are any.** For each, in the order the document gives:
+   - **Baseline.** Pick the safety net: the regression set and every existing test class that exercises the files the item touches. Run them — ids written out literally — redirecting to `{TDD_DIR}/tidy/{NN}/baseline.log`. They must pass now; if they do not, stop and tell the user — a red baseline cannot prove the restructuring preserved behavior.
+   - **Write `{TDD_DIR}/tidy/{NN}/tidy.md`** — the item as the document states it (what blocks the change, the restructuring, where the change lands), the in-scope files, and the safety-net test ids.
+2. **Stubs — only when there are no tidy items.** With tidy items they wait for the Tidy gate (Tidy First below), so they land in the restructured code. See **Stubs**.
+3. **The task list** — every Task of the session, wired with `blockedBy` (see **Creating Tasks**). Write each Task id into `session.md`.
+
 ### Spawn
 
 ```
-Agent({
-  name: "tdd-red",
-  subagent_type: "devlife:tdd-red",
-  description: "TDD RED teammate",
-  prompt: "Start."
-})
-
-Agent({
-  name: "tdd-green",
-  subagent_type: "devlife:tdd-green",
-  description: "TDD GREEN teammate",
-  prompt: "Start."
-})
+Agent({ name: "tdd-red",      subagent_type: "devlife:tdd-red",      description: "TDD RED teammate",      prompt: "Start." })
+Agent({ name: "tdd-green",    subagent_type: "devlife:tdd-green",    description: "TDD GREEN teammate",    prompt: "Start." })
+Agent({ name: "tdd-refactor", subagent_type: "devlife:tdd-refactor", description: "TDD REFACTOR teammate", prompt: "Start." })
 ```
 
-`tdd-refactor` is spawned only when it has work — before the Tidy First phase if there are tidy items, otherwise at Final Stage 1 — so it does not sit idle through the cycle:
-
-```
-Agent({
-  name: "tdd-refactor",
-  subagent_type: "devlife:tdd-refactor",
-  description: "TDD REFACTOR teammate",
-  prompt: "Start."
-})
-```
-
-If it is spawned for Tidy First, keep it running through the cycle rather than respawning it later — its Tidy First context is useful for the refactor pass.
+All three start now, `tdd-refactor` included — it owns the Tidy items at the front and the refactoring at the back, and nobody is there to spawn it in between.
 
 The role is in the definition and the session facts are in files — `context.md` for everyone, `roles/{name}.md` for each teammate — so a teammate's spawn prompt is just `Start.`. Each rulebook lives in one file that its writer and its reviewer both read: the `test-writing` skill for RED and the `review-test` lens, `references/implementation.md` for GREEN (and as the floor for `tdd-refactor`), `references/refactoring.md` for `tdd-refactor`; the `review-design` lens reads the last two. Reviewers still get their lens and guide paths in the spawn prompt (Final Stage 4). Teammates address each other by these names, so keep them exact. Do not add a model; teammates inherit the session's.
 
 **First report.** `tdd-red`, `tdd-green`, and `tdd-refactor` each open with `READY`. Reviewers do not report: they live for one review and start from their spawn prompt. A teammate without `SendMessage` cannot send that report, so a teammate silent past its first idle notification counts as missing it — stop the team and tell the user rather than letting the cycle start lame.
 
-**First work only after the first report.** A teammate that is still starting can miss a message sent to it, and resending afterwards makes it report finished work twice. So send a teammate its first `READ` — `tasks/` to `tdd-red`, `tidy.md` or `refactor.md` to a newly spawned `tdd-refactor` — only after its `READY` has arrived. If a teammate seems not to have acted on a message, check before resending: its Task's `owner` and `status` (`TaskGet`) and whether its result file exists. Resend only when neither shows the work started.
+**Teammates take their own work.** After `READY`, each teammate reads its files and takes its unblocked Tasks from `TaskList` in number order. You never send first work. A blocked Task becomes theirs when the teammate whose work unblocked it sends them `READ` of the Task's file.
 
 ### Tidy First (only when there are tidy items)
 
-Structure first, behavior second, in separate commits — the CLAUDE.md Tidy First rule. `tdd-refactor` does the restructuring; nothing else runs meanwhile, because RED writing new tests against a structure being moved would collide. Spawn `tdd-refactor` now (see Spawn) if it is not running yet, and wait for its first report before step 2.
+Structure first, behavior second, in separate commits — the CLAUDE.md Tidy First rule. `tdd-refactor` takes the `Tidy {NN}` Tasks in order; every cycle Task is blocked by the `Tidy gate` Task, which you own, so nothing else runs meanwhile — RED writing new tests against a structure being moved would collide.
 
-For each tidy item, in the order the document gives:
-
-1. **Baseline.** Pick the safety net: the regression set and every existing test class that exercises the files the item touches. Run them — ids written out literally — redirecting to `{TDD_DIR}/tidy/{NN}/baseline.log`. They must pass now; if they do not, stop and tell the user — a red baseline cannot prove the restructuring preserved behavior.
-2. **Hand it to `tdd-refactor`.** Write `{TDD_DIR}/tidy/{NN}/tidy.md` — the item as the document states it (what blocks the change, the restructuring, where the change lands), the in-scope files, and the safety-net test ids — and send `READ {TDD_DIR}/tidy/{NN}/tidy.md` to `tdd-refactor`. First create its Task (see **Creating Tasks**) with owner `tdd-refactor`.
-3. **Test-side follow-up — not yours.** If tests must change mechanically (a moved class, a renamed method), `tdd-refactor` lists the exact edits in `tidy/{NN}/test-updates.md` and sends them to `tdd-red` itself; RED applies only those edits — assertions untouched — and answers `tdd-refactor`. You hear from `tdd-refactor` once, after both are done.
-4. **Tidy Check.** On `tidy-result.md` (and RED's `test-updates-result.md` it names, when there was one): the safety-net tests pass again; changed files are within the item's in-scope files; test changes are only the listed mechanical edits. Any failure → write `tidy/{NN}/lead-check.md` to the owner, reopening its Task to `in_progress` first; after two bounces, ask the user.
+- **Test-side follow-up — not yours.** If tests must change mechanically (a moved class, a renamed method), `tdd-refactor` lists the exact edits in `tidy/{NN}/test-updates.md` and sends them to `tdd-red` itself; RED applies only those edits — assertions untouched — and answers `tdd-refactor`.
+- **Tidy Check.** When the last item is done, `tdd-refactor` sends you `READ {TDD_DIR}/tidy/tidy-finished.md`. For every item's `tidy-result.md` (and the `test-updates-result.md` it names, when there was one): the safety-net tests pass again; changed files are within the item's in-scope files; test changes are only the listed mechanical edits. Any failure → write `tidy/{NN}/lead-check.md` to `tdd-refactor`, reopening its Task to `in_progress` first; after two bounces, ask the user.
 
 When every item passed, ask once ← **user checkpoint (Tidy First only)**:
 
 > "구조 정비(Tidy First)가 끝났습니다: {항목 요약}. 기존 테스트는 정비 전후 모두 통과합니다. 기능 작업과 섞이지 않도록 지금 `refactor` 커밋을 따로 해 두는 게 좋습니다. 제가 커밋할까요, 직접 하실까요, 커밋 없이 진행할까요?"
 
-Commit only on "제가 커밋" — stage just the files the tidy items changed, message `refactor: {summary}`. Then continue.
+Commit only on "제가 커밋" — stage just the files the tidy items changed, message `refactor: {summary}`. Then create the **Stubs**, set the `Tidy gate` Task `completed`, and send `tdd-red` `READ {TASK_DIR}/task.md` for the lowest-numbered Task it unblocked.
 
-### Stubs and Start
+### Stubs
 
-RED does not write production files, so every production type and method the tests will call must exist before RED starts. Create them now — after the Tidy First phase, so they land in the restructured code — from the signatures the document gives (or the task scenarios): bodies `throw new UnsupportedOperationException("Not implemented yet")` — never a silent `null` or default. Then run `TEST_COMPILE_CMD` and confirm it passes. Add each stub's signature to `context.md` "Signatures RED may call".
+RED does not write production files, so every production type and method the tests will call must exist before RED starts. Create them from the signatures the document gives (or the task scenarios): bodies `throw new UnsupportedOperationException("Not implemented yet")` — never a silent `null` or default. Then run `TEST_COMPILE_CMD` and confirm it passes. Add each stub's signature to `context.md` "Signatures RED may call".
 
 After this, stubs are not yours: a stub RED finds missing mid-cycle it asks `tdd-green` for through `missing-stub.md`, and GREEN adds it and its signature.
-
-Create one Task per `tasks/{NN}/task.md` now, owner `tdd-red` — after Tidy First, so RED cannot pick one up while the structure is still moving — and write each id into `session.md`.
-
-Start the cycle — once `tdd-red`'s first report is in: send `READ {TDD_DIR}/tasks/` to `tdd-red`. RED begins with task 01 and continues in number order; GREEN takes each task as RED hands it over.
 
 ### Creating Tasks
 
@@ -325,15 +308,14 @@ One Task per work file, and nothing in it but the pointer:
 TaskCreate({ subject: "Task {NN}: {domain rule sentence}",
              description: "READ _workspace/tdd-agent-team/tasks/{NN}/task.md",
              metadata: { md: "_workspace/tdd-agent-team/tasks/{NN}/task.md" } })
-TaskUpdate({ taskId, owner: "tdd-red" })
+TaskUpdate({ taskId, owner: "tdd-red", addBlockedBy: [ ... ] })
 ```
 
 | Work file | subject | Owner | `addBlockedBy` |
 |---|---|---|---|
-| `tidy/{NN}/tidy.md` | `Tidy {NN}: {summary}` | `tdd-refactor` | — |
-| `tasks/{NN}/task.md` | `Task {NN}: {domain rule sentence}` | `tdd-red` | every earlier task whose scope overlaps this one |
-| `refactor.md` | `Refactor session code` | `tdd-refactor` | every cycle Task |
-| `test-refactor.md` | `Refactor session tests` | `tdd-red` | the refactor Task |
+| `tidy/{NN}/tidy.md` | `Tidy {NN}: {summary}` | `tdd-refactor` | the previous `Tidy` |
+| `tidy/` (no file — your gate) | `Tidy gate` | `team-lead` | every `Tidy` |
+| `tasks/{NN}/task.md` | `Task {NN}: {domain rule sentence}` | `tdd-red` | the `Tidy gate`, if any, and every earlier task whose scope overlaps this one |
 
 A cycle Task is shared by RED and GREEN: RED sets it `in_progress` and hands it over by changing `owner` to `tdd-green`; GREEN hands a refused one back to `tdd-red` and sets a finished one `completed`. Each owner change comes with the `READ` message that wakes the new owner. Reviewers get no Task — they start from their spawn prompt — and neither does `fixes.md`, which holds every owner's items in one file.
 
@@ -343,7 +325,8 @@ You are off the handoff path. RED → GREEN goes direct; GREEN reports to you on
 
 | Message | Your action |
 |---|---|
-| `READY` | Note that the teammate is up; send its first work if it is waiting on this (see First work only after the first report). Nothing else |
+| `READY` | Note that the teammate is up. Send nothing — it takes its own work |
+| `READ {TDD_DIR}/tidy/tidy-finished.md` | Tidy Check and the Tidy First checkpoint (Tidy First above) |
 | `READ {TASK_DIR}/green-result.md` | Run the **Task Check** below, then set the task `DONE` (or bounce it) in `session.md`. GREEN has already set the Task `completed`; on a bounce, reopen it first — `TaskUpdate({ taskId, status: "in_progress", owner: "tdd-green" })` |
 | `READ {TASK_DIR}/blocked.md` | If it names a missing fact, add it to `context.md` and reply `READ {TASK_DIR}/task.md`. If RED's tests were refused twice or it is a design problem, set `BLOCKED` (and `metadata: { blocked: true }` on its Task) and ask the user — this is the one mid-cycle escalation |
 | `READ {TDD_DIR}/red-finished.md` | RED has written tests for every task. Note it; wait for GREEN |
@@ -371,7 +354,7 @@ The cycle is finished when every task is `DONE` or `BLOCKED` and RED has sent `r
 
 ### 1. Refactor
 
-GREEN wrote only the minimum for each task; now `tdd-refactor` makes it readable and well-designed. Spawn it if it is not running, and wait for its first report before sending `refactor.md`.
+GREEN wrote only the minimum for each task; now `tdd-refactor` makes it readable and well-designed.
 
 1. Write `{TDD_DIR}/refactor.md`: every production file the session changed (the `files_modified` lines of every `green-result.md`), and the safety net — every session test method plus the regression set, ids written out. Create its Task (owner `tdd-refactor`, blocked by every cycle Task). Send `READ {TDD_DIR}/refactor.md` to `tdd-refactor`.
 2. On `refactor-result.md`, run the **Refactor Check**: the safety net passes (run it yourself, ids literal, `\| tail -5`); `files_modified` stays within the session's production files; `changes` names a technique for each change; `responsibilities` has one line per production class the session changed, and a line that names more than one responsibility has a matching Extract Class in `changes` or an entry in `deferred` — you check that the record is there, not whether the split is right (`review-design` judges that). If tests had to follow, `tdd-refactor` sent `refactor-test-updates.md` to `tdd-red` itself and reports only after RED's result came back — check that result the same way (only the listed mechanical edits). Any failure → `lead-check.md` back to the owner, reopening its Task to `in_progress` first; after two bounces, ask the user.

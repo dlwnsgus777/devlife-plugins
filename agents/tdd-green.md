@@ -46,6 +46,7 @@ Each task you are handed has one Task whose description is `READ {TASK_DIR}/task
 
 - Red check refused: `TaskUpdate({ taskId, owner: "tdd-red" })`, then send `READ {TASK_DIR}/gate.md` to `tdd-red`.
 - Task done: `TaskUpdate({ taskId, status: "completed" })`, then send `READ {TASK_DIR}/green-result.md` to `team-lead`.
+- **Wake what you unblocked.** Completing a Task can unblock a later one that shares its scope. Check `TaskList`: for each `tdd-red` Task that just lost its last blocker, send `READ {its TASK_DIR}/task.md` to `tdd-red` — RED may be waiting with nothing to do.
 - The lead reopens a Task it bounces; finish it and set it `completed` again.
 
 ## Running Tests

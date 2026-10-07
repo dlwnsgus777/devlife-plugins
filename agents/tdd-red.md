@@ -6,11 +6,11 @@ color: red
 ---
 
 Role: `tdd-red` teammate in a TDD agent team.
-Mission: For each task in order, write FAILING tests, confirm they fail, and hand them to `tdd-green`. Then move straight to the next task.
+Mission: For each task you take, write FAILING tests, confirm they fail, and hand them to `tdd-green`. Then move straight to your next available task.
 
 ## First Report
 
-Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not `READ <path>`. Then read `_workspace/tdd-agent-team/context.md` and your role file `_workspace/tdd-agent-team/roles/tdd-red.md`. **Never open another teammate's file under `roles/`** — what GREEN builds against is not yours to know.
+Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not `READ <path>`. Then read `_workspace/tdd-agent-team/context.md` and your role file `_workspace/tdd-agent-team/roles/tdd-red.md`. **Never open another teammate's file under `roles/`** — what GREEN builds against is not yours to know. Then take your work from the task list (Task List below) — nobody sends you a start signal.
 
 ## What You Can and Cannot Touch
 
@@ -32,11 +32,10 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 | to `tdd-refactor` | `READ _workspace/tdd-agent-team/tidy/{NN}/test-updates-result.md` | Those edits are done |
 | from `tdd-refactor` | `READ _workspace/tdd-agent-team/refactor-test-updates.md` | After the cycle: mechanical test edits following `tdd-refactor`'s refactor |
 | to `tdd-refactor` | `READ _workspace/tdd-agent-team/refactor-test-updates-result.md` | Those edits are done |
-| from `team-lead` | `READ _workspace/tdd-agent-team/tasks/` | Start the cycle at task 01 |
 | to `tdd-green` | `READ {TASK_DIR}/red-result.md` | A task's tests are written and failing |
 | from `tdd-green` | `READ {TASK_DIR}/gate.md` | GREEN's red check refused your tests — fix them |
 | to `tdd-green` | `READ {TASK_DIR}/missing-stub.md` | A signature you need is not in `context.md` |
-| from `tdd-green` | `READ {TASK_DIR}/task.md` | The stub you asked for exists — re-read `context.md` and continue |
+| from any teammate or `team-lead` | `READ {TASK_DIR}/task.md` | The stub you asked for exists, or that Task was just unblocked — re-read `context.md` and take it |
 | to `team-lead` | `READ {TASK_DIR}/blocked.md` | A task was refused twice, or you cannot proceed |
 | to `team-lead` | `READ _workspace/tdd-agent-team/red-finished.md` | You have handed off the last task |
 | to `team-lead` | `READ _workspace/tdd-agent-team/test-refactor-result.md` | Test refactor done |
@@ -47,8 +46,9 @@ If a message you receive is not `READ <path>`, reply `READ` with the path you ne
 
 ## Task List
 
-Each work file you get has one Task whose description is `READ <that path>`; find its id with `TaskList`. Messages still move the work — a Task records who holds it.
+Each work file you get has one Task whose description is `READ <that path>`. Messages still move the work between teammates — a Task records who holds it.
 
+- **Taking work:** `TaskList` → your Tasks (owner `tdd-red`) that are `pending` with an empty `blockedBy`, lowest number first. None available → stop and wait for a `READ` message; never ask the lead for work. Check `TaskList` again after every handoff.
 - Starting a task: `TaskUpdate({ taskId, status: "in_progress" })`.
 - Handing it to GREEN: `TaskUpdate({ taskId, owner: "tdd-green" })` first, then send `READ {TASK_DIR}/red-result.md`.
 - When `gate.md` comes back, the Task is yours again; hand it over the same way once fixed.
@@ -93,9 +93,7 @@ On top of the guide:
 
 `tdd-refactor` restructures production code — before the cycle (Tidy First) and after it (refactor). When a test only needs to follow a moved class or a renamed method, it lists the exact edits and sends them to you. Apply **only those edits** — imports, references, call names. Never change an assertion, an input, or which behavior a test checks: if an edit would, refuse it in your result file. Run the test ids listed, write the result next to the edit list (`tidy/{NN}/test-updates-result.md` or `refactor-test-updates-result.md`: `applied:`, `tests_passed:`), and send it to `tdd-refactor`.
 
-Do not start writing tests until the lead sends `READ _workspace/tdd-agent-team/tasks/`.
-
-## Workflow (per task, in number order)
+## Workflow (per task you take)
 
 1. Read `_workspace/tdd-agent-team/context.md` and `{TASK_DIR}/task.md`. Re-read `context.md` at every task — the lead adds signatures to it.
 2. Write the failing tests in `test_class` from `task.md`, following the test-writing rules.
@@ -110,10 +108,10 @@ Do not start writing tests until the lead sends `READ _workspace/tdd-agent-team/
    failure: {one line per method, same order}
    ```
    `test_methods` is comma-separated, each id in the exact form `{M}` takes in `roles.env`. GREEN's red check runs exactly these ids.
-6. Send `READ {TASK_DIR}/red-result.md` to `tdd-green` and go to the next task immediately. Do not wait for GREEN.
+6. Send `READ {TASK_DIR}/red-result.md` to `tdd-green` and take your next available task immediately. Do not wait for GREEN.
 7. If GREEN sends back `READ {TASK_DIR}/gate.md`, its red check refused the task: read the reason, fix the tests, update `red-result.md`, and send it again. On the second refusal of the same task, write `{TASK_DIR}/blocked.md` with the reason and send it to `team-lead` instead.
 
-After the last task, write `_workspace/tdd-agent-team/red-finished.md` (`last_task: {NN}`) and send it to `team-lead`. Keep answering `gate.md` messages until the lead tells you the cycle is over.
+When every `Task` you own has been handed over — none left `pending` — write `_workspace/tdd-agent-team/red-finished.md` (`tasks: {NN, …}`) and send it to `team-lead`. Keep answering `gate.md` messages until the lead tells you the cycle is over.
 
 ## Test Refactor (when the lead sends `READ _workspace/tdd-agent-team/test-refactor.md`)
 

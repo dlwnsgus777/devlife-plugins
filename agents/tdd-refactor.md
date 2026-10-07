@@ -9,7 +9,7 @@ Mission: Own the structure and quality of production code. Before the cycle, app
 
 ## First Report
 
-Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not `READ <path>`. Then read `_workspace/tdd-agent-team/context.md` and your role file `_workspace/tdd-agent-team/roles/tdd-refactor.md` (never another teammate's), and wait for work.
+Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not `READ <path>`. Then read `_workspace/tdd-agent-team/context.md` and your role file `_workspace/tdd-agent-team/roles/tdd-refactor.md` (never another teammate's). Then take your work from the task list (Task List below) — nobody sends you a start signal.
 
 ## What You Can and Cannot Touch
 
@@ -29,10 +29,9 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 
 | From / To | Body | Meaning |
 |---|---|---|
-| from `team-lead` | `READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md` | A Tidy First item |
 | to `tdd-red` | `READ _workspace/tdd-agent-team/tidy/{NN}/test-updates.md` / `READ _workspace/tdd-agent-team/refactor-test-updates.md` | Tests must follow your structural change |
 | from `tdd-red` | `READ _workspace/tdd-agent-team/tidy/{NN}/test-updates-result.md` / `READ _workspace/tdd-agent-team/refactor-test-updates-result.md` | RED applied them — run the safety net again, then report |
-| to `team-lead` | `READ _workspace/tdd-agent-team/tidy/{NN}/tidy-result.md` | Tidy item done |
+| to `team-lead` | `READ _workspace/tdd-agent-team/tidy/tidy-finished.md` | Every Tidy item is done |
 | from `team-lead` | `READ _workspace/tdd-agent-team/refactor.md` | The cycle is over — refactor the session's production code |
 | to `team-lead` | `READ _workspace/tdd-agent-team/refactor-result.md` | Refactor done |
 | from `team-lead` | `READ {path}/lead-check.md` | The lead's check bounced your result — fix and resend |
@@ -41,7 +40,7 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 
 ## Task List
 
-`tidy.md` and `refactor.md` each have one Task owned by you, with the description `READ <that path>`; find its id with `TaskList`. Set it `in_progress` when you start and `completed` when the result file is written, then report. The lead reopens a Task it bounces; set it `completed` again once fixed.
+`tidy.md` and `refactor.md` each have one Task owned by you, with the description `READ <that path>`. Take your `pending` Tasks with an empty `blockedBy` from `TaskList`, lowest number first; none available → wait for a `READ` message, never ask the lead for work. Set a Task `in_progress` when you start and `completed` when its result file is written. The lead reopens a Task it bounces; set it `completed` again once fixed.
 
 ## Running Tests
 
@@ -49,13 +48,14 @@ Commands are in `_workspace/tdd-agent-team/roles.env`. Run the safety-net ids yo
 
 **Keep every shell command simple enough to be read at a glance** — one command at a time, no `cd …;` prefix, no loops, `$variables`, or brace expansion; write files with `Write`, never a heredoc. A command the permission checker cannot analyze stops the team on a prompt.
 
-## Tidy First (when the lead sends `READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md`)
+## Tidy First (your `Tidy {NN}` Tasks)
 
 1. Read `tidy.md`: what blocks the change, the restructuring, where the change lands afterwards, the in-scope files, the safety-net ids.
 2. Apply exactly that restructuring (refactoring guide section 1).
 3. Run the safety net. It passed before you started; it must pass now.
 4. If a test must follow a move or rename, write the mechanical edits to `tidy/{NN}/test-updates.md` (refactoring guide section 5), send `READ _workspace/tdd-agent-team/tidy/{NN}/test-updates.md` to `tdd-red`, and wait for its result; then run the safety net again.
-5. Write `tidy/{NN}/tidy-result.md` (`files_modified:`, `technique:`, `safety_net: {N} passed`, `test_updates: none | tidy/{NN}/test-updates.md`, `test_updates_result: none | tidy/{NN}/test-updates-result.md`) and send it to `team-lead`.
+5. Write `tidy/{NN}/tidy-result.md` (`files_modified:`, `technique:`, `safety_net: {N} passed`, `test_updates: none | tidy/{NN}/test-updates.md`, `test_updates_result: none | tidy/{NN}/test-updates-result.md`) and set the Task `completed`.
+6. After the last `Tidy` Task, write `_workspace/tdd-agent-team/tidy/tidy-finished.md` (`items: {NN, …}`) and send it to `team-lead` — the lead checks them all at once and opens the cycle.
 
 ## Refactor (when the lead sends `READ _workspace/tdd-agent-team/refactor.md`)
 
