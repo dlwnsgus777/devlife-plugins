@@ -30,16 +30,16 @@ Run Red-Green-Refactor with an agent team: a `tdd-red` teammate writes failing t
 
 ### Teammate definitions
 
-Each role is a **user-scope** agent definition that ships with this skill and is installed into `~/.claude/agents/` (Setup 0):
+Each role is a **plugin agent** of the `devlife` plugin — its definition lives in the plugin's `agents/` directory, and the plugin install registers it:
 
 | Teammate name | `subagent_type` | Source | `tools` |
 |---|---|---|---|
-| `tdd-red` | `tdd-red` | `{PLUGIN_ROOT}/agents/tdd-red.md` | Read, Write, Edit, Bash, SendMessage |
-| `tdd-green` | `tdd-green` | `{PLUGIN_ROOT}/agents/tdd-green.md` | Read, Write, Edit, Bash, SendMessage |
-| `tdd-refactor` | `tdd-refactor` | `{PLUGIN_ROOT}/agents/tdd-refactor.md` | Read, Write, Edit, Bash, SendMessage |
-| `review-domain` / `review-test` / `review-design` | `tdd-reviewer` | `{PLUGIN_ROOT}/agents/tdd-reviewer.md` | Read, Write, Bash, SendMessage — no `Edit` |
+| `tdd-red` | `devlife:tdd-red` | `{PLUGIN_ROOT}/agents/tdd-red.md` | Read, Write, Edit, Bash, SendMessage |
+| `tdd-green` | `devlife:tdd-green` | `{PLUGIN_ROOT}/agents/tdd-green.md` | Read, Write, Edit, Bash, SendMessage |
+| `tdd-refactor` | `devlife:tdd-refactor` | `{PLUGIN_ROOT}/agents/tdd-refactor.md` | Read, Write, Edit, Bash, SendMessage |
+| `review-domain` / `review-test` / `review-design` | `devlife:tdd-reviewer` | `{PLUGIN_ROOT}/agents/tdd-reviewer.md` | Read, Write, Bash, SendMessage — no `Edit` |
 
-`SKILL_DIR` is this file's parent directory; `PLUGIN_ROOT` is two levels above it (`{SKILL_DIR}/../..`). The definition body becomes the teammate's system prompt, so the role is in force from its first turn. User scope is deliberate: agent teams accept teammate definitions from the project, user, or managed scope only — a definition shipped as a plugin agent is silently ignored, and the teammate spawns as a default agent with no role and no tool limit.
+`SKILL_DIR` is this file's parent directory; `PLUGIN_ROOT` is two levels above it (`{SKILL_DIR}/../..`). The definition body becomes the teammate's system prompt and its `tools` list is enforced, so the role is in force from its first turn. Agent teams accept teammate definitions from the plugin scope, so nothing is copied anywhere: spawn with the plugin name in the `subagent_type` column. The teammate's `name` — what everyone addresses with `SendMessage` — stays the bare role name.
 
 **What is and is not enforced.** The tool lists are enforced: reviewers have no `Edit`. Everything finer is the teammates' own discipline — `tools` cannot limit paths, and RED and GREEN both need `Bash` to run tests. So RED not reading production code, GREEN and `tdd-refactor` not editing tests, GREEN not refactoring, and GREEN's red check before implementing all rest on the definitions' instructions. The final test and the `review-test` lens are the independent checks that catch a lapse.
 
@@ -53,11 +53,9 @@ Agent teams need `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Check the **effective
 
 Edit the file only on an explicit yes. On no, stop and point to `tdd-subagent`. Agent teams also need an interactive session — in `-p` / SDK mode, teammates never spawn; stop and say so.
 
-**Install the teammate definitions.** For each `tdd-*.md` file in `{PLUGIN_ROOT}/agents/`, compare it with `~/.claude/agents/{same name}`. If any is missing or differs, ask once:
+**Teammate definitions present?** Check that `devlife:tdd-red`, `devlife:tdd-green`, `devlife:tdd-refactor`, and `devlife:tdd-reviewer` are among the agent types your `Agent` tool lists. If any is missing, the `devlife` plugin is not installed or is out of date — the skill alone (a copy under `~/.claude/skills/`) does not carry the definitions. Stop and say so:
 
-> "팀원 정의 파일({목록})을 `~/.claude/agents/`에 설치(또는 갱신)해야 합니다. 진행할까요?"
-
-On yes, copy them, then **look before you conclude anything**: Claude Code picks up new files in `~/.claude/agents/` while the session runs, and announces them as newly available agent types. Check that `tdd-red`, `tdd-green`, and `tdd-reviewer` are now among the agent types your `Agent` tool lists — usually they are, and you continue straight to Setup 1 with no restart. Only if they are still missing after the copy, tell the user to restart Claude Code and run the skill again, and stop. Never ask for a restart on the assumption that the list is stale. On no, stop: without the definitions the teammates spawn with no role.
+> "팀원 정의(`devlife:tdd-*` 에이전트)를 찾을 수 없습니다. `devlife` 플러그인을 설치하거나 최신으로 갱신한 뒤 다시 실행해주세요."
 
 **Task tools available?** Load `TaskCreate`, `TaskGet`, `TaskList`, and `TaskUpdate` with `ToolSearch`. If they load, run in task-list mode. They are on by default only on some models; on others they need `CLAUDE_CODE_ENABLE_TODO_TOOLS=1`. If they do not load, ask:
 
@@ -231,14 +229,14 @@ Decide `test_class` here, not in RED — the stubs (Stubs and Start) and the per
 ```
 Agent({
   name: "tdd-red",
-  subagent_type: "tdd-red",
+  subagent_type: "devlife:tdd-red",
   description: "TDD RED teammate",
   prompt: "TDD_DIR={TDD_DIR}. TEST_GUIDE={SKILL_DIR}/../test-writing/SKILL.md. Wait for READ messages."
 })
 
 Agent({
   name: "tdd-green",
-  subagent_type: "tdd-green",
+  subagent_type: "devlife:tdd-green",
   description: "TDD GREEN teammate",
   prompt: "TDD_DIR={TDD_DIR}. IMPL_GUIDE={SKILL_DIR}/references/implementation.md. Wait for READ messages."
 })
@@ -249,7 +247,7 @@ Agent({
 ```
 Agent({
   name: "tdd-refactor",
-  subagent_type: "tdd-refactor",
+  subagent_type: "devlife:tdd-refactor",
   description: "TDD REFACTOR teammate",
   prompt: "TDD_DIR={TDD_DIR}. REFACTOR_GUIDE={SKILL_DIR}/references/refactoring.md. IMPL_GUIDE={SKILL_DIR}/references/implementation.md. Wait for READ messages."
 })
@@ -369,11 +367,11 @@ Build the diff into a file first — it must never pass through your context. On
 Spawn three reviewers from the one definition, each owning one lens:
 
 ```
-Agent({ name: "review-domain", subagent_type: "tdd-reviewer", description: "Final review: domain",
+Agent({ name: "review-domain", subagent_type: "devlife:tdd-reviewer", description: "Final review: domain",
         prompt: "You are review-domain — the domain lens. TDD_DIR={TDD_DIR}" })
-Agent({ name: "review-test",   subagent_type: "tdd-reviewer", description: "Final review: test",
+Agent({ name: "review-test",   subagent_type: "devlife:tdd-reviewer", description: "Final review: test",
         prompt: "You are review-test — the test lens. TDD_DIR={TDD_DIR}. TEST_GUIDE={SKILL_DIR}/../test-writing/SKILL.md" })
-Agent({ name: "review-design", subagent_type: "tdd-reviewer", description: "Final review: design",
+Agent({ name: "review-design", subagent_type: "devlife:tdd-reviewer", description: "Final review: design",
         prompt: "You are review-design — the design lens. TDD_DIR={TDD_DIR}. IMPL_GUIDE={SKILL_DIR}/references/implementation.md. REFACTOR_GUIDE={SKILL_DIR}/references/refactoring.md" })
 ```
 
