@@ -58,7 +58,7 @@ Never set a cycle Task `completed` — GREEN does.
 
 ## Running Tests
 
-Commands are in `_workspace/tdd-agent-team/roles.env`. **Run per method, never per class** — `{TEST_METHOD_RUNNER}` followed by one `{TEST_METHOD_CMD}` per method, `{M}` replaced by the method id. GREEN may be working on the same class right now; its methods are not yours to run.
+Commands are in `_workspace/tdd-agent-team/roles.env`. **Run per method, never per class** — `{TEST_METHOD_RUNNER}` followed by one `{TEST_METHOD_CMD}` per method, `{M}` replaced by the method id. The class holds earlier tasks' methods too; they are not yours to run.
 
 Read the run's result, not its log: counts, failing names, and for each failure its message and first stack frame into this session's code. Filter (`| tail -40`) rather than reading whole.
 

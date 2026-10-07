@@ -50,7 +50,7 @@ Each task you are handed has one Task whose description is `READ {TASK_DIR}/task
 
 ## Running Tests
 
-Commands are in `_workspace/tdd-agent-team/roles.env`. **Run per method, never per class** — `{TEST_METHOD_RUNNER}` followed by one `{TEST_METHOD_CMD}` per id from `test_methods` in `red-result.md`. RED may already have added failing tests for the next task to the same class; they are not yours yet.
+Commands are in `_workspace/tdd-agent-team/roles.env`. **Run per method, never per class** — `{TEST_METHOD_RUNNER}` followed by one `{TEST_METHOD_CMD}` per id from `test_methods` in `red-result.md`. The class may hold other tasks' methods; they are not yours to run.
 
 Read the run's result, not its log: counts, failing names, each failure's message and first stack frame into this session's code. Filter (`| tail -40`).
 

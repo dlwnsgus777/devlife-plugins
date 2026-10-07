@@ -14,7 +14,7 @@ description: >
 
 # TDD Agent Team
 
-Run Red-Green-Refactor with an agent team: a `tdd-red` teammate writes failing tests task after task, a `tdd-green` teammate makes them pass with the minimum code, and the two hand work to each other directly — RED for task N+1 runs while GREEN works on task N. A `tdd-refactor` teammate owns structure and quality: it applies the plan's Tidy First items before the cycle and refactors GREEN's minimal code after it.
+Run Red-Green-Refactor with an agent team: a `tdd-red` teammate writes failing tests task after task, a `tdd-green` teammate makes them pass with the minimum code, and the two hand work to each other directly. Tasks whose scopes do not overlap run in parallel; a task that touches the same files as an earlier one waits for it. A `tdd-refactor` teammate owns structure and quality: it applies the plan's Tidy First items before the cycle and refactors GREEN's minimal code after it.
 
 ## Execution Rules
 
@@ -100,7 +100,7 @@ TEST_METHOD_RUNNER='./gradlew test --offline'
 TEST_METHOD_CMD='--tests "{M}"'
 ```
 
-- **Every test run in this skill is per method.** RED adds failing tests for task N+1 to a class while GREEN is finishing task N, so a class-level run hands GREEN someone else's failure. `TEST_METHOD_RUNNER` is the fixed part; `TEST_METHOD_CMD` is the per-method argument with `{M}` standing for one `FQCN.method`, repeated once per method. Maven: runner `mvn -o test`, arg `-Dtest="{M}"` with `{M}` as `Class#method`. jest/vitest: runner `npx vitest run`, arg `-t "{M}"` with the test name.
+- **Every test run in this skill is per method.** A test class holds earlier tasks' methods, and tasks running in parallel each have their own; running exactly the ids of the work at hand keeps every result about that work alone. `TEST_METHOD_RUNNER` is the fixed part; `TEST_METHOD_CMD` is the per-method argument with `{M}` standing for one `FQCN.method`, repeated once per method. Maven: runner `mvn -o test`, arg `-Dtest="{M}"` with `{M}` as `Class#method`. jest/vitest: runner `npx vitest run`, arg `-t "{M}"` with the test name.
 - `TEST_COMPILE_CMD` compiles test sources without running them. No compile step (plain JS) → `true`.
 
 Then offer once to pre-approve the two test commands, since every teammate runs them dozens of times and each unapproved run can stop the team on a permission prompt:
@@ -132,27 +132,28 @@ For each tidy item, capture what blocks the change today, the restructuring to a
 - **Batch scenarios that share one implementation change** into one task — one guard clause, one branch, one small function. A task maps to a unit of implementation work, not to a test method.
 - **Coverage floor, never a cap:** per invariant, the case that violates it, the nearest case that satisfies it, and every state the rule itself names; plus one happy path per touched class. An edge case with no test is an unbuilt behavior, because GREEN builds exactly what the tests demand.
 - **Before presenting, name the production change behind every task.** "Nothing — it already works" or "an earlier task already makes it pass" means it is coverage, not a task: merge its scenarios into the task that builds the logic. In this skill a task that cannot be Red is not just wasted — GREEN's red check refuses it, and RED stalls on it.
-- **Order tasks so dependencies come first.** RED runs ahead of GREEN, so task N+1's tests may be written while task N is still unbuilt — they fail for both reasons and the red check lets them through, which is fine because GREEN works in order and reaches N+1 after N. What breaks is the reverse: a later task listed before the task it needs. Record each dependency in `task.md` (`depends_on:`).
+- **Give every task a scope, and order tasks so dependencies come first.** A task's scope is the production files it will change (`scope_production`) and its `test_class`. Two tasks **overlap** when they share a production file or a test class. Overlapping tasks run one after the other in number order — the later one waits for the earlier one (Creating Tasks), so it starts from finished code and two teammates never edit the same file. Tasks that do not overlap run in parallel. So number a task after every task it needs, and if a task needs another one's code without sharing a file, put that file in both scopes so the order holds.
 
 ### 5. Confirm Tasks ← user checkpoint 1
 
-Present together, and wait for confirmation: the tidy items — marking which came from the document and which are your **candidates** for the user to approve or drop — the in-scope files, the regression set, the invariants, and the tasks with their test names:
+Present together, and wait for confirmation: the tidy items — marking which came from the document and which are your **candidates** for the user to approve or drop — the in-scope files, the regression set, the invariants, and the tasks with their test names and scopes:
 
 ```
 TDD 태스크 목록
 
-  ┌─────┬──────────────────────────────────────────────────────────────┐
-  │  #  │ 태스크 → @DisplayName                                         │
-  ├─────┼──────────────────────────────────────────────────────────────┤
-  │ 1   │ {domain rule sentence} (+ {sentence} if batched)             │
-  └─────┴──────────────────────────────────────────────────────────────┘
+  ┌─────┬──────────────────────────────────────────────┬──────────────────────┐
+  │  #  │ 태스크 → @DisplayName                         │ 영향 범위 (선행)       │
+  ├─────┼──────────────────────────────────────────────┼──────────────────────┤
+  │ 1   │ {domain rule sentence} (+ {sentence} if batched) │ {files} (-)       │
+  │ 2   │ {domain rule sentence}                       │ {files} (1)          │
+  └─────┴──────────────────────────────────────────────┴──────────────────────┘
 ```
 
 > "태스크를 확정하면 팀원이 끝까지 자동으로 진행하고, 최종 리뷰 결과가 나오면 다시 확인받습니다. 이대로 진행할까요?"
 
-**Is a team worth it?** With one or two tasks, RED has almost nothing to run ahead on, while every teammate still reads its guide and `context.md` and every idle notification costs you a turn — the team costs more than its parallelism saves. In that case, ask this instead of the question above:
+**Is a team worth it?** With one or two tasks, the team's upkeep — every teammate reading its guide, `context.md`, and role file, every idle notification costing you a turn — outweighs what it buys. In that case, ask this instead of the question above:
 
-> "태스크가 {N}개라 RED·GREEN 병렬 진행으로 얻는 이득이 거의 없고, 팀원마다 가이드와 문맥을 따로 읽어 비용이 큽니다. `tdd-subagent`로 전환할까요? (확정한 태스크 목록을 그대로 넘깁니다) / 팀으로 그대로 진행할까요?"
+> "태스크가 {N}개라 팀을 유지하는 비용(팀원마다 가이드·문맥을 따로 읽고, 대기 알림마다 리드가 응답)이 얻는 이득보다 큽니다. `tdd-subagent`로 전환할까요? (확정한 태스크 목록을 그대로 넘깁니다) / 팀으로 그대로 진행할까요?"
 
 On switch, stop here and invoke `tdd-subagent` with the requirements document and the confirmed task list — no teammate has been spawned yet. On continue, proceed as a team.
 
@@ -243,12 +244,12 @@ Write `{SKILL_DIR}` resolved to an absolute path, and `Read` each guide path onc
 # Task {NN}: {domain rule sentence}
 invariants: {INV-001, INV-004}
 test_class: {FQCN}
-depends_on: {task numbers, or none}
+scope_production: {relative paths this task changes}
 scenarios:
 - {scenario sentence}
 ```
 
-Decide `test_class` here, not in RED — the stubs (Stubs and Start) and the per-method commands both need it.
+Decide `test_class` and `scope_production` here, not in the teammates — the stubs, the per-method commands, and the task order all need them. RED sees `scope_production` as paths only and never opens those files.
 
 ## Running the Team
 
@@ -330,7 +331,7 @@ TaskUpdate({ taskId, owner: "tdd-red" })
 | Work file | subject | Owner | `addBlockedBy` |
 |---|---|---|---|
 | `tidy/{NN}/tidy.md` | `Tidy {NN}: {summary}` | `tdd-refactor` | — |
-| `tasks/{NN}/task.md` | `Task {NN}: {domain rule sentence}` | `tdd-red` | — (RED runs ahead of GREEN; `depends_on` stays in `task.md`) |
+| `tasks/{NN}/task.md` | `Task {NN}: {domain rule sentence}` | `tdd-red` | every earlier task whose scope overlaps this one |
 | `refactor.md` | `Refactor session code` | `tdd-refactor` | every cycle Task |
 | `test-refactor.md` | `Refactor session tests` | `tdd-red` | the refactor Task |
 
