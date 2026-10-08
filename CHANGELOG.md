@@ -10,8 +10,8 @@
 
 | Skill | Version | Change |
 |-------|---------|--------|
-| `tdd-agent-team` | `2.0.0` | 팀원 자율 기동으로 재설계. 팀원은 `READY` 후 공유 작업 목록에서 자기 Task를 가져가고 RED → GREEN → `tdd-refactor` → 다음 태스크로 직접 넘김(리드는 첫 작업을 보내지 않음). Task 도구 필수·messages 모드 삭제. 태스크별 영향 범위로 순서 결정(겹치면 앞 태스크 리팩터링 후, 아니면 병렬). 스폰 프롬프트 대신 `context.md` + 역할별 `roles/{이름}.md`. 리팩터링을 사이클 끝으로 옮겨 `tdd-refactor`가 태스크 범위 안의 프로덕션·테스트를 정리(테스트는 단언·수 불변, 범위 밖은 `deferred` → `review-design`), 마무리의 일괄 리팩터링·테스트 정리 단계 삭제. 리드 태스크별 검수를 모든 리팩터링 후 최종 검수 1회로 통합, 막힌 태스크는 세션을 멈추지 않음. 팀원 정의를 `devlife` 플러그인 에이전트(`devlife:tdd-*`)로 옮기고 `~/.claude/agents/` 설치 단계 삭제. 첫 보고를 도구 목록 대신 `READY` 한 줄로. 테스트 작성 규칙을 `test-writing` 스킬로 분리 |
-| `test-writing` | `1.0.0` | 신규. `tdd-agent-team`의 테스트 작성 가이드를 독립 스킬로 분리 — "테스트 작성해줘" 등으로 단독 호출, RED·`tdd-refactor`·`review-test`가 같은 파일을 `Read`로 읽음 |
+| `tdd-agent-team` | `2.0.0` | 팀원 자율 기동으로 재설계. 팀원은 `READY` 후 공유 작업 목록에서 자기 Task를 가져가고 RED → GREEN → `tdd-refactor` → 다음 태스크로 직접 넘김(리드는 첫 작업을 보내지 않음). Task 도구 필수·messages 모드 삭제. 태스크별 영향 범위로 순서 결정(겹치면 앞 태스크 리팩터링 후, 아니면 병렬). 스폰 프롬프트 대신 `context.md` + 역할별 `roles/{이름}.md`. 리팩터링을 사이클 끝으로 옮겨 `tdd-refactor`가 태스크 범위 안의 프로덕션·테스트를 정리(테스트는 단언·수 불변, 범위 밖은 `deferred` → `review-design`), 마무리의 일괄 리팩터링·테스트 정리 단계 삭제. 리드 태스크별 검수를 모든 리팩터링 후 최종 검수 1회로 통합, 막힌 태스크는 세션을 멈추지 않음. 팀원 정의를 `devlife` 플러그인 에이전트(`devlife:tdd-*`)로 옮기고 `~/.claude/agents/` 설치 단계 삭제. 첫 보고를 도구 목록 대신 `READY` 한 줄로. 테스트 작성 규칙을 `test-writing` 스킬로 분리. 테스트 삭제는 리드 판단(RED는 처음부터 통과한 테스트를 `already_passing`으로 남기고 지목된 것만 삭제), 최종 리뷰의 동작 수정도 RED 실패 테스트부터(`fixes.md` 한 파일), 리뷰 지적 목록은 질문과 같은 메시지에, `deferred`가 없으면 `deferred.md`를 만들지 않음 |
+| `test-writing` | `1.0.0` | 신규. `tdd-agent-team`의 테스트 작성 가이드를 독립 스킬로 분리 — "테스트 작성해줘" 등으로 단독 호출, RED·`tdd-refactor`·`review-test`가 같은 파일을 `Read`로 읽음. 이번 세션에 쓴 테스트도 스스로 판단해 합치거나 지우지 않음(작업을 지시한 쪽이 결정) |
 
 ---
 
