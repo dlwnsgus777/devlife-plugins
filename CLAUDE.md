@@ -64,11 +64,8 @@ devlife-plugins/
 | 변경 유형 | 버전 갱신 | CHANGELOG 기록 |
 |---|---|---|
 | 의도적인 기능/트리거/프로세스/오탈자 수정 (patch/minor/major 불문) | O | O |
-| `sync-skill`을 통한 글로벌 ↔ 프로젝트 병합 동기화 (`## 글로벌 동기화` 참고) | O | X |
 
 - 기록 형식: 날짜, 스킬명, 버전, 변경 요약 — `README.md` Skills 테이블과 동일한 버전 값 사용
-- 예외 이유: 병합 동기화는 두 위치의 내용을 맞추는 기계적 작업이라 별도의 변경 이력으로 보지 않음. 버전 숫자는 최신 내용을 반영하도록 올리되, `CHANGELOG.md`에는 남기지 않음
-- 이 예외는 병합 동기화에만 한정되며, 스킬 삭제 등 다른 케이스는 이 규칙에 포함되지 않음 (필요 시 별도로 정의)
 
 ### 스킬 구조 컨벤션
 
@@ -87,30 +84,33 @@ devlife-plugins/
 - 스킬명은 backtick으로 표기: `` `skill-name` ``
 - 스킬 추가/삭제 시 `## Plugins` 상단 요약 테이블도 함께 업데이트
 
-## 글로벌 동기화
+## 배포
 
-이 레포의 스킬은 `~/.claude/skills/`의 글로벌 스킬과 동기화됩니다.
+스킬과 팀원 정의(`agents/`)는 `devlife` 플러그인으로만 배포합니다. `~/.claude/skills/`·`~/.claude/agents/`에 사본을 두지 않습니다 — 플러그인과 같은 이름이 두 개씩 생깁니다.
 
-```bash
-# 글로벌 → 프로젝트
-cp ~/.claude/skills/{skill-name}/SKILL.md skills/{skill-name}/SKILL.md
+1. 변경을 main에 merge
+2. `.claude-plugin/plugin.json`의 `version`을 올림 — 버전이 같으면 업데이트가 감지되지 않음
+3. 플러그인 갱신:
+   ```bash
+   claude plugin marketplace update devlife-plugins
+   claude plugin install devlife@devlife-plugins   # 처음 설치 또는 갱신
+   ```
+4. 새 세션부터 적용 (스킬 이름은 `devlife:{skill-name}`)
 
-# 프로젝트 → 글로벌
-cp -r skills/{skill-name} ~/.claude/skills/
-```
+머지 전 검증은 설치 없이 `claude --plugin-dir <이 레포 경로>`로 새 세션을 띄워 합니다.
 
 ## 커밋 메시지 규칙
 
 형식: `type: subject`
 
-- `feat` — 스킬 신규 추가, 기능/트리거/프로세스 추가, 글로벌 ↔ 프로젝트 스킬 동기화 반영
+- `feat` — 스킬 신규 추가, 기능/트리거/프로세스 추가
 - `fix` — 버그 수정
 - `docs` — README, docs/, CLAUDE.md 등 문서 변경
 - `chore` — 설정 파일, 권한, 잡무성 변경
 
 예:
 ```
-feat: sync devlife-brainstorming skill from global
+feat: add test-writing skill
 docs: add versioning/changelog rules to CLAUDE.md
 chore: update allowed permissions in settings.local.json
 ```
