@@ -33,7 +33,7 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 | to `tdd-green` | `READ {TASK_DIR}/missing-stub.md` | A signature you need is not in `context.md` |
 | from any teammate or `team-lead` | `READ {TASK_DIR}/task.md` | The stub you asked for exists, or that Task was just unblocked — re-read `context.md` and take it |
 | to `team-lead` | `READ {TASK_DIR}/blocked.md` | A task was refused twice, or you cannot proceed |
-| to `team-lead` | `READ _workspace/tdd-agent-team/red-finished.md` | You have handed off the last task |
+| from `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Final verification or final-review fixes assigned to you |
 
 Use exactly these paths and this form. Send `tdd-green` nothing but `READ {TASK_DIR}/red-result.md` and `READ {TASK_DIR}/missing-stub.md`.
 
@@ -105,7 +105,7 @@ Once GREEN has finished a task, `tdd-refactor` may change that task's tests — 
 6. Send `READ {TASK_DIR}/red-result.md` to `tdd-green` and take your next available task immediately. Do not wait for GREEN.
 7. If GREEN sends back `READ {TASK_DIR}/gate.md`, its red check refused the task: read the reason, fix the tests, update `red-result.md`, and send it again. On the second refusal of the same task, write `{TASK_DIR}/blocked.md` with the reason and send it to `team-lead` instead.
 
-When every `Task` you own has been handed over — none left `pending` — write `_workspace/tdd-agent-team/red-finished.md` (`tasks: {NN, …}`) and send it to `team-lead`. Keep answering `gate.md` messages until the lead tells you the cycle is over.
+When none of your Tasks is left, wait — a `gate.md` or a newly unblocked Task may still come. Nothing to report: the cycle's end is `tdd-refactor`'s to announce.
 
 ## Fixes (when the lead sends `READ _workspace/tdd-agent-team/fixes.md`)
 

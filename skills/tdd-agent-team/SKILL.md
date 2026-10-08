@@ -18,7 +18,7 @@ Run Red-Green-Refactor with an agent team: a `tdd-red` teammate writes failing t
 
 ## Execution Rules
 
-**You are the team lead: you integrate results and handle errors.** Setup (the initial stubs included), creating the Tasks, the verification gates (Task Check, Tidy Check, Refactor Check), `blocked.md` and user escalations, the Final Test, and merging the review are yours. Communication is not: when one teammate's output is another's input — a handoff, a stub request, a green task to refactor — the sender sends it straight to the receiver. Never relay a file from one teammate to another. After Setup you edit no source or test file.
+**You are the team lead: you integrate results and handle errors.** Setup (the initial stubs included), creating the Tasks, the Tidy Check, `blocked.md` and user escalations, the one Final Verification after every task's refactor, and merging the review are yours. Communication is not: when one teammate's output is another's input — a handoff, a stub request, a green task to refactor — the sender sends it straight to the receiver. Never relay a file from one teammate to another. After Setup you edit no source or test file.
 
 - Respect system, developer, and project `CLAUDE.md` instructions above this skill.
 - The user is asked at task confirmation (Setup 5), after the Tidy First phase when there is one (to commit it separately), and before applying final-review fixes (Final Stage 2). Project instructions that ask for feedback after each stage are honored at these points — the team runs on its own between them and has no stage boundary to pause at.
@@ -117,7 +117,7 @@ Everything below comes from the requirements document **when it says so, and fro
 
 **Invariants — requirements document first, code second.** With a spec, plan, or ticket, derive invariants from it and adopt any IDs (`INV-001`, …) verbatim; if it gives none, number them yourself from `INV-001`. With nothing at all, ask "구현할 기능의 요구사항이나 티켓 내용을 공유해주시겠어요?" and wait. Only then add structural constraints the code shows and the document omitted. Write each as a declarative sentence about what must be true.
 
-**Scope.** In-scope files, out-of-scope items, and known pitfalls (defects in the code the change imitates, each with what to do instead) — take them from the document if it lists them; otherwise set them from the tasks and the exploration. In-scope files are what the Task Check and the Refactor Check hold the team to, so they must be concrete paths. They go to GREEN's and `tdd-refactor`'s role files (Setup 6), not to the shared `context.md` — RED has no use for them.
+**Scope.** In-scope files, out-of-scope items, and known pitfalls (defects in the code the change imitates, each with what to do instead) — take them from the document if it lists them; otherwise set them from the tasks and the exploration. In-scope files are what the Final Verification holds the team to, so they must be concrete paths. They go to GREEN's and `tdd-refactor`'s role files (Setup 6), not to the shared `context.md` — RED has no use for them.
 
 **Regression set.** The existing tests that must keep passing: those the document says already cover part of the requirement (plan-creator tags them `[REGRESSION]`), **plus every existing test class that exercises a file in scope** — find these in the exploration, whatever the document says. The regression set runs in the final test and is the safety net of the Tidy First and refactor phases; without the second half, a refactor that breaks existing behavior has nothing to catch it.
 
@@ -237,7 +237,7 @@ Write `{SKILL_DIR}` resolved to an absolute path, and `Read` each guide path onc
 | 1 | {domain rule sentence} | {Task id} | PENDING | - |
 ```
 
-`status`: `PENDING` | `RED_DONE` | `DONE` | `BLOCKED`. `session.md` stays alongside the Tasks — it is the session's record after the team is gone — and `DONE` is set only by your Task Check, never by a Task's status alone.
+`status`: `PENDING` | `DONE` | `BLOCKED`. `session.md` stays alongside the Tasks — it is the session's record after the team is gone — and `DONE` is set only by your Final Verification, never by a Task's status alone.
 
 **`{TASK_DIR}/task.md`** per task:
 
@@ -323,41 +323,43 @@ A task's cycle is two Tasks: `Task {NN}`, shared by RED and GREEN, then `Refacto
 
 ### Lead Duties During the Cycle
 
-You are off the handoff path. RED → GREEN goes direct; GREEN reports to you only when a task is done. What reaches you, and what you do:
+You are off the cycle's path. RED → GREEN → `tdd-refactor` → the next task's RED all go direct, and nothing reaches you per task. After the cycle starts, the only messages you send a teammate are a `blocked.md` reply, the Tidy gate release, and — when everyone is idle — an order to resend a handoff. What reaches you, and what you do:
 
 | Message | Your action |
 |---|---|
 | `READY` | Note that the teammate is up. Send nothing — it takes its own work |
 | `READ {TDD_DIR}/tidy/tidy-finished.md` | Tidy Check and the Tidy First checkpoint (Tidy First above) |
-| `READ {TASK_DIR}/refactor-result.md` | Run the **Task Check** below, then set the task `DONE` (or bounce it) in `session.md`. Both Tasks are already `completed`; on a bounce, reopen the one whose owner must fix it — `Task {NN}` with owner `tdd-green`, or `Refactor {NN}` |
-| `READ {TASK_DIR}/blocked.md` | If it names a missing fact, add it to `context.md` and reply `READ {TASK_DIR}/task.md`. If RED's tests were refused twice or it is a design problem, set `BLOCKED` (and `metadata: { blocked: true }` on its Task) and ask the user — this is the one mid-cycle escalation |
-| `READ {TDD_DIR}/red-finished.md` | RED has written tests for every task. Note it; wait for GREEN |
-| Idle notification | **Usually nothing — do not reply, do not inspect files.** Teammates go idle between every message, so idle is normal. Act only when *all* teammates are idle and the cycle is not finished (some task not `DONE`/`BLOCKED`, or no `red-finished.md`): then find the handoff that was never sent — from `TaskList` (an open Task whose owner has no message to act on), checked against the result files under `tasks/` — and tell **the sender** to send it again (`READ {TASK_DIR}/task.md` to that teammate). Never send the handoff yourself — the sender owns the file it points to |
+| `READ {TASK_DIR}/blocked.md` / `READ {TDD_DIR}/blocked.md` | A missing fact → add it to `context.md` or the teammate's role file and reply `READ {TASK_DIR}/task.md` (or the path it was stuck on). A file outside the task's scope is needed → widen `scope_production` in `task.md` and the `blockedBy` of later overlapping Tasks, or ask the user. RED's tests refused twice, or a design problem → **Blocked Task** below, then ask the user — this is the one mid-cycle escalation |
+| `READ {TDD_DIR}/cycle-finished.md` | Every `Refactor` is done — run the **Final Verification** |
+| Idle notification | **Usually nothing — do not reply, do not inspect files.** Teammates go idle between every message, so idle is normal. Act only when *all* teammates are idle and `cycle-finished.md` has not arrived: then find the handoff that was never sent — from `TaskList` (an open Task whose owner has no message to act on), checked against the result files under `tasks/` — and tell **the sender** to send it again (`READ {TASK_DIR}/task.md` to that teammate). Never send the handoff yourself — the sender owns the file it points to |
 
-### Task Check (on every `refactor-result.md`)
-
-Nothing outside the teammates enforces the role boundaries, so each finished cycle gets mechanical checks from you. `green-result.md` and `refactor-result.md` carry everything the checks need: read them and nothing else — no `red-result.md`, no `ls`, never `cat` whole files into your context.
-
-| Check | How | If it fails |
-|---|---|---|
-| 1. Red-first evidence | `green-result.md` has a `red_check_log:` line naming `{TASK_DIR}/red-check.log` | The code is already built, so red can no longer be proven — do not bounce. Note `red-first unverified` in the task's `session.md` row; the `review-test` lens reports it |
-| 2. Scope | the `files_modified` line of `green-result.md` names only paths under "In-scope files" in `roles/tdd-green.md` | Write `{TASK_DIR}/lead-check.md` naming the out-of-scope paths and send `READ {TASK_DIR}/lead-check.md` to `tdd-green`: revert them, or explain in `blocked.md` why the task needs them |
-| 3. Refactor record | `refactor-result.md`: `files_modified` inside the task's scope (`scope_production` and `test_class` in `task.md`); a technique for each `production_changes` line; one `responsibilities` line per class, and a line naming two responsibilities has a matching Extract Class or a `deferred` entry; `test_changes` change no assertion, input, or test count. You check that the record is there, not whether the design is right — `review-design` judges that | `lead-check.md` to `tdd-refactor` |
-| 4. Really passes | run the `test_methods` from `green-result.md` plus the regression set yourself, ids written out literally, `\| tail -5` | `lead-check.md` with the failing names to `tdd-refactor` if `refactor-result.md` lists changes, otherwise to `tdd-green` |
-
-All pass → `DONE`. A bounced task comes back as a new result file and is checked again; after two bounces of the same task, set `BLOCKED` and ask the user. Do not judge the code itself here — design and test quality belong to the Final Review.
+**Blocked Task.** A blocked task must not stop the rest. Set its `Task {NN}` `completed` with `metadata: { blocked: true }` and its `Refactor {NN}` `completed` with `metadata: { skipped: true }`, mark it `BLOCKED` in `session.md`, and send `tdd-red` `READ {TASK_DIR'}/task.md` for every Task this just unblocked — a status change wakes no one. If that skip completed the last open `Refactor`, no teammate will send `cycle-finished.md`: write it yourself and go to the Final Verification. Once the user decides, a task to be redone gets a new `Task {NN}` / `Refactor {NN}` pair (same `TASK_DIR`, `task.md` updated), and you send `READ {TASK_DIR}/task.md` to `tdd-red`.
 
 Update `session.md` after every message you act on. It is the record of progress that outlives the team; the Tasks show live status, but a Task's status can lag and is never the evidence — the result files are.
 
 **Every turn you take re-reads this whole conversation, so turns are your cost.** Answer the messages in the table above with the one action listed and end the turn; do not summarize progress, re-read files, or narrate between messages. The user is not waiting on you mid-cycle — they are waiting on the Final Review.
 
-The cycle is finished when every task is `DONE` or `BLOCKED` and RED has sent `red-finished.md`.
+The cycle is finished when `cycle-finished.md` arrives — every `Refactor` Task is `completed`.
 
 ## Final Stages
 
-### 1. Final Test
+### 1. Final Verification
 
-Each task passed its own Task Check; this run proves they still pass **together** — a later task's change can break an earlier task's methods. Run every session method in one invocation — all `test_methods` from every `red-result.md`, plus the regression set — with `TEST_METHOD_RUNNER` and one `TEST_METHOD_CMD` per method. Collect the ids by reading the `red-result.md` files, then **write them out literally in the command**: `{TEST_METHOD_RUNNER} {id1} {id2} …`. Never pass them through a shell variable or `$(…)` — a quoted variable turns the whole list into one argument, and the runner reports a single nonexistent test instead of running yours. Redirect the output to `{TDD_DIR}/final-test.log` and read only the counts and failing names. If anything fails, write the failures to `{TDD_DIR}/final-test-failures.md` and send `READ` to `tdd-green`; at most 2 rounds, then ask the user.
+Nothing outside the teammates enforces the role boundaries, so the finished work gets mechanical checks from you — once, after every task's refactor, not per task. For each task that is not `BLOCKED`, `green-result.md` and `refactor-result.md` carry what checks 1–4 need: read them and nothing else — no `red-result.md`, no `ls`, never `cat` whole files into your context.
+
+| Check | How (per task) | If it fails |
+|---|---|---|
+| 1. Red-first evidence | `green-result.md` has a `red_check_log:` line naming `{TASK_DIR}/red-check.log` | The code is already built, so red can no longer be proven — not a fix item. Note `red-first unverified` in the task's `session.md` row; the `review-test` lens reports it |
+| 2. Scope | the `files_modified` lines of `green-result.md` and `refactor-result.md` name only paths in the task's scope (`scope_production` and `test_class` in `task.md`) | A fix item for whoever touched the path: revert it, or explain in `blocked.md` why the task needs it |
+| 3. Refactor record | `refactor-result.md`: a technique for each `production_changes` line; one `responsibilities` line per class, and a line naming two responsibilities has a matching Extract Class or a `deferred` entry. You check that the record is there, not whether the design is right — `review-design` judges that | A fix item for `tdd-refactor` |
+| 4. Tests unchanged in what they check | `refactor-result.md`: every `test_changes` line changes no assertion, no input, and no test count | A fix item for `tdd-refactor` — undo that test change |
+| 5. Really passes, together | below | A fix item for the owner of the failing behavior |
+
+**Check 5 — one run for the whole session.** A later task's change can break an earlier task's methods, so run every session method in one invocation — all `test_methods` from every `red-result.md`, plus the regression set — with `TEST_METHOD_RUNNER` and one `TEST_METHOD_CMD` per method. Collect the ids by reading the `red-result.md` files (for a method `test_changes` renamed, use the new id), then **write them out literally in the command**: `{TEST_METHOD_RUNNER} {id1} {id2} …`. Never pass them through a shell variable or `$(…)` — a quoted variable turns the whole list into one argument, and the runner reports a single nonexistent test instead of running yours. Redirect the output to `{TDD_DIR}/final-test.log` and read only the counts and failing names. The executed count must equal the number of ids.
+
+**Collect `deferred`.** Copy every `deferred` line other than `none` from the `refactor-result.md` files into `{TDD_DIR}/deferred.md`, one line each, prefixed with the task number — the `review-design` lens judges them.
+
+**Failures go back to their owners.** Write `{TDD_DIR}/fixes.md` with the failures split by owner — missing or wrong behavior to `tdd-green`, structure and refactor records to `tdd-refactor`, tests to `tdd-red` — and send each owner its `READ`. When all have reported, run checks 2–5 again for the changed tasks, and check 5 for the whole session. At most 2 rounds, then ask the user. Every task that passes is `DONE` in `session.md`.
 
 ### 2. Parallel Final Review ← user checkpoint 2
 
@@ -393,7 +395,7 @@ Show the user the findings and ask — always, unless there are none at all:
 
 - **No findings** — skip the question and go to Summarize.
 
-Keep `tdd-red`, `tdd-green`, and `tdd-refactor` running until the answer is in — any of them may own a fix. Apply only what is approved. Write `{TDD_DIR}/fixes.md` with the approved items split by owner — test changes to `tdd-red`, design and readability findings (`review-design`) to `tdd-refactor`, other production changes (missing or wrong behavior) to `tdd-green` — and send each its `READ`. Then re-run the Final Test once.
+Keep `tdd-red`, `tdd-green`, and `tdd-refactor` running until the answer is in — any of them may own a fix. Apply only what is approved. Write `{TDD_DIR}/fixes.md` with the approved items split by owner — test changes to `tdd-red`, design and readability findings (`review-design`) to `tdd-refactor`, other production changes (missing or wrong behavior) to `tdd-green` — and send each its `READ`. Then re-run Final Verification check 5 once.
 
 **Release teammates as soon as their last work is in.** A teammate with no fixes assigned gets its shutdown request now; one with fixes gets it the moment its fix report arrives. If the user approved nothing, shut down `tdd-red`, `tdd-green`, and `tdd-refactor` immediately.
 

@@ -31,15 +31,15 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 |---|---|---|
 | from `tdd-green` | `READ {TASK_DIR}/green-result.md` | A task is green — its `Refactor {NN}` is yours now |
 | to `tdd-red` | `READ {TASK_DIR}/task.md` | Your refactor just unblocked that Task |
-| to `team-lead` | `READ {TASK_DIR}/refactor-result.md` | A task's refactor is done |
+| to `team-lead` | `READ _workspace/tdd-agent-team/cycle-finished.md` | Every `Refactor` Task is done |
 | to `team-lead` | `READ _workspace/tdd-agent-team/tidy/tidy-finished.md` | Every Tidy item is done |
-| from `team-lead` | `READ {path}/lead-check.md` | The lead's check bounced your result — fix and resend |
-| from `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Final-review fixes assigned to you |
+| from `team-lead` | `READ _workspace/tdd-agent-team/tidy/{NN}/lead-check.md` | The lead's Tidy Check bounced that item — fix and resend `tidy-finished.md` |
+| from `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Final verification or final-review fixes assigned to you |
 | to `team-lead` | `READ _workspace/tdd-agent-team/blocked.md` | You cannot proceed |
 
 ## Task List
 
-Each work file has one Task owned by you, with the description `READ <that path>`. Take your `pending` Tasks with an empty `blockedBy` from `TaskList`, lowest number first; none available → wait for a `READ` message, never ask the lead for work. Set a Task `in_progress` when you start and `completed` when its result file is written. The lead reopens a Task it bounces; set it `completed` again once fixed.
+Each work file has one Task owned by you, with the description `READ <that path>`. Take your `pending` Tasks with an empty `blockedBy` from `TaskList`, lowest number first; none available → wait for a `READ` message, never ask the lead for work. Set a Task `in_progress` when you start and `completed` when its result file is written. The lead reopens a `Tidy` Task it bounces; set it `completed` again once fixed.
 
 ## Running Tests
 
@@ -72,12 +72,13 @@ Commands are in `_workspace/tdd-agent-team/roles.env`. Run the safety-net ids �
    safety_net: {N} passed
    deferred: {outside the scope — where — smell — technique you would apply, or none}
    ```
+   The lead's final verification reads this file alone, so write every line, `none` where there is nothing.
 6. Set the Task `completed`. Check `TaskList`: for each `tdd-red` Task that just lost its last blocker, send `READ {its TASK_DIR}/task.md` to `tdd-red`.
-7. Send `READ {TASK_DIR}/refactor-result.md` to `team-lead`, then take your next available Task.
+7. If every `Refactor` Task is now `completed`, write `_workspace/tdd-agent-team/cycle-finished.md` (`refactors: {NN, …}`) and send it to `team-lead`. Otherwise take your next available Task. Nobody gets a message per task.
 
 ## Fixes (when the lead sends `READ _workspace/tdd-agent-team/fixes.md`)
 
-Apply only the items assigned to `tdd-refactor`, run the safety net, append a `## tdd-refactor` section to `fixes.md`, and send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead`.
+Apply only the items assigned to `tdd-refactor` — a structure or refactor-record item, an out-of-scope file to revert, a test change to undo, or a final-review finding — run the safety net, append a `## tdd-refactor` section to `fixes.md`, and send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead`.
 
 ## Never
 
