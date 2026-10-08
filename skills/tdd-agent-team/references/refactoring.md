@@ -1,13 +1,13 @@
 # Refactoring Guide
 
-How `tdd-refactor` changes the structure of production code in this skill, without changing what it does. The rules are language-agnostic; Java (Spring) is the worked example. In another stack, apply the same rule with that stack's idiom.
+How `tdd-refactor` changes the structure of production and test code in this skill, without changing what it does. The rules are language-agnostic; Java (Spring) is the worked example. In another stack, apply the same rule with that stack's idiom.
 
 `tdd-refactor` works in two moments, and this guide covers both:
 
 | Moment | What | Scope |
 |---|---|---|
 | **Tidy First** — before the cycle | Restructure so the requirement can land in one place | Exactly the confirmed tidy items, nothing else |
-| **Refactor** — after the cycle | Make GREEN's minimal code readable and well-designed | The production files this session changed |
+| **Refactor** — at the end of every task's cycle | Make GREEN's minimal code and RED's tests readable and well-designed | That task's scope: its `scope_production` files and its `test_class` |
 
 In both, **behavior never changes and nothing is added.** The safety-net tests pass before you start and must pass after.
 
@@ -23,7 +23,7 @@ GREEN's rules (`references/implementation.md`) still hold for what you leave beh
 
 ### One responsibility per class — check this first
 
-Before the smell table, go through every class the session changed:
+Before the smell table, go through every production class in the task's scope:
 
 1. **State its responsibility in one sentence.** If the sentence needs "and" — it validates *and* calculates *and* notifies — the class has more than one.
 2. **Group its methods by the fields and dependencies they use.** Two or more groups that share nothing are two classes sharing a file.
@@ -33,7 +33,7 @@ Any one of these showing more than one responsibility makes the class a candidat
 
 ### Smell → technique
 
-After the cycle, check every production file the session changed against these smells and apply the named technique. Look across tasks: GREEN wrote each task's minimum in isolation, so duplication and misplaced responsibility hide **between** tasks. Skip a file with a stated reason if it is already clean — "no refactoring needed" without a reason is not acceptable.
+At the end of each task's cycle, check every production file in the task's scope against these smells and apply the named technique. Look across tasks too: the scope may hold code earlier tasks wrote, and GREEN wrote each task's minimum in isolation, so duplication and misplaced responsibility hide **between** tasks. Skip a file with a stated reason if it is already clean — "no refactoring needed" without a reason is not acceptable.
 
 | Smell | Technique |
 |---|---|
@@ -78,6 +78,15 @@ public class OrderService {
 }
 ```
 
-## 5. When a Test Must Follow
+## 5. Tests: Follow the Structure, Then Tidy Them
 
-Moving a class or renaming a method can leave a test that no longer compiles or no longer reaches the code. **Do not edit the test.** Write the exact mechanical edits it needs — file, old text, new text — and send them to RED directly. These edits follow structure only: imports, references, call names. An assertion, an input, or which behavior a test checks never changes in a refactor; if your change would require that, it is a behavior change — undo it.
+Tests are yours to change in two ways, and only these two:
+
+- **Following a structural change.** Moving a class or renaming a method can leave a test that no longer compiles or no longer reaches the code. Fix it yourself — imports, references, call names.
+- **Tidying the task's tests.** Duplicated setup → a helper or fixture, unclear names, assertion style — by the test-writing rules (path in your role file).
+
+In both, **what a test checks never changes**: not an assertion, not an input, not which behavior it exercises — and no test is added or deleted. If a change would need that, it is a behavior change — undo it. Record every test change under `test_changes` in your result so the lead can check it.
+
+## 6. Out of Scope: Record, Don't Fix
+
+A smell you notice outside the task's scope — another task's files, code the session never touched — is not yours to change: another teammate may be editing it right now. Write it under `deferred` in your result (where, which smell, which technique you would apply). The final review weighs it, and the user decides.

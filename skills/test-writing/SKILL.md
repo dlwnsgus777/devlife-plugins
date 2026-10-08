@@ -1,8 +1,21 @@
+---
+name: test-writing
+description: >
+  Rules for writing test code — what deserves a test, one behavior per test, combining
+  cases of the same rule, domain-sentence names, arrange·act·assert, fixtures, test
+  strategy per layer, never deleting a test. Use when writing new tests, adding tests to
+  existing code, or modifying test code. Trigger on "테스트 작성해줘", "테스트 추가해줘",
+  "테스트 코드 수정해줘", "테스트 짜줘", "write tests", "add a test".
+  For the test-first workflow before implementing a feature, use test-driven-development.
+---
+
 # Test Writing Guide
 
-How to write a test in this skill. The rules are language-agnostic; Java (JUnit 5 + AssertJ) is the worked example. In another stack, apply the same rule with that stack's idiom — the table at the end maps the Java constructs.
+How to write a test. The rules are language-agnostic; Java (JUnit 5 + AssertJ) is the worked example. In another stack, apply the same rule with that stack's idiom — the table at the end maps the Java constructs.
 
-This guide covers **what a test looks like**. When to run tests, and in what order, is your role definition's business.
+This guide covers **what a test looks like**. When to run tests, and in what order, belongs to whoever called it — the user's request, or the role definition of an agent that reads this file.
+
+**Project conventions win.** Before writing, look at the existing tests next to the code under test and follow their assertion library, fixture names, naming, and comment style. Where they differ from an example here, the project wins; the rules below still hold. With no existing tests, follow this guide.
 
 ## 1. What Deserves a Test
 
@@ -86,7 +99,7 @@ Outside these, use real code and reach for a mock only when unavoidable. A test 
 
 ## 8. Never Delete an Existing Test
 
-A test that existed before this session is never deleted, renamed away, or weakened without the user's explicit permission. Tests you wrote this session are yours to merge or remove while refining them — say so in your result file when you do.
+A test that existed before this session is never deleted, renamed away, or weakened without the user's explicit permission. Tests written this session are not yours to remove on your own judgment either: merging or deleting one is decided by whoever directs the work — the user, or the lead of an agent team. If you think a test is redundant, say which one and why, and leave it.
 
 ## Other Stacks
 

@@ -14,10 +14,12 @@ You report; you never fix. Your definition has no `Edit`, and `Write` is for you
 
 Read these first, all under `_workspace/tdd-agent-team/`:
 
-- `context.md` — invariants, in-scope files, pitfalls
+- `context.md` — invariants
+- `roles/tdd-green.md` — in-scope files, out of scope, known pitfalls
 - `session.md` — the confirmed task list and final status
 - `branch-diff.md` — the whole session's diff
-- `tasks/*/task.md`, `tasks/*/red-result.md`, `tasks/*/green-result.md`
+- `tasks/*/task.md`, `tasks/*/red-result.md`, `tasks/*/green-result.md`, `tasks/*/refactor-result.md`
+- `deferred.md` (`review-design` only, when it exists) — what `tdd-refactor` saw outside a task's scope and left alone
 - `final-test.log` — the lead already ran every session method. **Do not re-run tests**; that run is the evidence. Execute something only for a specific doubt a static read cannot settle, and then only the methods in question.
 
 Shell commands: one simple command each — no `cd …;` prefix, loops, `$variables`, or brace expansion; write files with `Write`. A command the permission checker cannot analyze stops you on a prompt.
@@ -45,7 +47,7 @@ Judge the tests against the test-writing guide at `TEST_GUIDE` (path in your spa
 
 Judge the production code against the implementation guide at `IMPL_GUIDE` (GREEN's rules: scope, the right layer, anti-patterns) and the refactoring guide at `REFACTOR_GUIDE` (`tdd-refactor`'s rules: smells, design principles, readability) — paths in your spawn prompt. Cite the guide and section when a finding rests on it.
 
-- Duplication across tasks — GREEN wrote each task's minimum in isolation and `tdd-refactor` made one pass over all of them; check that pass left nothing between tasks.
+- Duplication across tasks — `tdd-refactor` refactored each task only within that task's scope, so what lies between tasks is what it could not fix. Judge every `deferred.md` entry: a real problem becomes a finding, a non-issue is dropped. Then look for cross-task problems it did not record.
 - Naming aligned with the domain language of the invariants.
 - Responsibilities: a class doing too much, logic in the wrong layer, leaked implementation details.
 - Leftover debug code, TODOs, commented-out blocks.
