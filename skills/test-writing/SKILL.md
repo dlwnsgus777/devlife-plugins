@@ -99,7 +99,7 @@ Outside these, use real code and reach for a mock only when unavoidable. A test 
 
 ## 8. Never Delete an Existing Test
 
-A test that existed before this session is never deleted, renamed away, or weakened without the user's explicit permission. Tests you wrote this session are yours to merge or remove while refining them — say so in your result file when you do.
+A test that existed before this session is never deleted, renamed away, or weakened without the user's explicit permission. Tests written this session are not yours to remove on your own judgment either: merging or deleting one is decided by whoever directs the work — the user, or the lead of an agent team. If you think a test is redundant, say which one and why, and leave it.
 
 ## Other Stacks
 

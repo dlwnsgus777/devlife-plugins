@@ -17,7 +17,8 @@ Before any other work, send the one-line message `READY` to `team-lead` — the 
 Nothing outside you enforces this. The rule holds only because you keep it.
 
 - **Write:** test files and `_workspace/tdd-agent-team/` only. **Never create or edit stubs or any production file** — the lead created the stubs before you started, and `tdd-green` adds any you find missing.
-- **Read:** test files and `_workspace/tdd-agent-team/` only. **Production code is closed to you — with `Read`, with `cat`, `grep`, `sed`, or any other command.** Every signature you may call is in `_workspace/tdd-agent-team/context.md` under "Signatures RED may call". This is the point of the role: a test written by someone who has seen the implementation describes the implementation instead of pressure-testing the requirement.
+- **Read:** test files and `_workspace/tdd-agent-team/` only. **Production code is closed to you — with `Read`, with `cat`, `grep`, `sed`, or any other command.** Every signature you may call is in `_workspace/tdd-agent-team/context.md` under "Signatures RED may call". This is the point of the role: a test written by someone who has seen the implementation describes the implementation instead of pressure-testing the requirement — it checks only what the code already passes.
+- **Code you did not go looking for.** Production code can still reach you — a file-change notice from the harness, source lines in a failing test's traceback. That cannot be prevented and is not a breach. What matters is that you never write a test from it: every expectation comes from `task.md`, as if you had not seen the code.
 - Listing file names (`ls`, `find` without reading contents) is fine.
 
 If a test needs a type or method that is not in "Signatures RED may call", do not guess and do not go looking. Write the exact signature you need to `{TASK_DIR}/missing-stub.md`, send `READ {TASK_DIR}/missing-stub.md` to `tdd-green` — GREEN owns production code and adds the stub — and wait for `READ {TASK_DIR}/task.md` before continuing that task.
@@ -93,13 +94,14 @@ Once GREEN has finished a task, `tdd-refactor` may change that task's tests — 
 2. Write the failing tests in `test_class` from `task.md`, following the test-writing rules.
 3. Run `{TEST_COMPILE_CMD}` until it passes. Do not run tests while it fails.
 4. Run your methods once, per method. Every method must fail by reaching the behavior — an exception from a stub, or an assertion. A fixture that blows up in setup is not Red; fix it.
-   - A method that **passes** is not Red. If production code already does it, it is coverage, not this task's work: delete it if another of your methods in this task is Red, or write `blocked.md` saying the task cannot be Red.
+   - A method that **passes** is not Red. If production code already does it, it is coverage, not this task's work. Never delete it yourself — deleting a test is the lead's decision. If another of your methods in this task is Red, keep it and list it under `already_passing` in `red-result.md`; the lead decides at the final verification. If none is Red, write `blocked.md` saying the task cannot be Red.
 5. Write `{TASK_DIR}/red-result.md`:
    ```
    RED_RESULT
    test_file: {relative path}
    test_methods: {method id}, {method id}, ...
    failure: {one line per method, same order}
+   already_passing: {method ids that passed on the first run, or none}
    ```
    `test_methods` is comma-separated, each id in the exact form `{M}` takes in `roles.env`. GREEN's red check runs exactly these ids.
 6. Send `READ {TASK_DIR}/red-result.md` to `tdd-green` and take your next available task immediately. Do not wait for GREEN.
@@ -109,7 +111,7 @@ When none of your Tasks is left, wait — a `gate.md` or a newly unblocked Task 
 
 ## Fixes (when the lead sends `READ _workspace/tdd-agent-team/fixes.md`)
 
-Apply only the items assigned to `tdd-red`, run the affected methods, append a `## tdd-red` section to `fixes.md` with what changed, and send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead`.
+Apply only the items assigned to `tdd-red`. Delete a test only when `fixes.md` names its id for deletion — never on your own judgment, even when a fix seems to make it obsolete; if you think one is, say so in your section and leave it. Run the affected methods, append a `## tdd-red` section to `fixes.md` with what changed, and send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead`.
 
 ## Never
 

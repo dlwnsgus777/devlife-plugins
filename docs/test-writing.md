@@ -32,7 +32,7 @@
    - arrange · act · assert 구조
    - 프로젝트 Fixture 사용
    - 계층별 전략 — Domain: 순수 단위 / Application: 저장소 mock / Infrastructure: 통합(Testcontainer) / Presentation: API 테스트(MockMvc)
-4. **기존 테스트는 삭제하지 않습니다** — 명시적 허락이 있을 때만
+4. **테스트를 스스로 판단해 삭제하지 않습니다** — 기존 테스트는 사용자의 명시적 허락이 있을 때만. 이번에 쓴 테스트도 합치거나 지우는 건 작업을 지시한 쪽(사용자, agent team에서는 리드)이 정하고, 불필요해 보이면 이유만 알립니다
 
 ## 관련 스킬
 

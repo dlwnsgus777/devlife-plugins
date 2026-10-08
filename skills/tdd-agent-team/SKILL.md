@@ -51,7 +51,7 @@ Agent teams need `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Check the **effective
 
 > "이 스킬은 Claude Code agent teams 기능이 필요한데 지금 꺼져 있습니다(`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`). `~/.claude/settings.json`의 `env`에 `"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"`을 넣어드릴까요? 켜면 이름을 붙인 서브에이전트가 팀원으로 실행되는 등 다른 작업에도 영향이 있습니다. 원치 않으시면 `tdd-subagent`로 진행할 수 있습니다."
 
-Edit the file only on an explicit yes. On no, stop and point to `tdd-subagent`. Agent teams also need an interactive session — in `-p` / SDK mode, teammates never spawn; stop and say so.
+Edit the file only on an explicit yes. On no, stop and point to `tdd-subagent`.
 
 **Teammate definitions present?** Check that `devlife:tdd-red`, `devlife:tdd-green`, `devlife:tdd-refactor`, and `devlife:tdd-reviewer` are among the agent types your `Agent` tool lists. If any is missing, the `devlife` plugin is not installed or is out of date — the skill alone (a copy under `~/.claude/skills/`) does not carry the definitions. Stop and say so:
 
@@ -357,7 +357,9 @@ Nothing outside the teammates enforces the role boundaries, so the finished work
 
 **Check 5 — one run for the whole session.** A later task's change can break an earlier task's methods, so run every session method in one invocation — all `test_methods` from every `red-result.md`, plus the regression set — with `TEST_METHOD_RUNNER` and one `TEST_METHOD_CMD` per method. Collect the ids by reading the `red-result.md` files (for a method `test_changes` renamed, use the new id), then **write them out literally in the command**: `{TEST_METHOD_RUNNER} {id1} {id2} …`. Never pass them through a shell variable or `$(…)` — a quoted variable turns the whole list into one argument, and the runner reports a single nonexistent test instead of running yours. Redirect the output to `{TDD_DIR}/final-test.log` and read only the counts and failing names. The executed count must equal the number of ids.
 
-**Collect `deferred`.** Copy every `deferred` line other than `none` from the `refactor-result.md` files into `{TDD_DIR}/deferred.md`, one line each, prefixed with the task number — the `review-design` lens judges them.
+**Already-passing tests.** A `red-result.md` may list `already_passing` methods — tests that passed before GREEN touched anything, kept because deleting a test is your decision, not RED's. Decide for each: keep it as coverage, or delete it as redundant (a fix item for `tdd-red` naming the id). Note the decision in `session.md`.
+
+**Collect `deferred`.** Copy every `deferred` line other than `none` from the `refactor-result.md` files into `{TDD_DIR}/deferred.md`, one line each, prefixed with the task number — the `review-design` lens judges them. If every line is `none`, write no `deferred.md`.
 
 **Failures go back to their owners.** Write `{TDD_DIR}/fixes.md` with the failures split by owner — missing or wrong behavior to `tdd-green`, structure and refactor records to `tdd-refactor`, tests to `tdd-red` — and send each owner its `READ`. When all have reported, run checks 2–5 again for the changed tasks, and check 5 for the whole session. At most 2 rounds, then ask the user. Every task that passes is `DONE` in `session.md`.
 
@@ -383,7 +385,7 @@ Agent({ name: "review-design", subagent_type: "devlife:tdd-reviewer", descriptio
 
 Each writes `{TDD_DIR}/final-review-{lens}.md`. A reviewer with only Minor findings reports to you at once; one with Critical or Important findings first sends its report to the other two, who rebut **those findings only** in `{TDD_DIR}/rebuttal-{from}-to-{to}.md`, revises once, then reports. The rebuttal round is the slow part of the review — it waits on the slowest reviewer twice — so it runs only where a must-fix finding is at stake. Either way you receive `READ {TDD_DIR}/final-review-{lens}.md` from all three. When all three have reported, merge them into `{TDD_DIR}/final-review.md`: drop findings a rebuttal refuted, keep the rest with their severity. Then send each reviewer a shutdown request right away — their work is done, and nothing later needs them.
 
-Show the user the findings and ask — always, unless there are none at all:
+Show the user the findings and ask — always, unless there are none at all. **The findings go in the same message as the question**, never in an earlier one that the question points back to ("위의 …"): the reviewers' shutdown notices print between your messages and push an earlier list off the screen.
 
 - **Critical or Important findings** — list them, then any Minor findings below them, one line each, numbered in the same sequence:
 
@@ -396,6 +398,8 @@ Show the user the findings and ask — always, unless there are none at all:
 - **No findings** — skip the question and go to Summarize.
 
 Keep `tdd-red`, `tdd-green`, and `tdd-refactor` running until the answer is in — any of them may own a fix. Apply only what is approved. Write `{TDD_DIR}/fixes.md` with the approved items split by owner — test changes to `tdd-red`, design and readability findings (`review-design`) to `tdd-refactor`, other production changes (missing or wrong behavior) to `tdd-green` — and send each its `READ`. Then re-run Final Verification check 5 once.
+
+**Deleting a test is your decision, never RED's.** When a behavior fix leaves a test obsolete — it checks behavior the fix removes or replaces — name that test id in `tdd-red`'s items in `fixes.md`, with the reason. RED deletes only the tests listed there.
 
 **Release teammates as soon as their last work is in.** A teammate with no fixes assigned gets its shutdown request now; one with fixes gets it the moment its fix report arrives. If the user approved nothing, shut down `tdd-red`, `tdd-green`, and `tdd-refactor` immediately.
 

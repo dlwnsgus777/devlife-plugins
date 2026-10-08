@@ -20,7 +20,7 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 | 사이클 검증 | 사이클마다 리뷰어 | GREEN이 구현 전에 테스트가 실제로 실패하는지 확인(red check), 리드 검수는 마지막에 한 번 |
 | 사용자 확인 | 1번 사이클 후, 이후 선택 | 태스크 확정 시 + (정비 항목이 있으면 정비 커밋 여부) + 최종 리뷰 반영 전 |
 | 재개 | 지원 (`session.md`) | 미지원 — 팀원이 복원되지 않음 |
-| 필요 조건 | 없음 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, 대화형 세션, **`devlife` 플러그인 설치**(팀원 정의), Task 도구(필수) |
+| 필요 조건 | 없음 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, **`devlife` 플러그인 설치**(팀원 정의), Task 도구(필수) |
 
 > 구현 후 테스트를 작성하거나, 기존 테스트를 실행하거나, 테스트 실패를 디버깅하는 용도로는 사용하지 않습니다. 팀을 언급하지 않은 "TDD로 개발해줘"는 `tdd-subagent`가 맡습니다.
 
@@ -108,8 +108,10 @@ tdd-red ── 실패 테스트 → red-result.md, owner를 tdd-green으로
    - 테스트 변경이 단언·테스트 수를 바꾸지 않았는지
    - 세션 전체 메서드 + 회귀 묶음 일괄 실행(`final-test.log`)
    
-   실패는 `fixes.md`로 담당자별로(동작 GREEN, 구조 `tdd-refactor`, 테스트 RED) 최대 2라운드, 넘으면 사용자에게 묻습니다. 모든 `deferred`는 `deferred.md`로 모읍니다
-2. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임, `deferred.md` 항목 판정) 3명이 각자 리포트를 씁니다. Critical/Important 지적이 있는 리뷰어만 나머지 두 명에게 반박을 1회 받습니다. 리드가 종합해 사용자에게 묻고, 승인한 것만 반영합니다 — 테스트는 RED, 설계·가독성은 `tdd-refactor`, 동작 누락·오류는 GREEN
+   RED가 처음부터 통과해 `already_passing`으로 남긴 테스트는 리드가 유지할지 삭제할지 정합니다(RED는 스스로 지우지 않음).
+   
+   실패는 `fixes.md`로 담당자별로(동작 GREEN, 구조 `tdd-refactor`, 테스트 RED) 최대 2라운드, 넘으면 사용자에게 묻습니다. `deferred` 항목은 `deferred.md`로 모읍니다(없으면 파일을 만들지 않음)
+2. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임, `deferred.md` 항목 판정) 3명이 각자 리포트를 씁니다. Critical/Important 지적이 있는 리뷰어만 나머지 두 명에게 반박을 1회 받습니다. 리드가 종합해 사용자에게 묻고, 승인한 것만 반영합니다 — 테스트는 RED, 설계·가독성은 `tdd-refactor`, 동작 누락·오류는 GREEN. 동작 수정으로 불필요해진 테스트는 리드가 판단해 `fixes.md`에 지목하고, RED는 지목된 테스트만 삭제합니다
 3. **종료** — 팀원 종료 요청, 요약 출력, `session.md` 끝에 `session: COMPLETE` 기록, `_workspace/tdd-agent-team/`는 git 제외 상태로 남깁니다
 
 ## 팀원 정의 (플러그인 `agents/`)
@@ -144,7 +146,7 @@ tdd-red ── 실패 테스트 → red-result.md, owner를 tdd-green으로
 - **역할 경계는 지시문 수준입니다** — 위 "무엇이 강제되고 무엇이 아닌가" 참고
 - **사이클 중 태스크별 반려가 없습니다** — 잘못된 태스크가 리팩터링까지 거친 뒤 최종 검수에서 발견될 수 있습니다
 - **red check는 "하나 이상 실패"를 봅니다** — 모든 메서드가 실패해야 한다는 규칙은 RED 지시문이 맡습니다
-- 실험 기능인 agent teams의 제약(대화형 세션 전용, 팀원 재개 불가)을 그대로 따릅니다
+- 실험 기능인 agent teams의 제약(팀원 재개 불가)을 그대로 따릅니다
 
 ## 관련 스킬
 
