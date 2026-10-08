@@ -153,4 +153,3 @@ tdd-red ── 실패 테스트 → red-result.md, owner를 tdd-green으로
 - [tdd-subagent](./tdd-subagent.md) — 같은 TDD 원칙을 서브에이전트 순차 실행으로
 - [test-writing](./test-writing.md) — RED·`tdd-refactor`·`review-test`가 읽는 테스트 작성 규칙
 - [plan-creator](./plan-creator.md) — 입력으로 쓸 계획 문서 생성, 완료 후 이 스킬로 넘길 수 있음
-- [test-driven-development](./test-driven-development.md) — 직접 TDD 구현 시 원칙 가이드

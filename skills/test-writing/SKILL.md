@@ -6,7 +6,7 @@ description: >
   strategy per layer, never deleting a test. Use when writing new tests, adding tests to
   existing code, or modifying test code. Trigger on "테스트 작성해줘", "테스트 추가해줘",
   "테스트 코드 수정해줘", "테스트 짜줘", "write tests", "add a test".
-  For the test-first workflow before implementing a feature, use test-driven-development.
+  For the test-first workflow before implementing a feature, use tdd-agent-team or tdd-subagent.
 ---
 
 # Test Writing Guide

@@ -201,5 +201,4 @@ Tests: 5 passed, 0 failed
 
 - [plan-creator](./plan-creator.md) — 요구사항 문서로 쓸 수 있는 태스크 계획 문서 생성
 - [tdd-agent-team](./tdd-agent-team.md) — 같은 TDD 원칙을 agent teams 병렬 실행으로
-- [test-driven-development](./test-driven-development.md) — 직접 TDD 구현 시 원칙 가이드
 - [spec-creator](./spec-creator.md) — tdd-subagent 실행 전 기술 명세 작성

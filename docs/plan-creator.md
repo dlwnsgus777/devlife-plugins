@@ -149,7 +149,7 @@ task-{feature}.md
 devlife-brainstorming
 └── spec-creator
     └── plan-creator  ← 현재 위치
-        └── tdd-subagent / tdd-agent-team / test-driven-development
+        └── tdd-subagent / tdd-agent-team
 ```
 
 ## 관련 스킬
