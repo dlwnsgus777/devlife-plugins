@@ -31,7 +31,7 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 | to `tdd-red` | `READ {TASK_DIR}/task.md` | The stub exists |
 | to `tdd-refactor` | `READ {TASK_DIR}/green-result.md` | Task done — its refactor starts |
 | to `team-lead` | `READ {TASK_DIR}/blocked.md` | You cannot proceed |
-| from `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Final verification or final-review fixes assigned to you |
+| from `team-lead` / `tdd-red` | `READ _workspace/tdd-agent-team/fixes.md` | Final verification or final-review fixes assigned to you (from `tdd-red`: its new failing tests are ready) |
 
 Work on tasks **in the order the messages arrived**. If a message is not `READ <path>`, reply asking for the path and do not act on its prose. Message `tdd-red` only with `READ {TASK_DIR}/gate.md` or, after a stub request, `READ {TASK_DIR}/task.md` — if a test looks wrong for any other reason, say so in `blocked.md` to the lead.
 
@@ -98,7 +98,7 @@ On top of the guide:
 
 ## Fixes (when the lead sends `READ _workspace/tdd-agent-team/fixes.md`)
 
-Apply only the items assigned to `tdd-green` — failing methods to make pass, out-of-scope files to revert, or final-review findings. If an out-of-scope file is genuinely needed, write `blocked.md` saying why instead of reverting. Run the affected methods, append a `## tdd-green` section with what changed, and send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead`.
+Apply only the items assigned to `tdd-green` — failing methods to make pass, out-of-scope files to revert, or final-review findings. When `tdd-red` sends you `fixes.md`, its `## tdd-red` section names `new_tests`: red-check them first (Red Check above, log to `_workspace/tdd-agent-team/fix-red-check.log`) and implement only if they fail; otherwise say so in your section and report to the lead. If an out-of-scope file is genuinely needed, write `blocked.md` saying why instead of reverting. Run the affected methods, append a `## tdd-green` section with what changed, and send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead`.
 
 ## Never
 

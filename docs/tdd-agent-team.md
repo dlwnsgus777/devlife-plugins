@@ -111,7 +111,7 @@ tdd-red ── 실패 테스트 → red-result.md, owner를 tdd-green으로
    RED가 처음부터 통과해 `already_passing`으로 남긴 테스트는 리드가 유지할지 삭제할지 정합니다(RED는 스스로 지우지 않음).
    
    실패는 `fixes.md`로 담당자별로(동작 GREEN, 구조 `tdd-refactor`, 테스트 RED) 최대 2라운드, 넘으면 사용자에게 묻습니다. `deferred` 항목은 `deferred.md`로 모읍니다(없으면 파일을 만들지 않음)
-2. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임, `deferred.md` 항목 판정) 3명이 각자 리포트를 씁니다. Critical/Important 지적이 있는 리뷰어만 나머지 두 명에게 반박을 1회 받습니다. 리드가 종합해 사용자에게 묻고, 승인한 것만 반영합니다 — 테스트는 RED, 설계·가독성은 `tdd-refactor`, 동작 누락·오류는 GREEN. 동작 수정으로 불필요해진 테스트는 리드가 판단해 `fixes.md`에 지목하고, RED는 지목된 테스트만 삭제합니다
+2. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임, `deferred.md` 항목 판정) 3명이 각자 리포트를 씁니다. Critical/Important 지적이 있는 리뷰어만 나머지 두 명에게 반박을 1회 받습니다. 리드가 종합해 사용자에게 묻고, 승인한 것만 반영합니다 — 테스트는 RED, 설계·가독성은 `tdd-refactor`. 동작 누락·오류는 사이클과 같이 RED가 실패 테스트를 먼저 쓰고 GREEN이 red check 후 구현합니다(모든 기록은 `fixes.md` 한 파일). 동작 수정으로 불필요해진 테스트는 리드가 판단해 `fixes.md`에 지목하고, RED는 지목된 테스트만 삭제합니다
 3. **종료** — 팀원 종료 요청, 요약 출력, `session.md` 끝에 `session: COMPLETE` 기록, `_workspace/tdd-agent-team/`는 git 제외 상태로 남깁니다
 
 ## 팀원 정의 (플러그인 `agents/`)

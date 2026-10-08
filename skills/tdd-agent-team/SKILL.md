@@ -397,7 +397,9 @@ Show the user the findings and ask — always, unless there are none at all. **T
 
 - **No findings** — skip the question and go to Summarize.
 
-Keep `tdd-red`, `tdd-green`, and `tdd-refactor` running until the answer is in — any of them may own a fix. Apply only what is approved. Write `{TDD_DIR}/fixes.md` with the approved items split by owner — test changes to `tdd-red`, design and readability findings (`review-design`) to `tdd-refactor`, other production changes (missing or wrong behavior) to `tdd-green` — and send each its `READ`. Then re-run Final Verification check 5 once.
+Keep `tdd-red`, `tdd-green`, and `tdd-refactor` running until the answer is in — any of them may own a fix. Apply only what is approved. Write `{TDD_DIR}/fixes.md` with the approved items split by owner — test changes to `tdd-red`, design and readability findings (`review-design`) to `tdd-refactor` — and send each owner its `READ`. Then re-run Final Verification check 5 once.
+
+**A behavior fix starts Red, like every task.** A finding about missing or wrong behavior has no failing test yet, so it is never handed straight to GREEN. List it twice in `fixes.md`: under `tdd-red` as the failing test to write (the domain sentence and the input), and under `tdd-green` as "make RED's new tests pass". Send `READ` only to `tdd-red` (and `tdd-refactor`, if it has items) — RED hands the file on to GREEN when its tests are red, and GREEN reports to you. Everything stays in `fixes.md`: each teammate appends its own section, and GREEN's red check goes to `{TDD_DIR}/fix-red-check.log`. Make no other files for this.
 
 **Deleting a test is your decision, never RED's.** When a behavior fix leaves a test obsolete — it checks behavior the fix removes or replaces — name that test id in `tdd-red`'s items in `fixes.md`, with the reason. RED deletes only the tests listed there.
 

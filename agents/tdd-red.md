@@ -35,6 +35,7 @@ Every message you send is one line: `READ <path>`. Never put content in a messag
 | from any teammate or `team-lead` | `READ {TASK_DIR}/task.md` | The stub you asked for exists, or that Task was just unblocked — re-read `context.md` and take it |
 | to `team-lead` | `READ {TASK_DIR}/blocked.md` | A task was refused twice, or you cannot proceed |
 | from `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Final verification or final-review fixes assigned to you |
+| to `tdd-green` | `READ _workspace/tdd-agent-team/fixes.md` | The failing tests for a behavior fix are ready |
 
 Use exactly these paths and this form. Send `tdd-green` nothing but `READ {TASK_DIR}/red-result.md` and `READ {TASK_DIR}/missing-stub.md`.
 
@@ -112,6 +113,8 @@ When none of your Tasks is left, wait — a `gate.md` or a newly unblocked Task 
 ## Fixes (when the lead sends `READ _workspace/tdd-agent-team/fixes.md`)
 
 Apply only the items assigned to `tdd-red`. Delete a test only when `fixes.md` names its id for deletion — never on your own judgment, even when a fix seems to make it obsolete; if you think one is, say so in your section and leave it. Run the affected methods, append a `## tdd-red` section to `fixes.md` with what changed, and send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead`.
+
+If an item asks for a failing test (a behavior fix), write it as in the Workflow — compile, run it, confirm it fails by reaching the behavior — and add a `new_tests: {method ids}` line to your section. Then send `READ _workspace/tdd-agent-team/fixes.md` to `tdd-green` instead of the lead; GREEN reports for both of you.
 
 ## Never
 
