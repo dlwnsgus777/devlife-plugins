@@ -4,6 +4,29 @@
 
 ---
 
+## 2026-10-20
+
+### devlife-review
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `grill-me` | 삭제 | 사용하지 않아 제거 (`devlife-review` 그룹도 함께 제거) |
+
+### devlife-tools
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `project-history` | 삭제 | 사용하지 않아 제거 |
+
+### Agents
+
+| Agent | Change |
+|-------|--------|
+| `code-analyzer` | 삭제 — 참조하는 스킬 없음 |
+| `spring-backend-developer` | 삭제 — 참조하는 스킬 없음 |
+
+---
+
 ## 2026-10-08
 
 ### devlife-tdd

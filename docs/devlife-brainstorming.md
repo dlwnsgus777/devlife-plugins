@@ -79,4 +79,3 @@ devlife-brainstorming  ← 현재 위치 (what/why + design spec)
 ## 관련 스킬
 
 - [plan-creator](./plan-creator.md) — design spec 문서를 입력으로 받아 구현 계획 작성
-- [grill-me](./grill-me.md) — 정해진 방향을 검증하고 싶을 때

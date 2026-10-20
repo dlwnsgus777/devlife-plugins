@@ -9,8 +9,7 @@ TDD, 기획 문서화, 브랜치 리뷰, 계획 수립, 멀티 에이전트 협�
 |--------|---------|---------------|
 | [`devlife-planning`](#devlife-planning) | `1.0.0` | 기획 문서화 — 브레인스토밍부터 Spec, 계획 문서까지 |
 | [`devlife-tdd`](#devlife-tdd) | `2.0.0` | TDD 실행 — Red/Green/Refactor 자동화 (서브에이전트 순차 / agent teams 병렬), 테스트 작성 규칙 |
-| [`devlife-review`](#devlife-review) | `1.0.0` | 코드 리뷰 — 설계 심문 |
-| [`devlife-tools`](#devlife-tools) | `1.0.0` | 유틸리티 — 멀티 에이전트 환경, 마크다운 변환, 터미널 제어, 작업 이력 문서화 |
+| [`devlife-tools`](#devlife-tools) | `1.0.0` | 유틸리티 — 멀티 에이전트 환경, 마크다운 변환, 터미널 제어 |
 
 ---
 
@@ -51,21 +50,9 @@ TDD 실행 워크플로우. Red/Green/Refactor 사이클을 서브에이전트 �
 
 ---
 
-### devlife-review
-
-코드 리뷰 워크플로우. 설계 심문을 커버합니다.
-
-#### Skills
-
-| Skill | Version | Description |
-|-------|---------|-------------|
-| `grill-me` | `1.0.0` | 계획/설계 심문 검증 — 한 번에 한 질문, 추천 답안 제시, 설계 결정 트리 전체 검증 |
-
----
-
 ### devlife-tools
 
-유틸리티 스킬 모음. 멀티 에이전트 환경 구성, 마크다운 변환, 터미널 앱 제어, 작업 이력 문서화를 담당합니다.
+유틸리티 스킬 모음. 멀티 에이전트 환경 구성, 마크다운 변환, 터미널 앱 제어를 담당합니다.
 
 #### Skills
 
@@ -75,7 +62,6 @@ TDD 실행 워크플로우. Red/Green/Refactor 사이클을 서브에이전트 �
 | `devlife-codex` | `1.0.0` | Codex cmux pane에 태스크 전송 + 결과 파일 수집 (`devlifeteam/` 폴더) |
 | `cmux` | `1.0.0` | Ghostty 기반 터미널 제어 — pane/workspace 관리, 브라우저 자동화, 알림, SSH, 마크다운 뷰어 |
 | `md-to-html` | `1.1.0` | Markdown → 독립형 HTML 변환 (외부 CSS/JS 없음) — 서브에이전트 위임 실행 |
-| `project-history` | `1.0.0` | Jira 티켓 하위 이슈 + git diff 분석 → 이력서용 작업 이력 문서 생성 |
 
 ---
 
