@@ -1,7 +1,7 @@
 {
   "name": "devlife-plugins",
-  "version": "1.0.0",
-  "description": "Codex skills for development workflows including TDD, PRD writing, planning, branch review, and cmux automation.",
+  "version": "1.1.0",
+  "description": "Codex skills for development workflows including brainstorming, spec and plan writing, TDD, and cmux automation.",
   "author": {
     "name": "dlwnsgus777",
     "url": "https://github.com/dlwnsgus777"
@@ -12,15 +12,15 @@
     "codex",
     "skills",
     "tdd",
-    "prd",
+    "spec",
     "planning",
-    "code-review"
+    "cmux"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Devlife Plugins",
     "shortDescription": "Development workflow skills for Codex.",
-    "longDescription": "A Codex plugin that packages devlife workflow skills for TDD, PRD writing, implementation planning, branch review, and cmux-assisted development.",
+    "longDescription": "A Codex plugin that packages devlife workflow skills for brainstorming, spec writing, implementation planning, TDD, and cmux-assisted development.",
     "developerName": "dlwnsgus777",
     "category": "Productivity",
     "capabilities": [
@@ -30,8 +30,8 @@
     ],
     "defaultPrompt": [
       "계획 문서를 작성해줘",
-      "PRD를 작성해줘",
-      "현재 브랜치를 리뷰해줘"
+      "스펙 작성해줘",
+      "TDD로 개발해줘"
     ],
     "brandColor": "#2563EB"
   }
