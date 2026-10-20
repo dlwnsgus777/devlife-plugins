@@ -1,15 +1,18 @@
 # devlife-plugins
 
 개발 워크플로우를 위한 Claude Code 스킬 모음입니다.  
-TDD, 기획 문서화, 브랜치 리뷰, 계획 수립, 멀티 에이전트 협업 등 반복되는 개발 작업을 자동화합니다.
+기획 문서화, 계획 수립, TDD, 멀티 에이전트 협업 등 반복되는 개발 작업을 자동화합니다.
 
 ## Plugins
 
-| Plugin | Version | What it's for |
-|--------|---------|---------------|
-| [`devlife-planning`](#devlife-planning) | `1.0.0` | 기획 문서화 — 브레인스토밍부터 Spec, 계획 문서까지 |
-| [`devlife-tdd`](#devlife-tdd) | `2.0.0` | TDD 실행 — Red/Green/Refactor 자동화 (서브에이전트 순차 / agent teams 병렬), 테스트 작성 규칙 |
-| [`devlife-tools`](#devlife-tools) | `1.0.0` | 유틸리티 — 멀티 에이전트 환경, 마크다운 변환, 터미널 제어 |
+모든 스킬·에이전트·훅은 `devlife` 플러그인 하나로 배포됩니다. 아래 그룹은 용도별 분류입니다.  
+스킬은 `devlife:{skill-name}`으로 호출합니다. 스킬별 상세 동작은 [`docs/{skill-name}.md`](docs/)를 참고하세요.
+
+| Group | What it's for |
+|-------|---------------|
+| [`devlife-planning`](#devlife-planning) | 기획 문서화 — 브레인스토밍부터 Spec, 계획 문서까지 |
+| [`devlife-tdd`](#devlife-tdd) | TDD 실행 — Red/Green/Refactor 자동화 (서브에이전트 순차 / agent teams 병렬), 테스트 작성 규칙 |
+| [`devlife-tools`](#devlife-tools) | 유틸리티 — 멀티 에이전트 환경, 마크다운 변환, 터미널 제어 |
 
 ---
 
@@ -23,9 +26,9 @@ TDD, 기획 문서화, 브랜치 리뷰, 계획 수립, 멀티 에이전트 협�
 
 | Skill | Version | Description |
 |-------|---------|-------------|
-| `devlife-brainstorming` | `1.10.1` | 아이디어 → 승인된 설계 spec 전환 — what/why + Architecture/Domain Model/Components/Data Flow/Error Handling/Testing 등 커버, DDD 렌즈(bounded context/aggregate/invariant/domain event/ubiquitous language)로 기존 도메인 확인, 우려 지점을 계속 표면화하고 명시적 지시가 있을 때만 문서 작성·plan-creator 핸드오프, 스펙 문서는 고정 템플릿 없이 자유 구성하되 필수 항목은 반드시 커버, 복잡도에 따라 깊이 조절 |
+| `devlife-brainstorming` | `1.10.1` | 대화로 아이디어의 what/why와 설계 결정을 정리해 승인된 설계 spec 문서로 만듦 |
 | `spec-creator` | `1.1.1` | 대규모 기능 기술 명세 작성 — 도메인 컨텍스트·불변성·하위 태스크 S/M/L 분해 포함 |
-| `plan-creator` | `1.10.0` | 태스크 구현 계획 문서 작성 — API 설계·비즈니스 로직·TDD 순서 포함, Explore 서브에이전트 코드 탐색, 요청이 지목한 대상을 포함하는 가장 좁은 범위에서 시작해 결과가 경계에 닿으면 넓혀 재탐색(범위는 잠정, 8개 카테고리는 항상 전부 요청·카테고리당 상위 8개 상한), 질문 수·섹션 생략은 사전 분류가 아니라 탐색·답변 결과가 결정, 답변 모순 검사(범위·리스크·기술·일정), 불변성에 ID·출처 태그 부여해 tdd-subagent까지 추적, 자체 검증 6항목 결과 보고 및 미해결 시 핸드오프 차단, Tidy First는 코드 냄새가 아니라 이번 요구사항 수용을 막는 지점 기준으로 단위 무관 정비(정비 후 요구사항이 들어갈 자리 명시), 도메인 변화 지점 추상화 제안(two-case rule로 억지 추상화 차단), 함정 스캔으로 기존 구현의 알려진 결함을 `→ 신규는` 대안과 함께 섹션 3에 기록(재사용 스캔의 역방향), 기존 구현과 병행하는 신규 플로우는 격리를 양방향 불변성으로 명시, 섹션 6에 코드 스니핏 자리를 템플릿 슬롯으로 고정(메서드 본문까지 포함 — 호출 순서·불변성 가드 절·예외·반환 형태), 계획 문서는 `docs/plan/`에 저장 |
+| `plan-creator` | `1.10.0` | 코드를 탐색해 태스크 구현 계획 문서 작성 — API 설계·비즈니스 로직·불변성·TDD 순서 포함, `docs/plan/`에 저장 |
 | `pdf-to-spec` | `1.0.0` | PDF 텍스트 추출(PDFKit + Vision OCR) → spec-creator 워크플로우 자동 실행 |
 
 ---
@@ -38,15 +41,26 @@ TDD 실행 워크플로우. Red/Green/Refactor 사이클을 서브에이전트 �
 
 | Skill | Version | Description |
 |-------|---------|-------------|
-| `tdd-subagent` | `3.1.0` | 3에이전트 TDD 사이클 (Red/Green/Refactor) — Cycle Reviewer·Final Reviewer·FIX 에이전트 포함, RED/GREEN 격리는 변경 크기와 무관하게 유지하되 주변 의식은 축소(시나리오 배치, Final Review는 세션에서 건드린 클래스만·전체 스위트는 옵트인, Cycle Reviewer는 기본 정적 추론), 에이전트 커밋 금지, 사이클 중엔 대상 테스트 클래스만 실행, Setup에서 프로젝트 컨텍스트 1회 캡처(구현 대상 파일·목표가 아닌 것·기존 코드의 함정을 경계로 포함해 결함 답습과 범위 이탈 차단), REFACTOR 체크 조건에 Feature Envy·단일 책임 위반·추상화 레벨 혼재 추가, 탐색 대신 에스컬레이션(스코프 펜스 + `MISSING_FACT`는 오케스트레이터가 사실을 구해 context.md에 추가 후 같은 컨텍스트로 재디스패치), Setup은 확인한 사실만 기록, 모든 재시도에 예산 부여(`OVERWHELMED` 축소 재시도 1회·결과 블록 재디스패치 1회·수정 2라운드)와 3사이클 연속 NEEDS_FIX 시 서킷 브레이커, 커버리지 하한(불변성마다 어기는/지키는 경계 양쪽 + 클래스당 해피패스, 상한 아님)과 한쪽만 검증 시 `PARTIAL` 지적, 1번 사이클만 게이트 후 진행 방식 1회 질의, 에이전트 통신을 `_workspace/tdd-subagent/` md 파일로 전환(컨텍스트·태스크·단계 결과·리뷰를 파일로 주고받고 반환값은 TDD_STATUS 봉투만), 세션 재개 지원(태스크 수 무관하게 session.md 기록, fix/서킷 카운터 포함), 사이클 중 context.md·task.md 직접 수정 가능, 태스크 분해 시 「이 태스크를 통과시키는 생산 코드 변경」 선제 체크로 Red가 될 수 없는 사이클을 목록 제시 전에 제거, 테스트 실행 출력은 전체 콘솔 로그가 아니라 결과(통과·실패 수, 실패 메시지, 이번 세션 코드의 첫 스택 프레임)만 읽도록 제약, RED는 컴파일(`TEST_COMPILE_CMD`)을 먼저 통과시킨 뒤 테스트를 1회 실행하고 `ALREADY_PASSES` 판정은 기존 생산 코드를 겨냥한 테스트에만 적용, 피드백은 사이클 리뷰어 승인 후 사이클 단위로 1회(단계마다 피드백을 요구하는 프로젝트 지시도 사이클 단위로 지킴), 불변성 ID(`INV-xxx`)는 `_workspace/tdd-subagent/` 산출물 전용 — 생산·테스트 코드의 주석·이름에 넣지 않음 |
-| `tdd-agent-team` | `2.0.0` | agent teams 기반 TDD — `tdd-red`·`tdd-green`·`tdd-refactor` 팀원이 리드 지시 없이 공유 작업 목록(Task 도구 필수)에서 자기 일을 가져가고 다음 단계로 직접 넘김(RED → GREEN → REFACTOR → 다음 태스크), 태스크별 영향 범위(프로덕션 파일·테스트 클래스)가 겹치면 앞 태스크의 리팩터링 후 순차·겹치지 않으면 병렬, 메시지는 `READ <경로>` 한 줄(첫 보고 `READY`만 예외), 공유 `context.md` + 역할별 `roles/{이름}.md`(스폰 프롬프트에 세션 정보 없음, RED는 다른 역할 파일을 읽지 않음), 팀원 정의는 `devlife` 플러그인 에이전트(`devlife:tdd-*`, `tools`로 제한·리뷰어는 `Edit` 없음), GREEN은 red check 후 최소 코드만, `tdd-refactor`가 사이클마다 그 태스크 범위 안의 프로덕션·테스트 리팩터링(클래스당 책임 하나 점검, 테스트는 단언·테스트 수 불변, 범위 밖은 `deferred` → `review-design`), 사이클 전 Tidy First 정비와 `refactor` 커밋 분리 확인, 리드는 Setup·`blocked.md`·막힌 태스크 우회(세션은 계속)·모든 리팩터링 후 최종 검수 1회(red check 기록·범위·리팩터링 기록·테스트 변경·일괄 실행, 실패는 담당자별 `fixes.md` 최대 2라운드), 마지막에 관점별 리뷰어 3명(Critical/Important 지적이 있을 때만 교차 반박), 사용자 확인은 태스크 확정과 최종 리뷰 반영 2회(태스크 1~2개면 `tdd-subagent` 전환 제안), 메서드 단위 테스트 실행, 재개 미지원(완료된 이전 세션은 묻지 않고 보관) |
-| `test-writing` | `1.0.1` | 테스트 코드 작성 규칙 — 무엇을 테스트하는가(비즈니스 규칙의 경계, 시나리오 전부), 한 테스트에 한 동작, 같은 규칙은 합치고 다른 규칙은 분리, 도메인 문장 이름, arrange·act·assert, 프로젝트 Fixture, 계층별 테스트 전략, 기존 테스트 삭제 금지. 프로젝트 컨벤션 우선, Java 예시 + 다른 스택 대응표. 단독 호출, `tdd-agent-team`의 RED·`tdd-refactor`·`review-test`가 같은 파일을 읽음 |
+| `tdd-subagent` | `3.1.0` | Red/Green/Refactor 서브에이전트를 순차 실행하는 TDD — 사이클마다 리뷰어 검수, 중단된 세션 재개 지원 |
+| `tdd-agent-team` | `2.0.0` | RED·GREEN·REFACTOR 팀원이 공유 작업 목록으로 병렬 진행하는 TDD — 마지막에 도메인·테스트·설계 리뷰어 3명이 리뷰 |
+| `test-writing` | `1.0.1` | 테스트 작성 규칙 — 무엇을 테스트할지, 한 테스트에 한 동작, 도메인 문장 이름, 계층별 테스트 전략 |
+
+#### Agents
+
+`tdd-agent-team`이 팀원으로 스폰하는 에이전트입니다. 직접 호출하지 않습니다.
+
+| Agent | Description |
+|-------|-------------|
+| `tdd-red` | 태스크의 동작을 실패하는 테스트로 작성 |
+| `tdd-green` | 실패하는 테스트를 통과시키는 최소 코드 작성 |
+| `tdd-refactor` | 동작을 바꾸지 않고 프로덕션·테스트 코드 정리 |
+| `tdd-reviewer` | 세션 전체를 도메인·테스트·설계 중 한 관점으로 최종 리뷰 |
 
 #### Hooks
 
 | Hook | Event | Description |
 |------|-------|-------------|
-| `allow-tdd-artifact` | `PreToolUse` | `tdd-subagent`·`tdd-agent-team` 에이전트들이 주고받는 `_workspace/tdd-subagent/**/*.md`, `_workspace/tdd-agent-team/**/*.md` 아티팩트의 권한 프롬프트를 생략합니다. 그 외 경로는 평소대로 프롬프트가 뜹니다. |
+| `allow-tdd-artifact` | `PreToolUse` | TDD 스킬이 주고받는 `_workspace/tdd-*/**/*.md` 파일의 권한 프롬프트 생략 |
 
 ---
 
@@ -67,9 +81,19 @@ TDD 실행 워크플로우. Red/Green/Refactor 사이클을 서브에이전트 �
 
 ## Installation
 
+```bash
+claude plugin marketplace add https://github.com/dlwnsgus777/devlife-plugins
+claude plugin install devlife@devlife-plugins
 ```
-/install-marketplace https://github.com/dlwnsgus777/devlife-plugins
+
+업데이트:
+
+```bash
+claude plugin marketplace update devlife-plugins
+claude plugin install devlife@devlife-plugins
 ```
+
+새 세션부터 적용됩니다.
 
 ---
 
