@@ -28,7 +28,7 @@
 |-------|---------|-------------|
 | `devlife-brainstorming` | `1.10.1` | 대화로 아이디어의 what/why와 설계 결정을 정리해 승인된 설계 spec 문서로 만듦 |
 | `spec-creator` | `1.1.1` | 대규모 기능 기술 명세 작성 — 도메인 컨텍스트·불변성·하위 태스크 S/M/L 분해 포함 |
-| `plan-creator` | `1.10.0` | 코드를 탐색해 태스크 구현 계획 문서 작성 — API 설계·비즈니스 로직·불변성·TDD 순서 포함, `docs/plan/`에 저장 |
+| `plan-creator` | `1.11.0` | 코드를 탐색해 태스크 구현 계획 문서 작성 — API 설계·비즈니스 로직·불변성·TDD 순서 포함, `docs/plan/`에 저장 |
 | `pdf-to-spec` | `1.0.0` | PDF 텍스트 추출(PDFKit + Vision OCR) → spec-creator 워크플로우 자동 실행 |
 
 ---

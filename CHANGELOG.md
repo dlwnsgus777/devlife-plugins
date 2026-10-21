@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-10-21
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `plan-creator` | `1.11.0` | Step 1에 Placement scan 추가 — 새 클래스마다 같은 기능·같은 역할의 기존 클래스 위치를 기본값으로 삼고, 벗어나거나 기능이 여러 위치에 흩어져 있으면 Step 2로 넘김. Step 2 질문 대상에 코드·프로젝트 규칙으로 정해지지 않는 배치 추가, Explore 카테고리 1에 패키지 경로 추가. 새 파일 위치를 점검하는 단계가 없어(Landing spot scan은 기존 코드 수정 시에만) 배치가 코드 추론으로 조용히 확정되던 문제. 패키지 구조는 가정하지 않고 탐색 결과에서 읽음. `SKILL.md`(skills/codex)·docs·README 동기화 |
+
+---
+
 ## 2026-10-20
 
 ### devlife-review

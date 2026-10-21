@@ -37,7 +37,7 @@ Request every category below on every sweep, whatever the scope:
 
 | # | Category |
 |---|----------|
-| 1 | Controllers handling [feature] — paths, endpoint annotations, method signatures |
+| 1 | Controllers handling [feature] — paths, endpoint annotations, method signatures, and the package path of each controller and the classes it calls |
 | 2 | Services in the same domain — class names, public method signatures |
 | 3 | Domain models/entities — class names, key fields, enum values |
 | 4 | `find-by-id + throw` patterns already encapsulated in ReadService classes |
@@ -64,6 +64,8 @@ After discovery, directly read only the 2–3 most relevant files to identify bu
 
 **Pitfall scan — the inverse of the reuse scan.** The reuse scan asks what to lean on; this one asks what **not to copy**. An agent reads existing code as this project's answer and reproduces its defects verbatim, so a defect you noticed but didn't write down will ship again. From the Explore category 8 results plus the 2–3 files you read, keep only defects the new code would actually inherit by imitation — a flaw in an unrelated corner of the codebase is not this plan's business. Each one needs a `→ 신규는` decision, not just a diagnosis. Nothing qualifies → `해당 없음`.
 
+**Placement scan** (whenever the plan adds a new class): for each new file, find where the same feature's existing classes of the same role already live — read the package layout off Explore category 1 instead of assuming one. That location is the default. Placing a new file elsewhere, or finding the feature already spread across more than one location, is a structural decision the code cannot settle: take it to Step 2 instead of fixing it in Section 6. A feature with no existing location follows the project's documented layout rule; with no rule, ask.
+
 **Landing spot scan** (only when the task modifies existing code): for each change target, ask where the new requirement has to land and what in the current structure keeps it from landing in one place — edits scattered across several classes, responsibilities tangled so there is no seam to add it, the same branch repeated in multiple spots. Each blocker is a `0-1` candidate, and the fix is whatever removes it — method-level (Extract Method, Guard Clause) or class-level (Move Method, Extract Class, splitting a parameter object). A smell the requirement never touches is not a candidate: `0-1` exists to make this change easy, not to clean the code. No blocker → no `0-1` entries, and Section 0 is included only if `0-2` has one.
 
 **Variation point scan**: find the axis this domain keeps changing along — branching on an enum/type/channel, policy values hardcoded in a service, near-duplicate methods differing in one step. That axis is where the next requirement lands, so it is the abstraction candidate for `0-2`.
@@ -79,6 +81,7 @@ Situations that require asking:
 - **Business invariants whose motivation is unclear** — don't infer the rule's intent from the guard clause alone. If the violation consequence or the constraint's origin isn't obvious, ask.
 - Domain-specific terminology or concepts that appear in the codebase but whose exact meaning is ambiguous
 - **Whether a variation axis from Step 1 is real** — code shows today's branches, not whether more are coming (e.g., "정산 정책이 앞으로 채널별로 더 늘어날 예정인가요?"). A "no" drops the proposal.
+- **Placement the code and project rules don't settle** — which package or existing class a new file joins, when the placement scan found no single home or the plan departs from it (e.g., "[기능]의 기존 엔드포인트는 `[패키지]`의 `[Controller]`에 있는데, 이번 API는 `[다른 위치]`에 둘 이유가 있어 보입니다. 기존 위치에 추가할까요, 분리할까요?").
 
 Ask through natural conversational text in normal assistant messages.
 Multiple-choice/lettered-option formats are too constrained for open-ended domain and
