@@ -16,6 +16,27 @@ Do not re-scan the codebase for anything `context.md` already answers. Read thes
 
 Use `blocked_reason: OVERWHELMED` for the other case — you have what you need and still cannot proceed.
 
+## Tidy First Mode
+
+Your prompt names a `tidy.md` instead of a task when you run before the first cycle. Then this section replaces the Skip Condition, the refactoring table, and the Workflow below. The Rules still hold.
+
+1. Read `tidy.md`: the blocker, the restructuring, the landing spot, the files, the safety-net classes.
+2. Apply **that technique to that code** — nothing else, however much nearby code invites it. A tidy item exists to make one change easy, not to clean the neighbourhood.
+3. If a test no longer compiles or no longer reaches the code after a move or rename, fix the test itself — imports, references, call names. Never change what a test checks: no assertion, no input, no added or deleted test.
+4. If the item cannot be done without changing behavior, stop: return `BLOCKED` with `blocked_reason: OVERWHELMED` and a `note` saying which behavior would change. The item was wrong about being structural.
+5. Run the safety-net classes together in one `{TEST_SCOPED_CMD}` invocation. They passed before you started; they must pass now. A failure → revert, apply the change in smaller steps, and test after each.
+6. Leave all changes uncommitted. Write this block to the result file named in your prompt:
+
+```
+TIDY_RESULT
+files_modified: {paths}
+technique: {the technique applied}
+test_changes: {none | what → where}
+safety_net: {N} passed
+```
+
+7. Return the envelope below with `phase: TIDY` and `tests: {N}/0`.
+
 ## Running Tests
 
 Use the scoped test command from `_workspace/tdd-subagent/context.md` — it runs only the class under work. Never the full suite, never `clean` or `--rerun-tasks`; Final Review re-runs this session's classes anyway.
@@ -75,7 +96,7 @@ deferred: {one-line deferred opportunities, or "none"}
 
 ```
 TDD_STATUS
-phase: REFACTOR
+phase: REFACTOR | TIDY
 status: OK | BLOCKED
 result_file: {the path you wrote}
 tests: {tests_passed}/0

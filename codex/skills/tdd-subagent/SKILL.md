@@ -63,12 +63,14 @@ This SKILL.md was loaded from a known absolute path. Capture its parent director
 {SKILL_DIR}/references/cycle-reviewer.md
 {SKILL_DIR}/references/final-reviewer.md
 {SKILL_DIR}/references/fix-agent.md
+{SKILL_DIR}/references/tidy-first-scan.md
 ```
 
 Then establish the artifact directory. Every file this session produces lives here, and every agent reads its inputs from here.
 
 - `TDD_DIR` = `_workspace/tdd-subagent` — the skill runs from the project root, so this resolves against the working directory
 - `TASK_DIR` = `{TDD_DIR}/task-{NN}` — `NN` is the task number, zero-padded to two digits
+- `TIDY_DIR` = `{TDD_DIR}/tidy-{NN}` — `NN` is the tidy item number, zero-padded to two digits
 
 Create `TDD_DIR`, then exclude it from git tracking:
 
@@ -124,6 +126,12 @@ These sentences become the source of test names.
 
 ### 4. Decompose into TDD Tasks
 
+**Tidy First items.** Read the requirements document for work that must change structure without changing behavior, *before* the requested change, to make that change easier — whatever the document calls it (Tidy First, refactor first, 코드 정비) and wherever it puts it. Extracting an abstraction counts: it is extracted from the cases that already exist, and the new case it will receive is a task. Each such item becomes a **tidy item**, never a task — it changes no behavior, so it can never be Red, and a RED dispatch on it only comes back `ALREADY_PASSES`. Recognize items by what they ask, not by their position in the document (a plan-creator document, for example, keeps them in its Section 0 and orders them first in its implementation steps).
+
+For each tidy item, capture what blocks the change today, the restructuring to apply, and where the change lands afterwards. If the document leaves one of these unsaid, ask at the confirmation below rather than guessing.
+
+**No tidy items in the document?** Then look for them yourself: read `{SKILL_DIR}/references/tidy-first-scan.md` and apply it to the code the change will modify. What it finds are **candidates** — shown at the confirmation below, and only the ones the user approves become tidy items. If the document already names tidy items, skip the scan; do not second-guess a plan that made this decision.
+
 If the document already provides an ordered task list, adopt it instead of deriving a new one. Items tagged `[REGRESSION]` (an existing test already covers that behavior) are not cycles — list them once as "기존 커버리지로 확인" and run them as part of Final Review instead of giving each its own RED. Only `[NEW]` items become cycles. Apply the batching rule and coverage floor below before presenting the list — a document often lists scenarios one-per-line for readability, which is a documentation granularity, not a cycle granularity.
 
 Name each task as a **domain rule sentence** — RED turns it into the test's `@DisplayName`. How it names methods, groups them, or splits a sentence across cases is `red-agent.md`'s business; you owe it the sentence and nothing more.
@@ -156,6 +164,18 @@ Boundary cases of one rule share the same guard clause, so batching already puts
 These lines are a filter, not an artifact — do not write them into `task.md` or anywhere else. Present only the tasks that survive.
 
 Run this before you present, because it is the only control that works before money is spent. The `ALREADY_PASSES` backstop fires *after* a cycle has already burned a RED dispatch, a reviewer, and a test run on work that could not have been Red. In a measured session, two such cycles took 41% of the total agent time.
+
+When there are tidy items, show them above the task list, marking which came from the document and which are your candidates for the user to approve or drop:
+
+```
+Tidy First 항목 (사이클 전에 동작 변경 없이 정비)
+
+  ┌─────┬──────────────────────────────┬──────────────────────┬──────────────────────┬──────────┐
+  │  #  │ 막는 지점                    │ 정비                 │ 정비 후 들어갈 자리  │ 출처     │
+  ├─────┼──────────────────────────────┼──────────────────────┼──────────────────────┼──────────┤
+  │ T1  │ {blocker}                    │ {technique}          │ {landing spot}       │ 문서/후보 │
+  └─────┴──────────────────────────────┴──────────────────────┴──────────────────────┴──────────┘
+```
 
 Present the task list in this format, then get user confirmation before starting:
 
@@ -234,6 +254,8 @@ fix_rounds_total: 0
 | 2 | {domain rule sentence} | PENDING | - |
 ```
 
+When there are tidy items, list them first as rows `T1`, `T2`, … in the same table, so resume picks them up before any task.
+
 `status` is `PENDING` | `IN_PROGRESS` | `DONE`. `last_phase` records the last phase that returned `status: OK`, e.g. `GREEN` or `CYCLE_REVIEW:APPROVED`.
 
 `feedback_mode` is written as the literal `unset` and stays that way until the user answers the cadence question, which replaces it with `per-cycle` or `auto`. `fix_rounds_total` is the session-wide count of fix rounds, never reset — it is what Session End reports.
@@ -250,6 +272,57 @@ scenarios:
 - {scenario sentence}
 - {scenario sentence}
 ```
+
+Then write one `{TIDY_DIR}/tidy.md` per tidy item, after Step 5's exploration has found the tests that exercise its files:
+
+```
+# Tidy {NN}: {summary}
+blocker: {what stops the change from landing in one place — file and method}
+restructuring: {named technique}
+landing_spot: {where the change goes once the blocker is removed}
+files: {production files this item may touch}
+safety_net: {test classes — the [REGRESSION] tests plus every existing test class that exercises these files}
+```
+
+## Tidy First (only when there are tidy items)
+
+Structure first, behavior second, in separate commits. Run every tidy item, in order, before the first cycle: RED writing new tests against a structure being moved would collide with it.
+
+For each item:
+
+1. **Baseline.** Run the item's `safety_net` classes together in one `TEST_SCOPED_CMD` invocation, redirecting to `{TIDY_DIR}/baseline.log`. They must pass now; if they do not, stop and tell the user — a red baseline cannot prove the restructuring preserved behavior.
+2. **Empty safety net.** If no existing test exercises the item's files, the restructuring has nothing to prove it preserved behavior. Stop before dispatching and ask:
+
+   > "정비 항목 {NN}({요약})이 건드리는 {파일}을 검증하는 기존 테스트가 없습니다. 정비 후 동작이 그대로인지 확인할 수 없습니다. 테스트를 직접 추가한 뒤 계속할까요, 안전망 없이 정비할까요, 이 항목을 뺄까요?"
+
+   Run the item only on "테스트를 직접 추가한 뒤 계속" (after the user says the tests are in — add them to `safety_net`, then redo the baseline) or "안전망 없이 정비". On "이 항목을 뺄까요", mark its row `DONE` with `last_phase: TIDY:DROPPED`.
+3. **Dispatch REFACTOR in tidy mode:**
+
+Dispatch a Codex sub-agent with this prompt:
+
+```
+Read {SKILL_DIR}/references/refactor-agent.md — you have permission to access this file.
+Follow its Tidy First Mode exactly.
+
+Read these before you start:
+- {TDD_DIR}/context.md — environment, project context, domain invariants, workspace rules
+- {TIDY_DIR}/tidy.md — the one tidy item to apply
+
+Scope fence: change only the files named in tidy.md, plus test files that must follow a move or rename.
+If you need something those documents do not give you, return BLOCKED with `blocked_reason: MISSING_FACT` and name the single fact you need.
+
+Write your full result block to {TIDY_DIR}/tidy-result.md.
+Return ONLY the TDD_STATUS envelope described in your reference file — no prose, no result block, no file contents.
+```
+
+4. **Tidy Check.** Gate the result like any phase (Result Block Gate, `TIDY` row). Then check `tidy-result.md`: `files_modified` stays within the item's `files`, and `test_changes` are mechanical only — no assertion, input, or test count changed. A failure → re-dispatch once with one line naming it, then ask the user.
+5. Update the item's row in `session.md` (`DONE`, `last_phase: TIDY`).
+
+When every item is done, ask once ← **user checkpoint (Tidy First only)**:
+
+> "구조 정비(Tidy First)가 끝났습니다: {항목 요약}. 기존 테스트는 정비 전후 모두 통과합니다. 기능 작업과 섞이지 않도록 지금 `refactor` 커밋을 따로 해 두는 게 좋습니다. 제가 커밋할까요, 직접 하실까요, 커밋 없이 진행할까요?"
+
+Commit only on "제가 커밋" — stage just the files the tidy items changed, message `refactor: {summary}`. Then start the first cycle. On resume, if every `T` row is `DONE` and no task has started, ask this question before cycle 1.
 
 ## TDD Cycle Execution
 
@@ -297,7 +370,7 @@ Every phase returns exactly this, and nothing else. It is the only thing that en
 
 ```
 TDD_STATUS
-phase: RED | GREEN | REFACTOR | CYCLE_REVIEW | FIX | FINAL_REVIEW
+phase: TIDY | RED | GREEN | REFACTOR | CYCLE_REVIEW | FIX | FINAL_REVIEW
 status: OK | BLOCKED | ALREADY_PASSES
 result_file: {path the agent wrote}
 tests: {passed}/{failed}
@@ -343,6 +416,7 @@ miss=$(for k in {REQUIRED_KEYS}; do grep -q "^$k:" "$f" 2>/dev/null || echo "$k"
 | RED | `test_file test_method failure stubs` |
 | GREEN | `files_modified tests_passed tests_failed failure_detail` |
 | REFACTOR | `status reason tests_passed deferred` |
+| TIDY | `files_modified technique test_changes safety_net` |
 | FIX | `findings_addressed files_modified tests_passed tests_failed notes` |
 
 If either check fails, **do not infer the value and do not proceed to the next phase** — re-dispatch that same agent with the same prompt plus one line naming what was missing. A guessed `RED_RESULT` sends GREEN after the wrong method, which costs a whole wasted cycle. Count the re-dispatch against the `BLOCKED` budget: one retry, then ask the user.
@@ -500,6 +574,7 @@ Every retry in this skill is bounded. When a budget runs out the answer is alway
 | Reviewer returns `NEEDS_FIX` | See Fix Round Budget | 2 rounds, then ask |
 | 3 cycles in a row need fixes | See Circuit Breaker | stop and revisit Setup |
 | Final Review test run fails | See Final Review | 2 rounds, then ask |
+| Tidy baseline red, or no safety net | See Tidy First | none — ask before the item runs |
 
 Two failure modes are deliberately absent from this table: a build failure inside RED, and a test that REFACTOR breaks. You budget neither — each agent resolves its own, per its reference file, and you learn of it only if the agent gives up and returns `BLOCKED`.
 

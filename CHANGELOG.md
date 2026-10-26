@@ -6,6 +6,13 @@
 
 ## 2026-10-26
 
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-subagent` | `3.2.0` | Tidy First 단계 추가 — 문서의 정비 항목을 위치가 아닌 내용으로 인식하고, 없으면 `tidy-first-scan.md`로 후보를 찾아 승인분만 정비. 첫 사이클 전에 기준선 실행 → REFACTOR 에이전트 Tidy First 모드 → 범위·테스트 변경 검수 → `refactor` 커밋 여부 확인. 정비 항목이 태그 없는 태스크로 남아 건너뛰어지던 문제. 안전망 테스트가 없으면 정비 전에 사용자에게 확인 |
+| `tdd-agent-team` | `2.0.1` | 정비 항목의 안전망 테스트가 없으면 `tidy.md`를 쓰기 전에 사용자에게 확인 — 빈 기준선이 통과로 처리되던 문제 |
+
 ### devlife-planning
 
 | Skill | Version | Change |

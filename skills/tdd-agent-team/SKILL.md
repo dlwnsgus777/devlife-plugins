@@ -262,6 +262,11 @@ In this order:
 
 1. **Tidy items, when there are any.** For each, in the order the document gives:
    - **Baseline.** Pick the safety net: the regression set and every existing test class that exercises the files the item touches. Run them — ids written out literally — redirecting to `{TDD_DIR}/tidy/{NN}/baseline.log`. They must pass now; if they do not, stop and tell the user — a red baseline cannot prove the restructuring preserved behavior.
+   - **Empty safety net.** If no existing test exercises the files the item touches, the restructuring has nothing to prove it preserved behavior. Stop before writing `tidy.md` and ask:
+
+     > "정비 항목 {NN}({요약})이 건드리는 {파일}을 검증하는 기존 테스트가 없습니다. 정비 후 동작이 그대로인지 확인할 수 없습니다. 테스트를 직접 추가한 뒤 계속할까요, 안전망 없이 정비할까요, 이 항목을 뺄까요?"
+
+     Keep the item only on "테스트를 직접 추가한 뒤 계속" (after the user says the tests are in — add them to the safety net, then redo the baseline) or "안전망 없이 정비". On "이 항목을 뺄까요", drop it from the tidy items.
    - **Write `{TDD_DIR}/tidy/{NN}/tidy.md`** — the item as the document states it (what blocks the change, the restructuring, where the change lands), the in-scope files, and the safety-net test ids.
 2. **Stubs — only when there are no tidy items.** With tidy items they wait for the Tidy gate (Tidy First below), so they land in the restructured code. See **Stubs**.
 3. **The task list** — every Task of the session, wired with `blockedBy` (see **Creating Tasks**). Write each Task id into `session.md`.

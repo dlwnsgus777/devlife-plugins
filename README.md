@@ -41,8 +41,8 @@ TDD 실행 워크플로우. Red/Green/Refactor 사이클을 서브에이전트 �
 
 | Skill | Version | Description |
 |-------|---------|-------------|
-| `tdd-subagent` | `3.1.0` | Red/Green/Refactor 서브에이전트를 순차 실행하는 TDD — 사이클마다 리뷰어 검수, 중단된 세션 재개 지원 |
-| `tdd-agent-team` | `2.0.0` | RED·GREEN·REFACTOR 팀원이 공유 작업 목록으로 병렬 진행하는 TDD — 마지막에 도메인·테스트·설계 리뷰어 3명이 리뷰 |
+| `tdd-subagent` | `3.2.0` | Red/Green/Refactor 서브에이전트를 순차 실행하는 TDD — 사이클마다 리뷰어 검수, 중단된 세션 재개 지원 |
+| `tdd-agent-team` | `2.0.1` | RED·GREEN·REFACTOR 팀원이 공유 작업 목록으로 병렬 진행하는 TDD — 마지막에 도메인·테스트·설계 리뷰어 3명이 리뷰 |
 | `test-writing` | `1.0.1` | 테스트 작성 규칙 — 무엇을 테스트할지, 한 테스트에 한 동작, 도메인 문장 이름, 계층별 테스트 전략 |
 
 #### Agents
