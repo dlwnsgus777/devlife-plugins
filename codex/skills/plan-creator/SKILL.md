@@ -134,6 +134,21 @@ respect their final decision — do not ask twice.
 
 Read and use the template from `assets/plan-template.md`. **Omit a section only when Step 1 and Step 2 produced nothing for it** — no endpoint in the change means no Section 4, no defect in the referenced implementation means Section 3 is `해당 없음`, and API Design does not apply to batch or refactoring work. A section dropped because it was never investigated is the blind spot this rule exists to prevent. Section 7 carries risk notes — failure modes and scale — whenever Step 1 or Step 2 surfaced any.
 
+#### Writing Style (all sections)
+
+The plan is reread before every coding step, so a sentence that packs three facts costs the reader three times. Verbosity in these plans comes from sentence shape, not from the number of sections.
+
+- **One fact per sentence.** Split facts chained with `~지만`, `~며`, `~고`, `그래서` into separate sentences.
+- **No parenthetical asides.** An aside that matters becomes its own sentence; one that doesn't is dropped. Code identifiers, literal values, and `INV-xxx` / `3-x` references in parentheses are fine.
+- **Table cells: the decision in one sentence, plus at most one sentence of reason.** A procedure belongs in Section 5, and the cell points to it.
+- **Invariants: at most two rule sentences**, plus the violation consequence in one sentence.
+- **Keep the reasons, shorten them.** The violation consequence (Section 2), `왜 문제인가`, and the fix-or-split reason (Section 3) stay — each as one sentence.
+- **State a fact once.** When another section already says it, reference the ID or section instead of restating it.
+- **Never shorten by dropping a fact.** Remove only what another section already states. A shorter plan that lost a path, a constraint, or a value is worse than a long one.
+
+> Bad: `PartitionStrategy(999건) 단위로 나눠 조회해 조립 — MSSQL 파라미터 2,100개 제한 대비(목록 size 상한 없음). 빈 목록이면 쿼리 없이 빈 리스트`
+> Good: `` `PartitionStrategy`의 999건 단위로 나눠 조회한다. 목록 `size`에 상한이 없어 MSSQL 파라미터 2,100개 제한에 걸릴 수 있다. `` — the empty-list case moves to the file table, which already covers it.
+
 #### Domain Context & Invariants (Section 2)
 
 **Rule: never guess.** If you don't know the business reason behind a concept or invariant, it means you should have asked in Step 2. If something is still unclear when you reach this section, **stop and ask the user before continuing** — do not fill the section with inferred or assumed content.
@@ -159,11 +174,15 @@ Also extract invariants from code discovered in Step 1 — enum state transition
 
 #### 기존 코드의 함정 (Section 3)
 
-Write one subsection per defect from Step 1's pitfall scan. A diagnosis alone is worse than nothing — it tells the agent something is wrong and leaves it to invent a replacement, which is how you get a third variant of the same bug. Every entry ends with **`→ 신규는`** naming the concrete alternative.
+Write one subsection per defect from Step 1's pitfall scan, in the template's order: `현재 코드` → `왜 문제인가` → table → `→ 신규는` → `기존 코드`. No summary table above the subsections — it repeats each entry and pushes the evidence away from the decision.
+
+List each location under `현재 코드` on its own line. Several locations packed into one sentence is the hardest line in the plan to read.
+
+A diagnosis alone is worse than nothing — it tells the agent something is wrong and leaves it to invent a replacement, which is how you get a third variant of the same bug. Every entry carries **`→ 신규는`** naming the concrete alternative. When it holds more than one instruction, number them.
 
 Show the failure as data where you can: a small condition/current/expected table beats a paragraph, because it is the shape the test will take later.
 
-Then decide, per entry, whether the existing defect is fixed in this ticket or split out — and say why. Silence here reads as "fix it", and an agent widening scope into legacy code is exactly what Section 0's commit separation exists to prevent.
+Close each entry with **`기존 코드`**: whether the existing defect is fixed in this ticket or split out, and why in one sentence. Silence here reads as "fix it", and an agent widening scope into legacy code is exactly what Section 0's commit separation exists to prevent.
 
 No referenced implementation, or no defects found → `해당 없음`. A padded pitfall section trains the reader to skim the real ones.
 
@@ -182,7 +201,7 @@ The template is structured for Spring Boot API feature planning. Non-obvious sec
 
 ### Step 3.5: Self-Review
 
-After writing the document, run these six checks and fix what you can inline — no need to re-review after fixing.
+After writing the document, run these seven checks and fix what you can inline — no need to re-review after fixing.
 
 **1. Spec coverage** (when a spec document was provided): does every requirement and invariant have a matching implementation entry in Section 8? Add whatever is missing.
 
@@ -202,10 +221,12 @@ After writing the document, run these six checks and fix what you can inline —
 
 **6. Invariant coverage**: does every `INV-xxx` appear in at least one Section 8 entry, and does every Section 8 test trace back to an invariant or an explicit requirement? A test with no upstream is either an unwritten invariant or scope creep — resolve which.
 
+**7. Sentence check**: scan for sentences that chain facts, parenthetical asides, and table cells longer than a decision plus one reason, and fix them per Writing Style. Then confirm the fix dropped nothing — every path, constraint, and value is still stated somewhere.
+
 **Report the result, don't just fix silently.** Show the outcome as part of Step 4 so the user sees what was checked:
 
 ```
-자체 검증: 6개 항목 중 5개 통과
+자체 검증: 7개 항목 중 6개 통과
 - FAIL 2번 (플레이스홀더): 섹션 5-2의 "예외 처리 추가" → 구체 문구로 교체함
 - FAIL 6번 (불변성 커버리지): INV-005를 검증하는 테스트가 섹션 8에 없음 — 확인 필요
 ```
