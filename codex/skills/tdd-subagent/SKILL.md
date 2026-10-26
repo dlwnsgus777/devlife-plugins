@@ -130,7 +130,7 @@ These sentences become the source of test names.
 
 For each tidy item, capture what blocks the change today, the restructuring to apply, and where the change lands afterwards. If the document leaves one of these unsaid, ask at the confirmation below rather than guessing.
 
-**No tidy items in the document?** Then look for them yourself: read `{SKILL_DIR}/references/tidy-first-scan.md` and apply it to the code the change will modify. What it finds are **candidates** — shown at the confirmation below, and only the ones the user approves become tidy items. If the document already names tidy items, skip the scan; do not second-guess a plan that made this decision.
+**Document doesn't address tidying?** Then look for tidy items yourself: read `{SKILL_DIR}/references/tidy-first-scan.md` and apply it to the code the change will modify. What it finds are **candidates** — shown at the confirmation below, and only the ones the user approves become tidy items. If the document names tidy items, or states that none are needed — a plan-creator Section 0 reading `해당 없음` with its reason, for example — skip the scan; do not second-guess a plan that made this decision.
 
 If the document already provides an ordered task list, adopt it instead of deriving a new one. Items tagged `[REGRESSION]` (an existing test already covers that behavior) are not cycles — list them once as "기존 커버리지로 확인" and run them as part of Final Review instead of giving each its own RED. Only `[NEW]` items become cycles. Apply the batching rule and coverage floor below before presenting the list — a document often lists scenarios one-per-line for readability, which is a documentation granularity, not a cycle granularity.
 

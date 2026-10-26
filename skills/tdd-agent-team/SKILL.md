@@ -125,7 +125,7 @@ Everything below comes from the requirements document **when it says so, and fro
 
 For each tidy item, capture what blocks the change today, the restructuring to apply, and where the change lands afterwards. If the document leaves one of these unsaid, ask in Setup 5 rather than guessing.
 
-**No tidy items in the document?** Then look for them yourself: read `{SKILL_DIR}/references/tidy-first-scan.md` and apply it to the code in scope. What it finds are **candidates** — shown at Setup 5, and only the ones the user approves become tidy items. If the document already names tidy items, skip the scan; do not second-guess a plan that made this decision.
+**Document doesn't address tidying?** Then look for tidy items yourself: read `{SKILL_DIR}/references/tidy-first-scan.md` and apply it to the code in scope. What it finds are **candidates** — shown at Setup 5, and only the ones the user approves become tidy items. If the document names tidy items, or states that none are needed — a plan-creator Section 0 reading `해당 없음` with its reason, for example — skip the scan; do not second-guess a plan that made this decision.
 
 **Tasks.** Adopt the document's ordered task list if it has one; otherwise decompose the invariants yourself. Items already covered by existing tests are not tasks — they belong to the regression set. Name each task as a domain rule sentence; RED turns it into `@DisplayName`.
 

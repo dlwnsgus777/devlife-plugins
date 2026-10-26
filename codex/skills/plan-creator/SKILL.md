@@ -69,11 +69,23 @@ After discovery, directly read only the 2–3 most relevant files to identify bu
 
 **Placement scan** (whenever the plan adds a new class): for each new file, find where the same feature's existing classes of the same role already live — read the package layout off Explore category 1 instead of assuming one. That location is the default. Placing a new file elsewhere, or finding the feature already spread across more than one location, is a structural decision the code cannot settle: take it to Step 2 instead of fixing it in Section 6. A feature with no existing location follows the project's documented layout rule; with no rule, ask.
 
-**Landing spot scan** (only when the task modifies existing code): for each change target, ask where the new requirement has to land and what in the current structure keeps it from landing in one place — edits scattered across several classes, responsibilities tangled so there is no seam to add it, the same branch repeated in multiple spots. Each blocker is a `0-1` candidate, and the fix is whatever removes it — method-level (Extract Method, Guard Clause) or class-level (Move Method, Extract Class, splitting a parameter object). A smell the requirement never touches is not a candidate: `0-1` exists to make this change easy, not to clean the code. No blocker → no `0-1` entries, and Section 0 is included only if `0-2` has one.
+**Target structure scan** (only when the task modifies existing code). Work backwards from the requirement: first picture the structure the requirement would go into without strain, then derive the restructuring that moves the existing code there. That restructuring is Tidy First; adding the requirement on top of it is the feature work.
 
-**Variation point scan**: find the axis this domain keeps changing along — branching on an enum/type/channel, policy values hardcoded in a service, near-duplicate methods differing in one step. That axis is where the next requirement lands, so it is the abstraction candidate for `0-2`.
+1. **Picture the target structure.** Ask: *how should the existing code be refactored so this requirement is easy to put in?* Look at where the requirement lands and what shape would take it naturally. These shapes are heuristics, not a checklist:
 
-**Two-case rule — never force it.** Propose an abstraction only when all three hold: **this requirement itself adds a case to the axis**, the axis has 2+ concrete cases counting that one, and the domain says it keeps growing (Section 2 context or a Step 2 answer). The first condition is what keeps a bug fix from turning into a redesign — a change that adds no case to an axis has no business proposing an abstraction over it. A single case, or a structural smell with no domain reason, means no proposal — an interface with one implementation is an anti-pattern. Nothing qualifies → `해당 없음`, never an invented axis.
+   | The requirement adds | A shape that takes it naturally |
+   |---|---|
+   | a case to an existing branch axis (type, channel, policy) | the existing cases as implementations of one abstraction (Replace Conditional with Polymorphism, Strategy) — the new case becomes a new class |
+   | a new rule about an existing concept | the rule's data and behavior in one domain object (Move Method, Extract Class) — the rule becomes a method or guard on it |
+   | a new step in a flow | the flow split into named steps (Compose Method) — the new step becomes one method |
+   | a new input value | the scattered parameters gathered into one object (Introduce Parameter Object) |
+
+2. **Keep the existing design.** The target stays inside the layers, packages, and patterns the code already uses. Tearing up the existing framework or design makes side effects unpredictable — that is separate work for Section 7, not a tidy item. The restructuring also stays within the requirement's reach: its callers sit inside this change's scope, and existing tests can show the behavior is unchanged.
+3. **Don't lean only toward ease.** A target that makes the addition trivial but adds an abstraction, a layer, or a wide blast radius is not automatically better. Weigh how much easier the requirement becomes against the complexity and risk the restructuring adds. An abstraction needs this requirement to add a case to its axis and 2+ concrete cases counting that one — an interface with one implementation is an anti-pattern.
+4. **Build 2–3 candidates**, normally including the current structure as is. For each, note the restructuring and its technique, its reach (callers and safety-net tests), and what the feature work then adds. They go to Step 2 — you do not pick one alone.
+5. **Nothing to restructure is a result too.** When the requirement already fits the current structure without strain — say, one class added beside the existing implementations — skip the Step 2 question and write `해당 없음` with one sentence on how the current structure takes it. Inventing an item to fill the section is worse than none.
+
+A smell the requirement never touches is not a candidate: Section 0 exists to make this change easy, not to clean the code.
 
 ### Step 2: Clarifying Questions
 
@@ -83,7 +95,12 @@ Situations that require asking:
 - **Domain context that isn't derivable from code alone** — code shows *what* happens, not *why*. If you cannot confidently explain the business reason behind a concept (e.g., "왜 이 상태에서는 금액 변경이 불가능한가?"), ask.
 - **Business invariants whose motivation is unclear** — don't infer the rule's intent from the guard clause alone. If the violation consequence or the constraint's origin isn't obvious, ask.
 - Domain-specific terminology or concepts that appear in the codebase but whose exact meaning is ambiguous
-- **Whether a variation axis from Step 1 is real** — code shows today's branches, not whether more are coming (e.g., "정산 정책이 앞으로 채널별로 더 늘어날 예정인가요?"). A "no" drops the proposal.
+- **The target structure from Step 1** — present the candidates side by side: what each restructures, its reach, what the feature work then adds, and the trade-off between ease and the complexity and risk it adds. Recommend one and say why, then let the user decide. When an abstraction is among them, ask whether its axis keeps growing — that answer weighs most in the trade-off. For example:
+
+  > "[기능]을 넣는 방법으로 두 가지를 봤습니다.
+  > A. 지금 구조 그대로 — `SettlementService.calculateFee()`에 분기를 하나 추가합니다. 변경은 작지만 채널 분기가 4개가 됩니다.
+  > B. 기존 3개 채널을 `FeePolicy` 구현체로 정비한 뒤 신규 채널 구현체를 추가합니다. 정비는 `SettlementService`와 호출부 2곳에 닿고, `SettlementServiceTest`로 확인합니다.
+  > 채널이 앞으로도 늘어난다면 B를 추천합니다. 채널이 더 늘어날 예정인가요, 어느 쪽으로 갈까요?"
 - **Placement the code and project rules don't settle** — which package or existing class a new file joins, when the placement scan found no single home or the plan departs from it (e.g., "[기능]의 기존 엔드포인트는 `[패키지]`의 `[Controller]`에 있는데, 이번 API는 `[다른 위치]`에 둘 이유가 있어 보입니다. 기존 위치에 추가할까요, 분리할까요?").
 
 Ask through natural conversational text in normal assistant messages.
@@ -195,9 +212,9 @@ When listing test cases in the implementation order, name each test using a **do
 - `[REGRESSION]` — an existing test already covers this; run it as-is to confirm the behavior is preserved, never add a duplicate
 
 The template is structured for Spring Boot API feature planning. Non-obvious section requirements:
-- **0. 코드 구조 정비**: Only when modifying existing code. `0-1. Tidy First` — behavior-preserving restructuring from the landing spot scan; every entry names the blocker and where the requirement lands once it is removed. `0-2. 추상화 제안` — entries passing the two-case rule; it is a design decision, so leave 적용 여부 as pending until Step 4 approves it. Commit order: `refactor` → `feat`.
+- **0. 코드 구조 정비**: Only when modifying existing code — and then always present, as `해당 없음` with its reason when nothing is restructured, so a reader can tell it was considered. One table from the target structure the user chose in Step 2: the target, the restructuring and its technique, its reach, and what the feature work adds. One line of 결정 근거 records why the user chose it. Commit order: `refactor` → `feat`.
 - **6. Implementation Files**: File table, then fill in the template's **`코드 스니핏` subsection** — class declaration, `private final` fields, and **method bodies**. The body is the point: call order, the guard clause enforcing each invariant (tagged with its `INV-xxx`), exceptions, and the return shape. Skeleton, not finished code — skip logging, transaction config, and defensive null checks, but make it concrete enough to start coding without re-reading the requirements. For dependencies, prefer injecting existing services found in Step 1 over wiring a repository directly.
-- **8. Implementation Order**: When modifying existing code, split into Tidy First → Behavior Change phases with separate commits, and tag every entry `[NEW]` or `[REGRESSION]`. An approved `0-2` abstraction is extracted in the Tidy First phase from the cases that already exist (`refactor`), and the new case follows in the behavior-change phase.
+- **8. Implementation Order**: When modifying existing code, split into Tidy First → Behavior Change phases with separate commits, and tag every entry `[NEW]` or `[REGRESSION]`. An abstraction in Section 0 is extracted in the Tidy First phase from the cases that already exist (`refactor`), and the new case follows in the behavior-change phase.
 
 ### Step 3.5: Self-Review
 
@@ -217,7 +234,7 @@ After writing the document, run these seven checks and fix what you can inline �
 
 **4. Consistency**: are the class and method names identical across all three places they appear — the Section 6 file table, the Section 6 `코드 스니핏`, and the Section 8 implementation entries? A name that exists in only one of them means a file, a signature, or a step is missing.
 
-**5. Section 0 justification**: does every `0-1` entry point to the Section 8 entry it makes easier, and does every `0-2` entry have 2+ cases and a domain reason? Delete the ones that don't — `해당 없음` beats a padded table.
+**5. Section 0 justification**: for every Section 0 entry — does its `본 작업에서 추가할 것` appear as a Section 8 behavior-change entry; would the requirement really be harder to put in without it; does its reach stay inside this change's scope; and did the user choose it in Step 2? Delete the ones that fail — `해당 없음` with its reason beats a padded table.
 
 **6. Invariant coverage**: does every `INV-xxx` appear in at least one Section 8 entry, and does every Section 8 test trace back to an invariant or an explicit requirement? A test with no upstream is either an unwritten invariant or scope creep — resolve which.
 
@@ -239,10 +256,6 @@ After writing the document, ask the user in a normal assistant message:
 
 > "계획 문서를 작성했습니다. 수정하거나 보완할 부분이 있으신가요?
 > 특히 [단계 구성 / 누락된 항목 / 범위]에 대한 의견을 주시면 반영하겠습니다."
-
-If `0-2` has an entry, ask about it in the same message and delete it from the document if rejected — never leave it as "추후 검토":
-
-> "섹션 0-2에 [변화 지점] 추상화([제안])를 제안했습니다. 지금 도입할지, 케이스가 더 쌓일 때까지 미룰지 판단해주세요."
 
 Do NOT proceed to implementation without explicit approval.
 
