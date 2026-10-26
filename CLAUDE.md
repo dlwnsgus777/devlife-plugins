@@ -93,7 +93,8 @@ devlife-plugins/
 3. 플러그인 갱신:
    ```bash
    claude plugin marketplace update devlife-plugins
-   claude plugin install devlife@devlife-plugins   # 처음 설치 또는 갱신
+   claude plugin install devlife@devlife-plugins   # 처음 설치
+   claude plugin update devlife@devlife-plugins    # 이미 설치된 경우 — install은 버전을 올리지 않음
    ```
 4. 새 세션부터 적용 (스킬 이름은 `devlife:{skill-name}`)
 
