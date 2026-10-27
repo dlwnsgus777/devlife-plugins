@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-10-27
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `plan-creator` | `1.13.0` | 불변성 ID(`INV-xxx`) 제거 — 섹션 2 표의 ID 열, 섹션 6 가드 절 ID 주석, 섹션 8 ID 참조 삭제. 자체 검증 6번은 불변성 문장으로 대조. 사람이 ID로 문서를 읽지 않고 TDD 스킬이 직접 번호를 매기므로 계획 문서에서는 쓸모가 없었음. `SKILL.md`·템플릿(skills/codex)·docs·README 동기화 |
+
+---
+
 ## 2026-10-26
 
 ### devlife-tdd

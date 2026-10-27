@@ -156,11 +156,11 @@ Read and use the template from `assets/plan-template.md`. **Omit a section only 
 The plan is reread before every coding step, so a sentence that packs three facts costs the reader three times. Verbosity in these plans comes from sentence shape, not from the number of sections.
 
 - **One fact per sentence.** Split facts chained with `~지만`, `~며`, `~고`, `그래서` into separate sentences.
-- **No parenthetical asides.** An aside that matters becomes its own sentence; one that doesn't is dropped. Code identifiers, literal values, and `INV-xxx` / `3-x` references in parentheses are fine.
+- **No parenthetical asides.** An aside that matters becomes its own sentence; one that doesn't is dropped. Code identifiers, literal values, and `3-x` references in parentheses are fine.
 - **Table cells: the decision in one sentence, plus at most one sentence of reason.** A procedure belongs in Section 5, and the cell points to it.
 - **Invariants: at most two rule sentences**, plus the violation consequence in one sentence.
 - **Keep the reasons, shorten them.** The violation consequence (Section 2), `왜 문제인가`, and the fix-or-split reason (Section 3) stay — each as one sentence.
-- **State a fact once.** When another section already says it, reference the ID or section instead of restating it.
+- **State a fact once.** When another section already says it, reference the section instead of restating it.
 - **Never shorten by dropping a fact.** Remove only what another section already states. A shorter plan that lost a path, a constraint, or a value is worse than a long one.
 
 > Bad: `PartitionStrategy(999건) 단위로 나눠 조회해 조립 — MSSQL 파라미터 2,100개 제한 대비(목록 size 상한 없음). 빈 목록이면 쿼리 없이 빈 리스트`
@@ -177,7 +177,7 @@ Write **business invariants** as complete declarative sentences: "If X, then Y m
 > Bad: `No amount change after approval`
 > Good: `The amount of an approved contract can never be changed under any circumstances. Allowing this causes settlement discrepancies and audit failures.`
 
-Give each invariant a stable **ID** (`INV-001`, …) and an **출처** tag. Section 8 then references the ID instead of restating the sentence, and tdd-subagent can carry the same IDs into its invariant table and its final coverage check — so "every invariant has a test" becomes a lookup rather than a judgment call.
+Tag each invariant with a **출처**. Do not number invariants — nobody reads the plan by ID, and tdd-subagent assigns its own IDs when it imports them.
 
 | 출처 | Means | Review weight |
 |------|-------|---------------|
@@ -185,7 +185,7 @@ Give each invariant a stable **ID** (`INV-001`, …) and an **출처** tag. Sect
 | `[사용자확인]` | Answered by the user in Step 2 | Low |
 | `[코드추론]` | Read off a guard clause or enum, motivation not confirmed | **Highest — flag these for the user explicitly** |
 
-**Isolation invariants.** When the feature runs alongside an existing parallel implementation — its own tables, its own flow, the legacy one still live — write the separation as invariants in both directions: the new path must not touch the old store, *and* the old path must not pull in the new one. Structural separation (different tables) is an argument for why it holds, not evidence that it does; a shared query or a chained side effect breaks it just the same. These land as invariants rather than prose because tdd-subagent inherits the IDs and tests each one on both sides, so writing them here is what makes them verified rather than asserted.
+**Isolation invariants.** When the feature runs alongside an existing parallel implementation — its own tables, its own flow, the legacy one still live — write the separation as invariants in both directions: the new path must not touch the old store, *and* the old path must not pull in the new one. Structural separation (different tables) is an argument for why it holds, not evidence that it does; a shared query or a chained side effect breaks it just the same. These land as invariants rather than prose because tdd-subagent imports each invariant and tests it on both sides, so writing them here is what makes them verified rather than asserted.
 
 Also extract invariants from code discovered in Step 1 — enum state transitions, validation annotations, and guard clauses are all domain rules in disguise. But they land as `[코드추론]`: code shows the constraint exists, not why it exists or what it protects. Never promote one to `[사용자확인]` without an actual answer.
 
@@ -213,7 +213,7 @@ When listing test cases in the implementation order, name each test using a **do
 
 The template is structured for Spring Boot API feature planning. Non-obvious section requirements:
 - **0. 코드 구조 정비**: Only when modifying existing code — and then always present, as `해당 없음` with its reason when nothing is restructured, so a reader can tell it was considered. One table from the target structure the user chose in Step 2: the target, the restructuring and its technique, its reach, and what the feature work adds. One line of 결정 근거 records why the user chose it. Commit order: `refactor` → `feat`.
-- **6. Implementation Files**: File table, then fill in the template's **`코드 스니핏` subsection** — class declaration, `private final` fields, and **method bodies**. The body is the point: call order, the guard clause enforcing each invariant (tagged with its `INV-xxx`), exceptions, and the return shape. Skeleton, not finished code — skip logging, transaction config, and defensive null checks, but make it concrete enough to start coding without re-reading the requirements. For dependencies, prefer injecting existing services found in Step 1 over wiring a repository directly.
+- **6. Implementation Files**: File table, then fill in the template's **`코드 스니핏` subsection** — class declaration, `private final` fields, and **method bodies**. The body is the point: call order, the guard clause enforcing each invariant, exceptions, and the return shape. Skeleton, not finished code — skip logging, transaction config, and defensive null checks, but make it concrete enough to start coding without re-reading the requirements. For dependencies, prefer injecting existing services found in Step 1 over wiring a repository directly.
 - **8. Implementation Order**: When modifying existing code, split into Tidy First → Behavior Change phases with separate commits, and tag every entry `[NEW]` or `[REGRESSION]`. An abstraction in Section 0 is extracted in the Tidy First phase from the cases that already exist (`refactor`), and the new case follows in the behavior-change phase.
 
 ### Step 3.5: Self-Review
@@ -236,7 +236,7 @@ After writing the document, run these seven checks and fix what you can inline �
 
 **5. Section 0 justification**: for every Section 0 entry — does its `본 작업에서 추가할 것` appear as a Section 8 behavior-change entry; would the requirement really be harder to put in without it; does its reach stay inside this change's scope; and did the user choose it in Step 2? Delete the ones that fail — `해당 없음` with its reason beats a padded table.
 
-**6. Invariant coverage**: does every `INV-xxx` appear in at least one Section 8 entry, and does every Section 8 test trace back to an invariant or an explicit requirement? A test with no upstream is either an unwritten invariant or scope creep — resolve which.
+**6. Invariant coverage**: is every Section 2 invariant verified by at least one Section 8 test, and does every Section 8 test trace back to an invariant or an explicit requirement? A test with no upstream is either an unwritten invariant or scope creep — resolve which.
 
 **7. Sentence check**: scan for sentences that chain facts, parenthetical asides, and table cells longer than a decision plus one reason, and fix them per Writing Style. Then confirm the fix dropped nothing — every path, constraint, and value is still stated somewhere.
 
@@ -245,7 +245,7 @@ After writing the document, run these seven checks and fix what you can inline �
 ```
 자체 검증: 7개 항목 중 6개 통과
 - FAIL 2번 (플레이스홀더): 섹션 5-2의 "예외 처리 추가" → 구체 문구로 교체함
-- FAIL 6번 (불변성 커버리지): INV-005를 검증하는 테스트가 섹션 8에 없음 — 확인 필요
+- FAIL 6번 (불변성 커버리지): "정산 완료된 계약은 해지할 수 없다"를 검증하는 테스트가 섹션 8에 없음 — 확인 필요
 ```
 
 A check you fixed is reported as fixed. **A check you could not fix without a decision blocks the handoff**: do not proceed to Step 5 until it is resolved, and say so in Step 4 rather than passing an incomplete plan to tdd-subagent.
