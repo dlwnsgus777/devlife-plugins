@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-11-02
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-agent-team` | `2.0.3` | 스킬 md 내용 다듬기 |
+
+---
+
 ## 2026-10-27
 
 ### devlife-planning

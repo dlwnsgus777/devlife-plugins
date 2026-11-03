@@ -78,30 +78,30 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 ### 사이클 (태스크마다)
 
 ```
-tdd-red ── 실패 테스트 → red-result.md, owner를 tdd-green으로
-   └─READ red-result.md─▶ tdd-green ── red check(컴파일 + 실제 실패) → 최소 구현 → green-result.md, completed
-                             │  (red check 거절 시 ─READ gate.md─▶ tdd-red)
-                             └─READ green-result.md─▶ tdd-refactor ── 범위 안 리팩터링 → refactor-result.md, completed
+tdd-red ── 실패 테스트 → task.md#red-result, owner를 tdd-green으로
+   └─READ task.md#red-result─▶ tdd-green ── red check(컴파일 + 실제 실패) → 최소 구현 → task.md#green-result, completed
+                             │  (red check 거절 시 ─READ task.md#gate─▶ tdd-red)
+                             └─READ task.md#green-result─▶ tdd-refactor ── 범위 안 리팩터링 → task.md#refactor-result, completed
                                                         └─READ task.md─▶ tdd-red (이 Refactor로 풀린 다음 태스크)
 ```
 
-- **메시지 본문은 `READ <경로>` 한 줄뿐**입니다(예외: 첫 보고 `READY`)
+- **메시지 본문은 `READ <경로>` 또는 `READ <경로>#<섹션>` 한 줄뿐**입니다(예외: 첫 보고 `READY`). 한 태스크의 결과는 모두 그 `task.md`에 섹션(`## red-result`, `## gate`, `## missing-stub`, `## green-result`, `## refactor-result`, `## blocked`)으로 쌓이고, 섹션마다 쓰는 팀원은 한 명입니다
 - **GREEN은 최소 코드만** 쓰고 리팩터링하지 않습니다
 - **`tdd-refactor`는 그 태스크의 범위 안에서만** 프로덕션·테스트를 리팩터링합니다. 클래스마다 책임을 한 문장으로 적고(둘 이상이면 Extract Class), 테스트는 단언·입력·테스트 수를 바꾸지 않습니다. 범위 밖에서 보인 리팩터링 거리는 고치지 않고 `deferred`에 남겨 최종 리뷰로 넘깁니다
-- **스텁 요청은 팀원끼리** — RED가 `missing-stub.md`를 GREEN에게 보내고, GREEN이 "미구현" 예외 스텁과 시그니처를 추가한 뒤 회신합니다
+- **스텁 요청은 팀원끼리** — RED가 `task.md#missing-stub`을 GREEN에게 보내고, GREEN이 "미구현" 예외 스텁과 시그니처를 추가한 뒤 회신합니다
 - 모든 `Refactor`가 끝나면 `tdd-refactor`가 리드에게 `cycle-finished.md`를 보냅니다
 
 ### 사이클 중 리드
 
-리드가 팀원에게 보내는 메시지는 세 가지뿐입니다: `blocked.md` 회신, `Tidy gate` 해제, 전원 idle일 때 보내는 쪽에 재전송 지시.
+리드가 팀원에게 보내는 메시지는 세 가지뿐입니다: `blocked` 회신, `Tidy gate` 해제, 전원 idle일 때 보내는 쪽에 재전송 지시.
 
-- **`blocked.md`** — 빠진 사실이면 `context.md`나 역할 파일을 보충하고 회신. 범위 밖 파일이 필요하면 범위·`blockedBy`를 갱신하거나 사용자에게. red check가 두 번 거절됐거나 설계 문제면 **막힌 태스크** 처리 후 사용자에게 묻습니다
+- **`blocked`** (`task.md#blocked`, `tidy.md#blocked`, 세션 전체는 `blocked.md`) — 빠진 사실이면 `context.md`나 역할 파일을 보충하고 회신. 범위 밖 파일이 필요하면 범위·`blockedBy`를 갱신하거나 사용자에게. red check가 두 번 거절됐거나 설계 문제면 **막힌 태스크** 처리 후 사용자에게 묻습니다
 - **막힌 태스크는 세션을 멈추지 않습니다** — 그 `Task`를 `completed`(`blocked`), `Refactor`를 `completed`(`skipped`)로 바꿔 뒤 작업을 풀고, 사용자 판단 뒤 새 Task 쌍으로 다시 진행합니다
 - idle 알림에는 보통 반응하지 않습니다
 
 ### 마무리
 
-1. **최종 검수** (리드, `cycle-finished.md` 수신 후 한 번) — 태스크마다 `green-result.md`·`refactor-result.md`만 읽고 확인합니다
+1. **최종 검수** (리드, `cycle-finished.md` 수신 후 한 번) — 태스크마다 `task.md`의 `green-result`·`refactor-result` 섹션만 보고 확인합니다
    - `red-check.log` 기록(없으면 반려하지 않고 `red-first unverified`로 남겨 `review-test`가 지적)
    - 수정 파일이 그 태스크 범위 안인지
    - 리팩터링 기록(기법, 클래스당 책임 한 줄)
