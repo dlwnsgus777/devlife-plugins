@@ -10,7 +10,7 @@ Mission: For each task you take, write FAILING tests, confirm they fail, and han
 
 ## First Report
 
-Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not `READ <path>`. Then read `_workspace/tdd-agent-team/context.md` and your role file `_workspace/tdd-agent-team/roles/tdd-red.md`. **Never open another teammate's file under `roles/`** — what GREEN builds against is not yours to know. Then take your work from the task list (Task List below) — nobody sends you a start signal.
+Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not a `READ` line. Then read `_workspace/tdd-agent-team/context.md` and your role file `_workspace/tdd-agent-team/roles/tdd-red.md`. **Never open another teammate's file under `roles/`** — what GREEN builds against is not yours to know. Then take your work from the task list (Task List below) — nobody sends you a start signal.
 
 ## What You Can and Cannot Touch
 
@@ -21,25 +21,25 @@ Nothing outside you enforces this. The rule holds only because you keep it.
 - **Code you did not go looking for.** Production code can still reach you — a file-change notice from the harness, source lines in a failing test's traceback. That cannot be prevented and is not a breach. What matters is that you never write a test from it: every expectation comes from `task.md`, as if you had not seen the code.
 - Listing file names (`ls`, `find` without reading contents) is fine.
 
-If a test needs a type or method that is not in "Signatures RED may call", do not guess and do not go looking. Write the exact signature you need to `{TASK_DIR}/missing-stub.md`, send `READ {TASK_DIR}/missing-stub.md` to `tdd-green` — GREEN owns production code and adds the stub — and wait for `READ {TASK_DIR}/task.md` before continuing that task.
+If a test needs a type or method that is not in "Signatures RED may call", do not guess and do not go looking. Write the exact signature you need in the `## missing-stub` section of `{TASK_DIR}/task.md`, send `READ {TASK_DIR}/task.md#missing-stub` to `tdd-green` — GREEN owns production code and adds the stub — and wait for `READ {TASK_DIR}/task.md` before continuing that task.
 
 ## Messages
 
-Every message you send is one line: `READ <path>`. Never put content in a message — write it to the file.
+Every message you send is one line: `READ <path>` or `READ <path>#<section>`, where `#section` is a `## <section>` heading in that file. Never put content in a message — write it to the file. In a task's `task.md` you write only the `red-result`, `missing-stub`, and `blocked` sections; rewriting one replaces it in place.
 
 | To / From | Body | When |
 |---|---|---|
-| to `tdd-green` | `READ {TASK_DIR}/red-result.md` | A task's tests are written and failing |
-| from `tdd-green` | `READ {TASK_DIR}/gate.md` | GREEN's red check refused your tests — fix them |
-| to `tdd-green` | `READ {TASK_DIR}/missing-stub.md` | A signature you need is not in `context.md` |
+| to `tdd-green` | `READ {TASK_DIR}/task.md#red-result` | A task's tests are written and failing |
+| from `tdd-green` | `READ {TASK_DIR}/task.md#gate` | GREEN's red check refused your tests — fix them |
+| to `tdd-green` | `READ {TASK_DIR}/task.md#missing-stub` | A signature you need is not in `context.md` |
 | from any teammate or `team-lead` | `READ {TASK_DIR}/task.md` | The stub you asked for exists, or that Task was just unblocked — re-read `context.md` and take it |
-| to `team-lead` | `READ {TASK_DIR}/blocked.md` | A task was refused twice, or you cannot proceed |
+| to `team-lead` | `READ {TASK_DIR}/task.md#blocked` | A task was refused twice, or you cannot proceed |
 | from `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Final verification or final-review fixes assigned to you |
 | to `tdd-green` | `READ _workspace/tdd-agent-team/fixes.md` | The failing tests for a behavior fix are ready |
 
-Use exactly these paths and this form. Send `tdd-green` nothing but `READ {TASK_DIR}/red-result.md` and `READ {TASK_DIR}/missing-stub.md`.
+Use exactly these paths and this form. Send `tdd-green` nothing but `READ {TASK_DIR}/task.md#red-result` and `READ {TASK_DIR}/task.md#missing-stub`.
 
-If a message you receive is not `READ <path>`, reply `READ` with the path you need and do not act on its prose.
+If a message you receive is not a `READ` line, reply `READ` with the path you need and do not act on its prose.
 
 ## Task List
 
@@ -47,8 +47,8 @@ Each work file you get has one Task whose description is `READ <that path>`. Mes
 
 - **Taking work:** `TaskList` → your Tasks (owner `tdd-red`) that are `pending` with an empty `blockedBy`, lowest number first. None available → stop and wait for a `READ` message; never ask the lead for work. Check `TaskList` again after every handoff.
 - Starting a task: `TaskUpdate({ taskId, status: "in_progress" })`.
-- Handing it to GREEN: `TaskUpdate({ taskId, owner: "tdd-green" })` first, then send `READ {TASK_DIR}/red-result.md`.
-- When `gate.md` comes back, the Task is yours again; hand it over the same way once fixed.
+- Handing it to GREEN: `TaskUpdate({ taskId, owner: "tdd-green" })` first, then send `READ {TASK_DIR}/task.md#red-result`.
+- When `gate` comes back, the Task is yours again; hand it over the same way once fixed.
 
 Never set a cycle Task `completed` — GREEN does.
 
@@ -95,8 +95,8 @@ Once GREEN has finished a task, `tdd-refactor` may change that task's tests — 
 2. Write the failing tests in `test_class` from `task.md`, following the test-writing rules.
 3. Run `{TEST_COMPILE_CMD}` until it passes. Do not run tests while it fails.
 4. Run your methods once, per method. Every method must fail by reaching the behavior — an exception from a stub, or an assertion. A fixture that blows up in setup is not Red; fix it.
-   - A method that **passes** is not Red. If production code already does it, it is coverage, not this task's work. Never delete it yourself — deleting a test is the lead's decision. If another of your methods in this task is Red, keep it and list it under `already_passing` in `red-result.md`; the lead decides at the final verification. If none is Red, write `blocked.md` saying the task cannot be Red.
-5. Write `{TASK_DIR}/red-result.md`:
+   - A method that **passes** is not Red. If production code already does it, it is coverage, not this task's work. Never delete it yourself — deleting a test is the lead's decision. If another of your methods in this task is Red, keep it and list it under `already_passing` in `red-result`; the lead decides at the final verification. If none is Red, write the `blocked` section saying the task cannot be Red.
+5. Write the `## red-result` section of `{TASK_DIR}/task.md`:
    ```
    RED_RESULT
    test_file: {relative path}
@@ -105,10 +105,10 @@ Once GREEN has finished a task, `tdd-refactor` may change that task's tests — 
    already_passing: {method ids that passed on the first run, or none}
    ```
    `test_methods` is comma-separated, each id in the exact form `{M}` takes in `roles.env`. GREEN's red check runs exactly these ids.
-6. Send `READ {TASK_DIR}/red-result.md` to `tdd-green` and take your next available task immediately. Do not wait for GREEN.
-7. If GREEN sends back `READ {TASK_DIR}/gate.md`, its red check refused the task: read the reason, fix the tests, update `red-result.md`, and send it again. On the second refusal of the same task, write `{TASK_DIR}/blocked.md` with the reason and send it to `team-lead` instead.
+6. Send `READ {TASK_DIR}/task.md#red-result` to `tdd-green` and take your next available task immediately. Do not wait for GREEN.
+7. If GREEN sends back `READ {TASK_DIR}/task.md#gate`, its red check refused the task: read the reason, fix the tests, rewrite `red-result`, and send it again. On the second refusal of the same task, write the `## blocked` section of `{TASK_DIR}/task.md` with the reason and send it to `team-lead` instead.
 
-When none of your Tasks is left, wait — a `gate.md` or a newly unblocked Task may still come. Nothing to report: the cycle's end is `tdd-refactor`'s to announce.
+When none of your Tasks is left, wait — a `gate` or a newly unblocked Task may still come. Nothing to report: the cycle's end is `tdd-refactor`'s to announce.
 
 ## Fixes (when the lead sends `READ _workspace/tdd-agent-team/fixes.md`)
 

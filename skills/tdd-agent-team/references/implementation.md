@@ -53,7 +53,3 @@ public void cancel() {
 | Business logic in the controller | Put it in the domain or application layer |
 | Domain imports infrastructure | Domain defines an interface; infrastructure implements it |
 | Abstract class or interface with a single implementation | Use the concrete class until a second case actually exists |
-
-## 4. Never Touch Tests
-
-Test files are not yours — not to fix a typo, not to loosen an assertion, not through a shell command. If a test looks wrong, report it to the lead; do not make it pass by changing it.

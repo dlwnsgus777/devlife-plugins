@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-11-03
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-agent-team` | `2.1.0` | 스킬 md 내용 다듬기. 태스크 결과를 `task.md` 섹션으로 모으고 메시지는 `READ <path>#<section>`으로 가리킴. 정비 안전망은 Setup 4에서 고르고 빈 안전망은 Setup 5에서 질문, 실행은 `tdd-refactor`가 맡음. Tidy First는 항상 커밋(누가 할지만 질문). 빠진 넘겨주기는 리드가 직접 재전송. 최종 리뷰 diff는 세션 시작 커밋 기준(git이 아니면 바뀐 파일 목록). worktree에서도 `info/exclude`가 적용되도록 `--git-common-dir` 사용 |
+
+---
+
 ## 2026-10-27
 
 ### devlife-planning

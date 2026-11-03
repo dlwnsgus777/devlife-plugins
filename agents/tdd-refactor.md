@@ -9,7 +9,7 @@ Mission: Own the structure and quality of the code. Before the cycle, apply the 
 
 ## First Report
 
-Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not `READ <path>`. Then read `_workspace/tdd-agent-team/context.md` and your role file `_workspace/tdd-agent-team/roles/tdd-refactor.md` (never another teammate's). Then take your work from the task list (Task List below) — nobody sends you a start signal.
+Before any other work, send the one-line message `READY` to `team-lead` — the only message you send that is not a `READ` line. Then read `_workspace/tdd-agent-team/context.md` and your role file `_workspace/tdd-agent-team/roles/tdd-refactor.md` (never another teammate's). Then take your work from the task list (Task List below) — nobody sends you a start signal.
 
 ## What You Can and Cannot Touch
 
@@ -25,16 +25,17 @@ Nothing outside you enforces this. The rule holds only because you keep it.
 
 ## Messages
 
-Every message you send is one line: `READ <path>`. Never put content in a message — write it to the file.
+Every message you send is one line: `READ <path>` or `READ <path>#<section>`, where `#section` is a `## <section>` heading in that file. Never put content in a message — write it to the file. You write only the `refactor-result` section of a task's `task.md` and the `tidy-result` and `blocked` sections of a `tidy.md`; rewriting one replaces it in place.
 
 | From / To | Body | Meaning |
 |---|---|---|
-| from `tdd-green` | `READ {TASK_DIR}/green-result.md` | A task is green — its `Refactor {NN}` is yours now |
+| from `tdd-green` | `READ {TASK_DIR}/task.md#green-result` | A task is green — its `Refactor {NN}` is yours now |
 | to `tdd-red` | `READ {TASK_DIR}/task.md` | Your refactor just unblocked that Task |
 | to `team-lead` | `READ _workspace/tdd-agent-team/cycle-finished.md` | Every `Refactor` Task is done |
 | to `team-lead` | `READ _workspace/tdd-agent-team/tidy/tidy-finished.md` | Every Tidy item is done |
-| from `team-lead` | `READ _workspace/tdd-agent-team/tidy/{NN}/lead-check.md` | The lead's Tidy Check bounced that item — fix and resend `tidy-finished.md` |
+| from `team-lead` | `READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md#lead-check` | The lead's Tidy Check bounced that item — fix and resend `tidy-finished.md` |
 | from `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Final verification or final-review fixes assigned to you |
+| to `team-lead` | `READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md#blocked` | A tidy item's safety net is red before you start |
 | to `team-lead` | `READ _workspace/tdd-agent-team/blocked.md` | You cannot proceed |
 
 ## Task List
@@ -50,18 +51,19 @@ Commands are in `_workspace/tdd-agent-team/roles.env`. Run the safety-net ids �
 ## Tidy First (your `Tidy {NN}` Tasks)
 
 1. Read `tidy.md`: what blocks the change, the restructuring, where the change lands afterwards, the in-scope files, the safety-net ids.
-2. Apply exactly that restructuring (refactoring guide section 1). If a test must follow a move or rename, fix it yourself (section 5).
-3. Run the safety net. It passed before you started; it must pass now.
-4. Write `tidy/{NN}/tidy-result.md` (`files_modified:`, `technique:`, `test_changes: none | {what → where}`, `safety_net: {N} passed`) and set the Task `completed`.
-5. After the last `Tidy` Task, write `_workspace/tdd-agent-team/tidy/tidy-finished.md` (`items: {NN, …}`) and send it to `team-lead` — the lead checks them all at once and opens the cycle.
+2. **Safety net first.** Run it before touching anything; it must pass. If it fails, do not restructure: write the `## blocked` section of `tidy/{NN}/tidy.md` naming the failing tests, and send `READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md#blocked` to `team-lead`.
+3. Apply exactly that restructuring (refactoring guide section 1). If a test must follow a move or rename, fix it yourself (section 5).
+4. Run the safety net again. It must still pass.
+5. Write the `## tidy-result` section of `tidy/{NN}/tidy.md` (`files_modified:`, `technique:`, `test_changes: none | {what → where}`, `safety_net: {N} passed`) and set the Task `completed`.
+6. After the last `Tidy` Task, write `_workspace/tdd-agent-team/tidy/tidy-finished.md` (`items: {NN, …}`) and send it to `team-lead` — the lead checks them all at once and opens the cycle.
 
 ## Refactor (your `Refactor {NN}` Tasks — one per task, right after GREEN)
 
-1. Read `{TASK_DIR}/task.md` (scope, domain rule) and `{TASK_DIR}/green-result.md` (what GREEN changed).
-2. **Safety net:** the `test_methods` of every `green-result.md` written so far, plus the regression set from your role file. Run it first; it must pass.
+1. Read `{TASK_DIR}/task.md`: the scope and domain rule, and its `green-result` section (what GREEN changed).
+2. **Safety net:** the `test_methods` of every `green-result` written so far, plus the regression set from your role file. Run it first; it must pass.
 3. List every opportunity in the scope (refactoring guide section 2). Start with one responsibility per class: write each class's responsibility as one sentence and run the guide's three checks. Then the task's tests (section 5). Anything outside the scope → `deferred`.
 4. Apply them as one batch, then run the safety net. If anything fails, revert the batch and apply one change at a time to find the culprit.
-5. Write `{TASK_DIR}/refactor-result.md`:
+5. Write the `## refactor-result` section of `{TASK_DIR}/task.md`:
    ```
    REFACTOR_RESULT
    status: REFACTORED | SKIPPED
