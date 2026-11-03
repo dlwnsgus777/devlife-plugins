@@ -17,7 +17,7 @@ Read these first, all under `_workspace/tdd-agent-team/`:
 - `context.md` — invariants
 - `roles/tdd-green.md` — in-scope files, out of scope, known pitfalls
 - `session.md` — the confirmed task list and final status
-- `branch-diff.md` — the whole session's diff
+- `branch-diff.md` — the whole session's diff (outside git, a list of changed files to read instead)
 - `tasks/*/task.md` — each task's spec and its `red-result`, `green-result`, and `refactor-result` sections
 - `deferred.md` (`review-design` only, when it exists) — what `tdd-refactor` saw outside a task's scope and left alone
 - `final-test.log` — the lead already ran every session method. **Do not re-run tests**; that run is the evidence. Execute something only for a specific doubt a static read cannot settle, and then only the methods in question.

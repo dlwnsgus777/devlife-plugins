@@ -93,7 +93,7 @@ tdd-red ── 실패 테스트 → task.md#red-result, owner를 tdd-green으로
 
 ### 사이클 중 리드
 
-리드가 팀원에게 보내는 메시지는 세 가지뿐입니다: `blocked` 회신, `Tidy gate` 해제, 전원 idle일 때 보내는 쪽에 재전송 지시.
+리드가 팀원에게 보내는 메시지는 세 가지뿐입니다: `blocked` 회신, `Tidy gate` 해제, 전원 idle일 때 빠진 넘겨주기를 받는 쪽에 직접 재전송(써 놓은 결과 섹션의 `READ {경로}#{섹션}`).
 
 - **`blocked`** (`task.md#blocked`, `tidy.md#blocked`, 세션 전체는 `blocked.md`) — 빠진 사실이면 `context.md`나 역할 파일을 보충하고 회신. 범위 밖 파일이 필요하면 범위·`blockedBy`를 갱신하거나 사용자에게. red check가 두 번 거절됐거나 설계 문제면 **막힌 태스크** 처리 후 사용자에게 묻습니다
 - **막힌 태스크는 세션을 멈추지 않습니다** — 그 `Task`를 `completed`(`blocked`), `Refactor`를 `completed`(`skipped`)로 바꿔 뒤 작업을 풀고, 사용자 판단 뒤 새 Task 쌍으로 다시 진행합니다
