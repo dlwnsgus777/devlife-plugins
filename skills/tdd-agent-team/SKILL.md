@@ -329,7 +329,7 @@ scenarios:
 ```
 
 - You write this header. Decide `test_class` and `scope_production` here, not in the teammates — the stubs, the per-method commands, and the task order all use them.
-- The teammates add their result sections below it: `## red-result`, `## gate`, `## missing-stub`, `## green-result`, `## refactor-result`, `## blocked`, each written by one teammate.
+- The teammates add their result sections below it: `## red-result`, `## gate`, `## missing-stub`, `## green-result`, `## compile-error`, `## refactor-result`, `## blocked`, each written by one teammate.
 - `tidy.md` works the same way: you write the item and `## lead-check`, `tdd-refactor` writes `## tidy-result` and `## blocked`.
 - RED sees `scope_production` as paths only and never opens those files.
 

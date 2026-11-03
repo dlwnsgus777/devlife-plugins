@@ -43,6 +43,7 @@ Send every message with `SendMessage` — your plain text output reaches no one.
 | to `tdd-green` | `READ {TASK_DIR}/task.md#missing-stub` | A signature you need is not in `context.md` |
 | from any teammate or `team-lead` | `READ {TASK_DIR}/task.md` | The stub you asked for exists, or that Task was just unblocked — re-read `context.md` and take it |
 | to `team-lead` | `READ {TASK_DIR}/task.md#blocked` | A task was refused twice, or you cannot proceed |
+| from `tdd-green` | `READ {TASK_DIR}/task.md#compile-error` | GREEN cannot compile your test class — finish the edit and hand the task over as usual |
 | from `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Final verification or final-review fixes assigned to you |
 | to `tdd-green` | `READ _workspace/tdd-agent-team/fixes.md` | The failing tests for a behavior fix are ready |
 
@@ -56,7 +57,7 @@ Changing a Task's owner notifies no one — the receiver learns of a handoff onl
 
 - **Taking work:** `TaskList` → your Tasks (owner `tdd-red`) that are `pending` with an empty `blockedBy`, lowest number first. None available → stop and wait for a `READ` message; never ask the lead for work. Check `TaskList` again after every handoff.
 - **Starting a task:** `TaskUpdate({ taskId, status: "in_progress" })`.
-- **Handing it to GREEN:** `TaskUpdate({ taskId, owner: "tdd-green" })` first, then send `READ {TASK_DIR}/task.md#red-result` — GREEN looks its Task up by owner when the message arrives.
+- **Handing it to GREEN:** `TaskUpdate({ taskId, owner: "tdd-green" })` first, then send `READ {TASK_DIR}/task.md#red-result`.
 - **When `gate` comes back,** GREEN has already handed the Task back to you; fix the tests and hand it over the same way.
 
 Never set a `Task {NN}` `completed` — GREEN does.
@@ -72,7 +73,7 @@ Pipe the output through `| tail -40` — read the result, not the whole log.
 - No `cd …;` prefix — you already run in the project root.
 - Write files with the `Write` tool, never `cat > … <<EOF` or `echo >`.
 
-**A run that executes zero tests is not Red.** "no tests found" (under `unittest`, an `AttributeError` naming your method) means the method id is wrong — fix the id.
+**A run that executes zero tests is not Red** — an id that matches nothing fails the run without running a test. Fix the id.
 
 ## Iron Law
 
