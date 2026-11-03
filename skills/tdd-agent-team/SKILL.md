@@ -153,6 +153,7 @@ Everything below comes from the requirements (a document, or what the user descr
 - Find such work in the requirements.
 - Extracting an abstraction counts: it is extracted from the cases that already exist, and the new case it will receive is a task.
 - For each, capture what blocks the change today, the restructuring to apply, and where the change lands afterwards. If the requirements leave one unsaid, ask at Setup 5 rather than guessing.
+- For each, pick its safety net: the regression set and every existing test class that exercises the files the item touches. If none does, the item has an **empty safety net** — mark it for Setup 5.
 - If the requirements do not address tidying, read `{SKILL_DIR}/references/tidy-first-scan.md` and apply it to the code in scope. What it finds are **candidates** — shown at Setup 5, and only the ones the user approves become tidy items.
 - If the requirements name tidy items, or state with a reason that none are needed, skip the scan — do not second-guess that decision.
 
@@ -173,7 +174,7 @@ Everything below comes from the requirements (a document, or what the user descr
 ### 5. Confirm Tasks ← user checkpoint 1
 
 Present together, and wait for confirmation:
-- the tidy items — marking which came from the requirements and which are your **candidates** for the user to approve or drop
+- the tidy items — marking which came from the requirements and which are your **candidates** for the user to approve or drop, and which have an empty safety net
 - the in-scope files
 - the regression set
 - the invariants
@@ -192,6 +193,14 @@ TDD 태스크 목록
 
 > "태스크를 확정하면 팀원이 끝까지 자동으로 진행하고, 최종 리뷰 결과가 나오면 다시 확인받습니다. 이대로 진행할까요?"
 
+**Empty safety net.** For each tidy item with no existing test behind it, ask this together with the confirmation:
+
+> "정비 항목 {NN}({요약})이 건드리는 {파일}을 검증하는 기존 테스트가 없습니다. 정비 후 동작이 그대로인지 확인할 수 없습니다. 테스트를 직접 추가한 뒤 계속할까요, 안전망 없이 정비할까요, 이 항목을 뺄까요?"
+
+- "테스트를 직접 추가한 뒤 계속" → wait for the user to write the tests. Once they say the tests are in, add those test ids to the safety net and keep the item.
+- "안전망 없이 정비" → keep the item.
+- "이 항목을 뺄까요" → drop it from the tidy items.
+
 **Is a team worth it?** With one or two tasks, the team's upkeep outweighs what it buys. In that case, ask this instead of the question above:
 
 > "태스크가 {N}개라 팀을 유지하는 비용(팀원마다 가이드·문맥을 따로 읽고, 대기 알림마다 리드가 응답)이 얻는 이득보다 큽니다. `tdd-subagent`로 전환할까요? (확정한 태스크 목록을 그대로 넘깁니다) / 팀으로 그대로 진행할까요?"
@@ -201,6 +210,8 @@ On switch, stop here and invoke `tdd-subagent` with the requirements and the con
 After this answer, do not ask again until Final Stage 2 — except the Tidy First commit question, when there are tidy items, and the escalations named under Lead Duties.
 
 ### 6. Context, Session, and Task Files
+
+Write the files the teammates read when they start; they learn the session's facts and their own work from these files, not from messages.
 
 **`{TDD_DIR}/context.md`** — the facts every teammate shares. Write it from the Setup 4 exploration, only what you verified this session:
 
@@ -222,7 +233,7 @@ After this answer, do not ask again until Final Stage 2 — except the Tidy Firs
 - Domain anchors: {aggregate/entity files + invariants that apply here}
 
 ## Domain Invariants
-{list, IDs verbatim}
+{list, numbered as in Setup 4}
 
 ## Workspace Rules
 Others may have edited this workspace since this file was written. Never revert a change you didn't make.
@@ -232,7 +243,11 @@ SendMessage bodies are one line: READ <path> or READ <path>#<section>. Content g
 Your role file is roles/{your name}.md. Never open another teammate's role file.
 ```
 
-**`{TDD_DIR}/roles/{name}.md`** — one per teammate, holding what only that role needs. The definitions read their own file at start, so the spawn prompt carries nothing; keeping each role's facts in its own file keeps RED from learning what GREEN builds against. The scope and pitfalls are the ones the user confirmed at Setup 5.
+When filling it in:
+- **Test conventions** — record only what the existing tests or project instructions actually show. A project convention overrides the test-writing rules (naming included), so never invent one. With no existing tests, write `none`; RED and the `review-test` lens then hold to the guide.
+- **Signatures RED may call** — RED's only window into production code. List every type, constructor, and method a test will touch with its exact signature; each one missing costs a `missing-stub` round trip.
+
+**`{TDD_DIR}/roles/{name}.md`** — one per teammate, holding what only that role needs. Separate files keep RED from learning what GREEN builds against. The scope and pitfalls are the ones the user confirmed at Setup 5.
 
 `roles/tdd-red.md`:
 ```
@@ -264,11 +279,7 @@ Your role file is roles/{your name}.md. Never open another teammate's role file.
 
 Write `{SKILL_DIR}` resolved to an absolute path, and `Read` each guide path once before writing it — a teammate that cannot read its guide stops and reports `blocked`.
 
-**Test conventions are observed, never invented.** A project convention overrides the test-writing rules (naming included), so record only what the existing tests or project instructions actually show. With no existing tests, there is no project convention — do not make one up; RED and the `review-test` lens then hold to the guide.
-
-**"Signatures RED may call" is RED's only window into production code** — its definition forbids reading production files. Every type, constructor, and method a test will touch must be listed with its exact signature. A missing signature costs a `missing-stub` round trip per task.
-
-**`{TDD_DIR}/session.md`** — you are its only writer:
+**`{TDD_DIR}/session.md`** — the session's progress record, which outlives the team. You are its only writer:
 
 ```
 # TDD Agent Team Session: {feature}
@@ -278,9 +289,9 @@ Write `{SKILL_DIR}` resolved to an absolute path, and `Read` each guide path onc
 | 1 | {domain rule sentence} | {Task id} | PENDING | - |
 ```
 
-`status`: `PENDING` | `DONE` | `BLOCKED`. `session.md` stays alongside the Tasks — it is the session's record after the team is gone — and `DONE` is set only by your Final Verification, never by a Task's status alone.
+`status`: `PENDING` | `DONE` | `BLOCKED`. Set `DONE` only when your Final Verification passes, never from a Task's status.
 
-**`{TASK_DIR}/task.md`** per task:
+**`{TASK_DIR}/task.md`** — one task's spec, and where its results collect. Per task:
 
 ```
 # Task {NN}: {domain rule sentence}
@@ -291,9 +302,10 @@ scenarios:
 - {scenario sentence}
 ```
 
-You write only this header. The teammates add their result sections below it — `## red-result`, `## gate`, `## missing-stub`, `## green-result`, `## refactor-result`, `## blocked` — each written by one teammate. The same holds for `tidy.md`: you write the item and `## lead-check`, `tdd-refactor` writes `## tidy-result` and `## blocked`.
-
-Decide `test_class` and `scope_production` here, not in the teammates — the stubs, the per-method commands, and the task order all need them. RED sees `scope_production` as paths only and never opens those files.
+- You write this header. Decide `test_class` and `scope_production` here, not in the teammates — the stubs, the per-method commands, and the task order all use them.
+- The teammates add their result sections below it: `## red-result`, `## gate`, `## missing-stub`, `## green-result`, `## refactor-result`, `## blocked`, each written by one teammate.
+- `tidy.md` works the same way: you write the item and `## lead-check`, `tdd-refactor` writes `## tidy-result` and `## blocked`.
+- RED sees `scope_production` as paths only and never opens those files.
 
 ## Running the Team
 
@@ -303,14 +315,7 @@ Everything a teammate needs is laid out before it exists: the files from Setup 6
 
 In this order:
 
-1. **Tidy items, when there are any.** For each, in the order the document gives:
-   - **Safety net.** Pick it: the regression set and every existing test class that exercises the files the item touches. Do not run it — `tdd-refactor` runs it before restructuring. A safety net that is already red comes back to you as a `blocked` report: stop and tell the user, since a red baseline cannot prove the restructuring preserved behavior.
-   - **Empty safety net.** If no existing test exercises the files the item touches, the restructuring has nothing to prove it preserved behavior. Stop before writing `tidy.md` and ask:
-
-     > "정비 항목 {NN}({요약})이 건드리는 {파일}을 검증하는 기존 테스트가 없습니다. 정비 후 동작이 그대로인지 확인할 수 없습니다. 테스트를 직접 추가한 뒤 계속할까요, 안전망 없이 정비할까요, 이 항목을 뺄까요?"
-
-     Keep the item only on "테스트를 직접 추가한 뒤 계속" (after the user says the tests are in — add them to the safety net) or "안전망 없이 정비". On "이 항목을 뺄까요", drop it from the tidy items.
-   - **Write `{TDD_DIR}/tidy/{NN}/tidy.md`** — the item as the document states it (what blocks the change, the restructuring, where the change lands), the in-scope files, and the safety-net test ids.
+1. **Tidy items, when there are any.** For each, in the order the requirements give, write the header of `{TDD_DIR}/tidy/{NN}/tidy.md`: the item as the requirements state it (what blocks the change, the restructuring, where the change lands), the in-scope files, and the safety-net test ids from Setup 4. `tdd-refactor` runs the safety net before restructuring; one already red comes back to you as `blocked`: stop and tell the user.
 2. **Stubs — only when there are no tidy items.** With tidy items they wait for the Tidy gate (Tidy First below), so they land in the restructured code. See **Stubs**.
 3. **The task list** — every Task of the session, wired with `blockedBy` (see **Creating Tasks**). Write each Task id into `session.md`.
 
@@ -322,13 +327,15 @@ Agent({ name: "tdd-green",    subagent_type: "devlife:tdd-green",    description
 Agent({ name: "tdd-refactor", subagent_type: "devlife:tdd-refactor", description: "TDD REFACTOR teammate", prompt: "Start." })
 ```
 
-All three start now, `tdd-refactor` included — it owns the Tidy items at the front and the refactoring at the back, and nobody is there to spawn it in between.
+All three start now, `tdd-refactor` included — it owns the tidy items before the cycle and the refactors after each task, so there is no later point to spawn it.
 
-The role is in the definition and the session facts are in files — `context.md` for everyone, `roles/{name}.md` for each teammate — so a teammate's spawn prompt is just `Start.`. Each rulebook lives in one file that its writer and its reviewer both read: the `test-writing` skill for RED and the `review-test` lens, `references/implementation.md` for GREEN (and as the floor for `tdd-refactor`), `references/refactoring.md` for `tdd-refactor`; the `review-design` lens reads the last two. Reviewers still get their lens and guide paths in the spawn prompt (Final Stage 2). Teammates address each other by these names, so keep them exact. Do not add a model; teammates inherit the session's.
+- **The spawn prompt is just `Start.`** The role is in the definition; the session facts are in `context.md` and `roles/{name}.md`. Only reviewers get their lens and guide paths in the spawn prompt (Final Stage 2).
+- **Keep the names exact** — teammates address each other by them.
+- **Do not add a model**; teammates inherit the session's.
 
-**First report.** `tdd-red`, `tdd-green`, and `tdd-refactor` each open with `READY`. Reviewers do not report: they live for one review and start from their spawn prompt. A teammate without `SendMessage` cannot send that report, so a teammate silent past its first idle notification counts as missing it — stop the team and tell the user rather than letting the cycle start lame.
+**First report.** `tdd-red`, `tdd-green`, and `tdd-refactor` each open with `READY`. Reviewers do not report. A teammate still silent past its first idle notification (it may lack `SendMessage`) — stop the team and tell the user.
 
-**Teammates take their own work.** After `READY`, each teammate reads its files and takes its unblocked Tasks from `TaskList` in number order. You never send first work. A blocked Task becomes theirs when the teammate whose work unblocked it sends them `READ` of the Task's file.
+**Teammates take their own work.** After `READY`, each teammate reads its files and takes its unblocked Tasks from `TaskList` in number order. A blocked Task is woken by the teammate whose work unblocked it, with a `READ` to its owner.
 
 ### Tidy First (only when there are tidy items)
 
