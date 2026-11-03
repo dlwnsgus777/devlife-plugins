@@ -101,6 +101,30 @@ Set where the session's files live, and exclude that folder from git so it stays
 
 Use `info/exclude`, never `.gitignore`.
 
+**Files under `{TDD_DIR}`** — every file the session creates:
+
+| File | Written by | Read by | Holds |
+|---|---|---|---|
+| `roles.env` | lead (Setup 3) | everyone | Compile and test commands |
+| `context.md` | lead (Setup 6); `tdd-green` adds stub signatures | everyone | Shared session facts, "Signatures RED may call" |
+| `roles/{name}.md` | lead (Setup 6) | that teammate only | What only that role needs |
+| `session.md` | lead only | lead, reviewers, next run's Setup 1 | Task list, base commit, progress |
+| `tidy/{NN}/tidy.md` | lead (header, `lead-check`); `tdd-refactor` (`tidy-result`, `blocked`) | lead, `tdd-refactor` | One Tidy First item |
+| `tidy/tidy-finished.md` | `tdd-refactor` | lead | Every Tidy item is done |
+| `tasks/{NN}/task.md` | lead (header); each teammate its own sections | lead, teammates | One task and all its results |
+| `tasks/{NN}/red-check.log` | `tdd-green` | reviewers | Proof the task's tests failed first |
+| `blocked.md` | `tdd-refactor` | lead | A block outside any task |
+| `cycle-finished.md` | `tdd-refactor` (lead, if a skip ends the cycle) | lead | Every Refactor is done |
+| `final-test.log` | lead | reviewers | Final run of every session method |
+| `deferred.md` | lead | `review-design` | Out-of-scope notes from `refactor-result` |
+| `branch-diff.md` | lead | reviewers | The session's whole diff |
+| `final-review-{lens}.md` | each reviewer | lead, other reviewers | One lens's findings |
+| `rebuttal-{you}-to-{them}.md` | each reviewer | lead | Rebuttal of another lens |
+| `final-review.md` | lead | user | Merged review |
+| `fixes.md` | lead (items); each owner its section | assigned owners | Approved fixes |
+| `fix-red-check.log` | `tdd-green` | lead | Red check of fix tests |
+| `archive-{YYYYMMDD-HHMMSS}/` | lead (Setup 1) | — | A previous session, never deleted |
+
 ### 3. Detect Environment and Write `roles.env`
 
 Decide the test commands the teammates will run and write them to `roles.env`.
