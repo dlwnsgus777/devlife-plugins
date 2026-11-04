@@ -253,7 +253,7 @@
       <li><span class="toc-part">Part 4 · REFACTOR 팀원 정의</span><a href="#part4">REFACTOR 팀원 정의</a><ol><li><a href="#p4-1">첫 보고</a></li><li><a href="#p4-2">손댈 수 있는 것과 없는 것</a></li><li><a href="#p4-3">리팩터링 방법</a></li><li><a href="#p4-4">메시지</a></li><li><a href="#p4-5">작업 목록</a></li><li><a href="#p4-6">테스트 실행</a></li><li><a href="#p4-7">Tidy First (당신의 Tidy {NN} Task)</a></li><li><a href="#p4-8">Refactor (당신의 Refactor {NN} Task — 태스크마다 하나, GREEN 직후)</a></li><li><a href="#p4-9">수정 반영 (리드가 READ _workspace/tdd-agent-team/fixes.md를 보낼 때)</a></li><li><a href="#p4-10">하지 않을 것</a></li></ol></li>
       <li><span class="toc-part">Part 5 · 최종 리뷰어 정의</span><a href="#part5">최종 리뷰 — 세 가지 관점</a><ol><li><a href="#p5-1">리뷰할 것</a></li><li><a href="#p5-2">관점</a><ol><li><a href="#p5-3">review-domain — 코드가 도메인이 요구하는 것을 하는가?</a></li><li><a href="#p5-4">review-test — 이 테스트들이 회귀를 잡아낼까?</a></li><li><a href="#p5-5">review-design — 프로덕션 코드를 그대로 둘 만한가?</a></li></ol></li><li><a href="#p5-6">심각도</a></li><li><a href="#p5-7">프로토콜</a></li></ol></li>
       <li><span class="toc-part">Part 6 · 구현 가이드</span><a href="#part6">구현 가이드</a><ol><li><a href="#p6-1">1. 범위: 테스트가 요구하는 것만 정확히</a></li><li><a href="#p6-2">2. 통과할 만큼만 — 그리고 멈춘다</a></li><li><a href="#p6-3">3. 도메인 언어</a></li></ol></li>
-      <li><span class="toc-part">Part 7 · 리팩터링 가이드</span><a href="#part7">리팩터링 가이드</a><ol><li><a href="#p7-1">1. Tidy First: 확정된 항목만</a></li><li><a href="#p7-2">2. Refactor: 이름 붙은 냄새에 이름 붙은 기법을</a><ol><li><a href="#p7-3">클래스마다 책임 하나 — 이것부터 확인</a></li><li><a href="#p7-4">냄새 → 기법</a></li></ol></li><li><a href="#p7-5">3. 설계 원칙 (SOLID, 가볍게 적용)</a></li><li><a href="#p7-6">4. 그 자체로 읽히게</a></li><li><a href="#p7-7">5. 테스트: 구조를 따라가고, 그다음 정리한다</a></li><li><a href="#p7-8">6. 범위 밖: 기록하고, 고치지 않는다</a></li></ol></li>
+      <li><span class="toc-part">Part 7 · 리팩터링 가이드</span><a href="#part7">리팩터링 가이드</a><ol><li><a href="#p7-1">1. Tidy First: 확정된 항목만</a></li><li><a href="#p7-2">2. Refactor: 이름 붙은 냄새에 이름 붙은 기법을</a><ol><li><a href="#p7-3">클래스마다 책임 하나 — 이것부터 확인</a></li><li><a href="#p7-4">냄새 → 기법</a></li></ol></li><li><a href="#p7-5">3. 설계 원칙 (SOLID, 가볍게 적용)</a></li><li><a href="#p7-6">4. 그 자체로 읽히게</a></li><li><a href="#p7-7">5. 테스트: 구조를 따라가고, 그다음 정리한다</a></li><li><a href="#p7-8">6. 범위와 deferred</a></li></ol></li>
       <li><span class="toc-part">Part 8 · Tidy First 스캔</span><a href="#part8">Tidy First 스캔</a><ol><li><a href="#p8-1">1. 들어갈 자리</a></li><li><a href="#p8-2">2. 추상화 (엄격하게)</a></li><li><a href="#p8-3">3. 후보 기록</a></li></ol></li>
     </ol>
   </nav>
@@ -1476,7 +1476,7 @@ production_changes: {one line per change — smell → technique → where, or n
 test_changes: {one line per change — what → where, or none}
 files_modified: {comma-separated — all inside the scope}
 safety_net: {N} passed
-deferred: {outside the scope — where — smell — technique you would apply, or none}
+deferred: {left alone — where — smell — technique you would apply — why, or none}
 </code></pre>
 모든 줄을 쓰고, 해당 없으면 <code>none</code>을 씁니다. 범위 안에 리팩터링할 것이 없었으면 <code>status</code>는 <code>SKIPPED</code>입니다.</li>
 <li>역할 파일에 <code>Commit per task: yes</code>가 있으면 이 태스크를 커밋합니다: <code>red-result</code>의 <code>test_file</code>과 <code>green-result</code>·<code>refactor-result</code>의 모든 <code>files_modified</code> 경로를 글자 그대로 <code>git add</code>하고, <code>git commit -m &quot;feat: {태스크의 도메인 규칙 문장}&quot;</code>. 커밋이 실패하면 오류를 <code>_workspace/tdd-agent-team/blocked.md</code>에 써서 <code>team-lead</code>에게 보내고 계속 진행합니다.</li>
@@ -1628,8 +1628,7 @@ deferred: {outside the scope — where — smell — technique you would apply, 
     <p class="part-src">skills/tdd-agent-team/references/refactoring.md</p>
     <p class="part-title">리팩터링 가이드</p>
   </header>
-<p>이 스킬에서 <code>tdd-refactor</code>가 프로덕션 코드와 테스트 코드의 구조를, 하는 일은 바꾸지 않고 바꾸는 방법. 규칙은 언어와 무관하며, Java(Spring)를 예시로 듭니다. 다른 스택에서는 같은 규칙을 그 스택의 관용구로 적용합니다.</p>
-<p><code>tdd-refactor</code>는 두 시점에 일하고, 이 가이드는 둘 다 다룹니다:</p>
+<p>프로덕션 코드와 테스트 코드의 구조를, 하는 일은 바꾸지 않고 바꾸는 규칙입니다. Red-Green-Refactor의 <strong>Refactor 단계</strong>와 사이클 전의 <strong>Tidy First</strong>에 적용합니다. 규칙은 언어와 무관하며, Java(Spring)를 예시로 듭니다. 다른 스택에서는 같은 규칙을 그 스택의 관용구로 적용합니다.</p>
 <div class="table-scroll"><table>
 <thead>
 <tr>
@@ -1641,35 +1640,35 @@ deferred: {outside the scope — where — smell — technique you would apply, 
 <tbody>
 <tr>
 <td><strong>Tidy First</strong> — 사이클 전</td>
-<td>요구사항이 한 곳에 들어갈 수 있게 구조를 바꿈</td>
-<td>확정된 정비 항목 정확히 그것만</td>
+<td>요청된 변경을 넣기 쉽게 구조를 바꿈</td>
+<td>확정된 Tidy 항목 정확히 그것만</td>
 </tr>
 <tr>
 <td><strong>Refactor</strong> — 각 태스크 사이클의 끝</td>
-<td>GREEN의 최소 코드와 RED의 테스트를 읽기 좋고 잘 설계된 코드로 만듦</td>
+<td>그 태스크의 최소 코드와 테스트를 읽기 좋고 잘 설계된 코드로 만듦</td>
 <td>그 태스크의 범위: <code>scope_production</code> 파일과 <code>test_class</code></td>
 </tr>
 </tbody>
 </table></div>
-<p>두 경우 모두 <strong>동작은 절대 바뀌지 않고 아무것도 더해지지 않습니다.</strong> 안전망 테스트는 시작 전에 통과하고, 끝난 뒤에도 통과해야 합니다.</p>
-<p>구현 가이드의 규칙(<code>references/implementation.md</code>) — 범위와 도메인 언어 — 은 당신이 남기는 코드에도 그대로 적용됩니다. 당신은 테스트 파일을 절대 고치지 않습니다. 옮겨진 클래스나 바뀐 메서드 이름을 테스트가 따라가야 하면, 그 수정을 RED에게 넘길 목록으로 적습니다(5절).</p>
+<p>두 경우 모두 <strong>동작은 절대 바뀌지 않고 기능을 더하지 않습니다.</strong> 시작 전에 통과하던 테스트는 끝난 뒤에도 모두 통과해야 합니다.</p>
 <h3 id="p7-1">1. Tidy First: 확정된 항목만</h3>
+<p>기존 동작은 바꾸지 않고, 요구사항을 넣기 쉬운 구조로 기존 코드를 정리합니다.</p>
 <ul>
-<li>정비 항목 — 요구사항 문서에서 왔거나, 사용자가 승인한 리드의 후보 — 은 무엇이 변경을 막는지, 구조 변경, 그 뒤 변경이 들어갈 자리를 말합니다. <strong>그 기법을 그 코드에</strong> 적용합니다. 정비 항목은 주변을 정리해도 된다는 허가가 아닙니다.</li>
+<li>Tidy 항목에 적힌 코드만, 그 항목에 적힌 구조 변경으로만 바꿉니다. Tidy 항목은 주변을 정리해도 된다는 허가가 아닙니다.</li>
 <li>동작을 바꾸지 않고는 항목을 할 수 없다면 멈추고 막혔다고 보고합니다 — 그 항목이 구조적이라는 판단이 틀린 것입니다.</li>
-<li>확정된 추상화 항목은 여기서 <strong>이미 존재하는 사례들로부터</strong> 추출합니다. 그 추상화가 받을 새 사례는 동작이며, 사이클에서 태스크로 들어옵니다.</li>
+<li>요구사항의 새 동작은 넣지 않습니다. 그것은 사이클에서 테스트부터 시작하는 태스크로 들어옵니다. 추상화 항목은 <code>references/tidy-first-scan.md</code> 2절의 예시를 참고합니다.</li>
 </ul>
 <h3 id="p7-2">2. Refactor: 이름 붙은 냄새에 이름 붙은 기법을</h3>
 <h4 id="p7-3">클래스마다 책임 하나 — 이것부터 확인</h4>
-<p>냄새 표를 보기 전에, 태스크 범위 안의 모든 프로덕션 클래스를 훑습니다:</p>
+<p>냄새 표는 메서드를 하나씩 보므로, 태스크마다 책임이 하나씩 늘어나는 클래스는 놓칩니다. 냄새 표를 쓰기 전에 태스크 범위 안의 모든 프로덕션 클래스를 훑습니다:</p>
 <ol>
 <li><strong>그 책임을 한 문장으로 말합니다.</strong> 문장에 &quot;그리고&quot;가 필요하면 — 검증하고 <em>그리고</em> 계산하고 <em>그리고</em> 알린다 — 그 클래스에는 책임이 둘 이상입니다.</li>
 <li><strong>메서드를 그것이 쓰는 필드와 의존성으로 묶습니다.</strong> 공유하는 것이 없는 묶음이 둘 이상이면, 파일 하나를 나눠 쓰는 클래스 둘입니다.</li>
 <li><strong>바뀔 이유를 셉니다.</strong> 정책 변경과 저장 방식 변경이 같은 클래스에 떨어지면 이유가 둘입니다.</li>
 </ol>
-<p>이 중 하나라도 책임이 둘 이상임을 보여주면 그 클래스는 후보입니다: Extract Class로 이유마다 클래스 하나씩, 또는 남겨 두는 이유를 기록(<code>deferred</code>). 짧고 이름이 좋은 메서드가 클래스를 깨끗하게 만들지는 않습니다 — 이 확인이 있는 이유는 태스크마다의 최소 코드가 같은 서비스에 쌓이고, 메서드 수준의 어떤 냄새도 책임이 쌓이는 것을 보지 못하기 때문입니다.</p>
+<p>이 중 하나라도 책임이 둘 이상임을 보여주면 그 클래스는 후보입니다: Extract Class로 이유마다 클래스 하나씩, 또는 남겨 두는 이유를 <code>deferred</code>에 기록합니다.</p>
 <h4 id="p7-4">냄새 → 기법</h4>
-<p>각 태스크 사이클의 끝에, 태스크 범위 안의 모든 프로덕션 파일을 이 냄새들에 비춰 보고 적힌 기법을 적용합니다. 태스크 사이도 봅니다: 범위에는 앞 태스크들이 쓴 코드가 있을 수 있고, GREEN은 태스크마다 최소 코드를 따로따로 썼으므로, 중복과 잘못 놓인 책임은 태스크 <strong>사이에</strong> 숨어 있습니다. 이미 깨끗한 파일은 이유를 밝히고 건너뜁니다 — 이유 없는 &quot;리팩터링 필요 없음&quot;은 받아들여지지 않습니다.</p>
+<p>태스크 범위 안의 모든 프로덕션 파일을 이 냄새들에 비춰 보고 적힌 기법을 적용합니다. 태스크 사이도 봅니다: 범위에는 앞 태스크들이 각자 최소로 쓴 코드가 있을 수 있고, 중복과 잘못 놓인 책임이 그 사이에 숨어 있습니다. 이미 깨끗한 파일은 건너뛰고, 그 이유를 <code>refactor-result</code>에 적습니다.</p>
 <div class="table-scroll"><table>
 <thead>
 <tr>
@@ -1679,56 +1678,44 @@ deferred: {outside the scope — where — smell — technique you would apply, 
 </thead>
 <tbody>
 <tr>
-<td>한 클래스가 둘 이상의 이유로 바뀜(Large Class / Divergent Change)</td>
-<td>Extract Class — 이유마다 클래스 하나</td>
-</tr>
-<tr>
 <td>중복 로직</td>
 <td>Extract Method / 중복 제거(DRY)</td>
 </tr>
 <tr>
-<td>이제 일반형이 다룰 수 있는 하드코딩 값이나 특수 사례</td>
-<td>테스트가 이미 요구하는 일반형으로 바꿈</td>
+<td>테스트가 이제 여러 입력으로 확인하는 하드코딩 값이나 특수 사례</td>
+<td>그 테스트들이 요구하는 일반형으로 바꿈</td>
 </tr>
 <tr>
 <td>불분명하거나 오해를 부르는 이름</td>
 <td>Rename Variable / Rename Method</td>
 </tr>
 <tr>
-<td>이유 없이 ~10줄을 넘거나, 둘 이상의 일을 하는 메서드</td>
+<td>둘 이상의 일을 하는 메서드</td>
 <td>Extract Method</td>
 </tr>
 <tr>
-<td>자기 데이터보다 다른 클래스의 데이터를 더 씀(Feature Envy)</td>
-<td>Move Method</td>
-</tr>
-<tr>
-<td>다른 클래스에 속한 책임을 처리함</td>
+<td>다른 클래스의 데이터를 쓰거나 그 클래스의 일을 함(Feature Envy)</td>
 <td>Move Method / Extract Class</td>
 </tr>
 <tr>
 <td>한 번에 한 수준씩 내려가지 않고 고수준과 저수준 단계를 섞음</td>
 <td>Compose Method</td>
 </tr>
-<tr>
-<td>딱 한 번 쓰이는 코드를 감싼 계층이나 헬퍼</td>
-<td>Inline</td>
-</tr>
 </tbody>
 </table></div>
-<p>기회를 모두 먼저 찾은 뒤, 한 묶음으로 적용하고 안전망을 실행합니다. 무엇이든 실패하면 묶음을 되돌리고 변경을 하나씩 적용하며 매번 테스트해, 무엇이 깨뜨렸는지 찾습니다. 더 단순한 구조가 있으면, &quot;영리한&quot; 구조가 기술적으로 더 멋지더라도 단순한 쪽을 씁니다.</p>
+<p>더 단순한 구조가 있으면, &quot;영리한&quot; 구조가 기술적으로 더 멋지더라도 단순한 쪽을 씁니다.</p>
 <h3 id="p7-5">3. 설계 원칙 (SOLID, 가볍게 적용)</h3>
 <ul>
-<li><strong>SRP</strong> — 클래스 하나, 책임 하나.</li>
+<li><strong>SRP</strong> — 클래스 하나, 책임 하나(판단은 2절의 확인으로).</li>
 <li><strong>OCP</strong> — <em>두 번째 사례가 있을 때</em> 인터페이스로 확장합니다. 확장 지점을 미리 만들지 않습니다.</li>
 <li><strong>LSP</strong> — 하위 타입은 부모가 쓰이는 어디서든 쓸 수 있어야 합니다.</li>
 <li><strong>ISP</strong> — 넓은 인터페이스 하나보다 작고 구체적인 인터페이스 여럿.</li>
 <li><strong>DIP</strong> — 계층 경계에서는 추상화에 의존합니다.</li>
 </ul>
-<p>이 원칙들은 코드가 이미 그것을 필요로 할 때만 구조를 정당화합니다. 비기면 단순함(KISS)과 미리 만들지 않기(YAGNI)가 이깁니다.</p>
-<p>이미 존재하는 책임을 나누는 것은 미리 만드는 것이 아닙니다. YAGNI는 아직 아무도 필요로 하지 않는 확장 지점 — 구현이 하나뿐인 인터페이스, 존재하지 않는 사례를 위한 훅 — 에 적용되지, 클래스가 이미 하는 일을 나누는 데는 절대 적용되지 않습니다. 책임이 둘인 클래스는 비긴 경우가 아닙니다.</p>
+<p>원칙은 코드가 이미 그것을 필요로 할 때만 적용합니다. 원칙이 구조를 더 요구하는데 코드가 그것 없이도 잘 돌아가면, 단순하게 둡니다(KISS, YAGNI).</p>
+<p>YAGNI는 아직 아무도 필요로 하지 않는 것에 적용합니다 — 구현이 하나뿐인 인터페이스, 존재하지 않는 경우를 위한 훅, 한 번만 쓰이는 계층이나 헬퍼. 클래스가 이미 하는 일을 나누는 데는 적용하지 않습니다. 책임이 둘인 클래스는 나눕니다.</p>
 <h4 id="p7-5a">올바른 계층</h4>
-<p>의존성은 안쪽으로만 향합니다:</p>
+<p>의존성은 안쪽으로만 향합니다. 그래야 도메인 규칙을 DB나 외부 시스템 없이 바꾸고 테스트할 수 있습니다:</p>
 <div class="table-scroll"><table>
 <thead>
 <tr>
@@ -1760,7 +1747,7 @@ deferred: {outside the scope — where — smell — technique you would apply, 
 </tr>
 </tbody>
 </table></div>
-<p>안티패턴 — 발견하면 옮깁니다:</p>
+<p>안티패턴 — 발견하면 옮깁니다. 옮길 자리가 태스크 범위 밖의 기존 파일이면, 대신 <code>deferred</code>에 적습니다:</p>
 <div class="table-scroll"><table>
 <thead>
 <tr>
@@ -1785,18 +1772,14 @@ deferred: {outside the scope — where — smell — technique you would apply, 
 <td>도메인이 인프라를 import</td>
 <td>도메인이 인터페이스를 정의하고, 인프라가 구현</td>
 </tr>
-<tr>
-<td>구현이 하나뿐인 추상 클래스나 인터페이스</td>
-<td>두 번째 사례가 실제로 생길 때까지 구체 클래스를 씀</td>
-</tr>
 </tbody>
 </table></div>
 <h4 id="p7-5b">이미 있는 것을 재사용</h4>
 <p>리포지토리를 직접 연결하지 말고 기존 서비스를 호출합니다 — 예: 이미 &quot;id로 찾고, 없으면 예외&quot;를 하는 조회 서비스. 같은 로직을 하나 더 만들면 나중에 두 벌이 서로 달라집니다.</p>
 <h3 id="p7-6">4. 그 자체로 읽히게</h3>
 <ul>
-<li>주석보다 명확하고 스스로 설명하는 이름. 주석은 <em>왜</em>를 설명하지, <em>무엇</em>을 설명하지 않습니다.</li>
-<li>클래스 안에서 public 메서드가 먼저, private 메서드가 뒤에 옵니다.</li>
+<li>주석 대신 명확하고 스스로 설명하는 이름을 씁니다. 주석에는 <em>왜</em>만 적습니다.</li>
+<li>클래스 안에서 public 메서드가 먼저, private 메서드가 뒤에 옵니다. 읽는 사람이 클래스가 무엇을 제공하는지 먼저 보고, 어떻게 동작하는지는 그다음에 봅니다.</li>
 </ul>
 <pre><code class="language-java">public class OrderService {
     public OrderResponse cancel(Long orderId) {      // public first
@@ -1814,10 +1797,19 @@ deferred: {outside the scope — where — smell — technique you would apply, 
 <li><strong>구조 변경을 따라가기.</strong> 클래스를 옮기거나 메서드 이름을 바꾸면 테스트가 더는 컴파일되지 않거나 코드에 닿지 않을 수 있습니다. 직접 고칩니다 — import, 참조, 호출 이름.</li>
 <li><strong>태스크의 테스트 정리하기.</strong> 중복된 준비 코드 → 헬퍼나 픽스처, 불분명한 이름, 단언 스타일 — 테스트 작성 규칙(경로는 역할 파일에 있음)에 따라.</li>
 </ul>
-<p>두 경우 모두 <strong>테스트가 확인하는 내용은 절대 바뀌지 않습니다</strong>: 단언도, 입력도, 어떤 동작을 실행하는지도 — 그리고 테스트를 더하거나 지우지도 않습니다. 변경에 그런 것이 필요하다면 그것은 동작 변경입니다 — 되돌리세요. 리드가 확인할 수 있도록 모든 테스트 변경을 결과의 <code>test_changes</code>에 기록합니다.</p>
-<h3 id="p7-8">6. 범위 밖: 기록하고, 고치지 않는다</h3>
-<p>범위 안의 코드를 새 클래스로 옮기는 것 — Extract Class, Move Method, 새 DTO — 은 범위 안의 일입니다. 새 파일은 그 태스크에 속하며, <code>files_modified</code>에 적습니다.</p>
-<p>태스크 범위 밖에서 눈에 띈 냄새 — 다른 태스크의 파일, 세션이 한 번도 건드리지 않은 코드 — 는 당신이 바꿀 것이 아닙니다: 다른 팀원이 바로 지금 그것을 고치고 있을 수 있습니다. 결과의 <code>deferred</code>에 적습니다(어디, 어떤 냄새, 어떤 기법을 적용할지). 최종 리뷰가 그것을 따져 보고, 사용자가 결정합니다.</p>
+<p>두 경우 모두 <strong>테스트가 확인하는 내용은 절대 바뀌지 않습니다</strong>: 단언도, 입력도, 어떤 동작을 실행하는지도 — 그리고 테스트를 더하거나 지우지도 않습니다. 변경에 그런 것이 필요하다면 그것은 동작 변경입니다 — 되돌리세요. 모든 테스트 변경을 결과의 <code>test_changes</code>에 기록합니다.</p>
+<h3 id="p7-8">6. 범위와 <code>deferred</code></h3>
+<ul>
+<li><strong>새 파일은 범위 안입니다.</strong> 범위 안의 코드를 새 클래스로 옮기는 것 — Extract Class, Move Method, 새 DTO — 은 그 태스크의 일입니다. 새 파일은 <code>files_modified</code>에 적습니다.</li>
+<li><strong>그 밖에 범위 밖의 것은 바꾸지 않습니다</strong> — 다른 태스크의 파일, 세션이 한 번도 건드리지 않은 코드. 다른 팀원이 바로 지금 그것을 고치고 있을 수 있습니다.</li>
+<li><strong>손대지 않고 남긴 것은 <code>deferred</code>에 적습니다</strong> — 어디, 어떤 냄새, 어떤 기법을 적용할지, 왜 남겼는지:
+<ul>
+<li>범위 밖에서 본 냄새</li>
+<li>책임이 둘인데 남긴 클래스</li>
+<li>옮길 자리가 범위 밖인 경우</li>
+</ul>
+</li>
+</ul>
 </article>
 
 <article class="part part-ref" id="part8">
@@ -1836,6 +1828,7 @@ deferred: {outside the scope — where — smell — technique you would apply, 
 <tr>
 <th>막는 것</th>
 <th>모습</th>
+<th>예</th>
 <th>흔한 구조 변경</th>
 </tr>
 </thead>
@@ -1843,21 +1836,25 @@ deferred: {outside the scope — where — smell — technique you would apply, 
 <tr>
 <td>흩어진 수정</td>
 <td>같은 새 규칙을 여러 클래스나 메서드에 더해야 함</td>
+<td>주문 금액 상한을 <code>create()</code>와 <code>update()</code> 둘 다에 넣어야 함</td>
 <td>Extract Method / Move Method로 규칙이 머물 곳을 하나로</td>
 </tr>
 <tr>
 <td>이음매 없음</td>
 <td>책임이 얽혀 있어, 새 동작을 따로 더할 메서드나 클래스가 없음</td>
+<td>할인 계산이 <code>checkout()</code> 안에 결제·재고 처리와 섞여 있어 새 할인 규칙을 끼울 곳이 없음</td>
 <td>Extract Method / Extract Class로 이음매를 만듦</td>
 </tr>
 <tr>
 <td>반복되는 분기</td>
 <td>같은 조건문이 여러 곳에 있고, 변경이 각각에 분기를 더함</td>
+<td><code>if (grade == VIP)</code>가 가격·배송·포인트 세 곳에 있고, 새 <code>GOLD</code> 등급을 각각에 더해야 함</td>
 <td>조건문을 한 곳으로 합침</td>
 </tr>
 <tr>
 <td>과적된 시그니처</td>
 <td>변경이 값 하나를 더 많은 파라미터를 거쳐 전달해야 함</td>
+<td>배송 희망 시간을 추가하려면 메서드 네 개에 파라미터를 하나씩 더해야 함</td>
 <td>Introduce Parameter Object</td>
 </tr>
 </tbody>
@@ -1871,6 +1868,19 @@ deferred: {outside the scope — where — smell — technique you would apply, 
 <li>도메인이 그 축이 <strong>계속 늘어난다</strong>고 말합니다 — 문서가 그렇게 말하거나, 사용자가 Setup 5에서 확인합니다.</li>
 </ol>
 <p>사례가 하나뿐이거나, 도메인상 이유가 없는 구조적 냄새는 제안 대상이 아닙니다 — 구현이 하나뿐인 인터페이스는 안티패턴입니다. 추상화는 기존 사례들로부터 추출하고, 새 사례는 태스크입니다.</p>
+<p>예: 요구사항이 카카오페이를 추가하고, 결제 수단은 계속 늘어납니다. 변경 전:</p>
+<pre><code class="language-java">int fee(PaymentType type, int amount) {
+    if (type == CARD) return amount * 3 / 100;
+    if (type == BANK) return 500;
+    throw new IllegalArgumentException();
+}
+</code></pre>
+<p>Tidy 항목은 기존 경우들로만 인터페이스를 추출합니다:</p>
+<pre><code class="language-java">interface PaymentMethod { int fee(int amount); }
+class CardPayment implements PaymentMethod { public int fee(int amount) { return amount * 3 / 100; } }
+class BankPayment implements PaymentMethod { public int fee(int amount) { return 500; } }
+// KakaoPayment는 여기서 만들지 않습니다 — 태스크의 일입니다.
+</code></pre>
 <h3 id="p8-3">3. 후보 기록</h3>
 <p>후보마다 기록합니다:</p>
 <ul>
