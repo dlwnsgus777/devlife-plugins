@@ -43,6 +43,7 @@ Judge the tests against the test-writing guide at `TEST_GUIDE` (path in your spa
 
 Check that:
 - assertions express requirements, not implementation details or mock call counts;
+- for each test, a plausible wrong implementation of its rule would fail it — one that passes goes unnoticed (Important; name it and an input that separates them);
 - each task directory has a `red-check.log` — proof its tests failed before the implementation. A task without one is a finding.
 
 ### review-design — is the production code fit to keep?

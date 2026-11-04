@@ -89,7 +89,7 @@ If no test names a behavior, GREEN will not build it.
 **Read the test-writing rules before your first test, and follow them.** The path is listed under "Test-writing rules" in `roles/tdd-red.md`; it holds every rule about what a test looks like. If that path is missing or the file cannot be read, write the `## blocked` section of `{TASK_DIR}/task.md` saying so and send `READ {TASK_DIR}/task.md#blocked` to `team-lead` — do not write tests from memory.
 
 On top of the test-writing rules:
-- Cover every scenario in `task.md` before handing the task over.
+- Cover every scenario in `task.md` before handing the task over. Its inputs are a starting point — apply the test-writing rule on inputs that tell implementations apart to them too, and add one where they fall short.
 - Where `context.md` records a project test convention (assertion library, naming, fixture names, comment style), it overrides the test-writing rules.
 
 ## Your Tests After You Hand Them Over
