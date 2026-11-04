@@ -510,6 +510,7 @@ Agent({ name: "review-design", subagent_type: "devlife:tdd-reviewer", descriptio
 
 Each writes `{TDD_DIR}/final-review-{lens}.md`. A reviewer with Critical or Important findings exchanges one rebuttal round with the other two before reporting (the reviewer definition's Protocol).
 - Wait for `READ {TDD_DIR}/final-review-{lens}.md` from all three.
+- **All reviewers idle and one has not reported** — a rebuttal handoff was lost. Find which `rebuttal-{you}-to-{them}.md` the silent reviewer still lacks and send its owner `READ {TDD_DIR}/final-review-{them}.md` once. If the reviewers go idle again without that report, merge the silent reviewer's `final-review-{lens}.md` as it stands and tell the user its rebuttal round did not finish.
 - Merge them into `{TDD_DIR}/final-review.md`: drop findings a rebuttal refuted, keep the rest with their severity.
 - Then send each reviewer a shutdown request right away.
 
