@@ -232,6 +232,12 @@ TDD 태스크 목록
 
 On switch, stop here and invoke `tdd-subagent` with the requirements and the confirmed task list.
 
+**Per-task commits.** Ask this together with the confirmation:
+
+> "태스크마다 사이클이 끝나면 커밋할까요? (테스트·구현·리팩터링을 태스크당 커밋 하나로, `git add`·`git commit` 허용 목록 추가 포함) / 커밋하지 않고 진행할까요?"
+
+On yes, add `Bash(git add:*)` and `Bash(git commit:*)` to `permissions.allow` in `.claude/settings.local.json`, and write `Commit per task: yes` in `roles/tdd-refactor.md` (Setup 6). On no, write `Commit per task: no`.
+
 After this answer, do not ask again until Final Stage 2 — except the Tidy First commit question, when there are tidy items, and the escalations named under Lead Duties.
 
 ### 6. Context, Session, and Task Files
@@ -262,7 +268,7 @@ Write the files the teammates read when they start; they learn the session's fac
 
 ## Workspace Rules
 Others may have edited this workspace since this file was written. Never revert a change you didn't make.
-Do not commit. The lead and the user own the commit history.
+Do not commit unless your role file says so. The lead and the user own the commit history.
 Invariant IDs are session bookkeeping — never write them into production or test code.
 SendMessage bodies are one line: READ <path> or READ <path>#<section>. Content goes in files.
 Your role file is roles/{your name}.md. Never open another teammate's role file.
@@ -300,6 +306,7 @@ When filling it in:
 - Out of scope: {what this task deliberately does not change}
 - Known pitfalls — do NOT copy: {defect} → {what to do instead}
 - Regression set: {test ids}
+- Commit per task: {yes | no}
 ```
 
 Write `{SKILL_DIR}` resolved to an absolute path, and `Read` each guide path once before writing it — a teammate that cannot read its guide stops and reports `blocked`.
@@ -535,6 +542,8 @@ Keep `tdd-red`, `tdd-green`, and `tdd-refactor` running until the answer is in �
 - If the user approved nothing → shut down `tdd-red`, `tdd-green`, and `tdd-refactor` immediately.
 
 ### 3. Summarize
+
+If per-task commits are on and `fixes.md` has any `files_modified` line, commit those fixes once: `git add` each listed path, written out literally, then `git commit -m "fix: apply final verification and review fixes"`.
 
 Send a shutdown request to any teammate not yet shut down, then print the summary **without waiting for shutdown acknowledgements** — a teammate finishes its current turn before it exits:
 

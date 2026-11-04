@@ -113,7 +113,7 @@ Apply only the items assigned to `tdd-green`.
 - **From the lead:** failing methods to make pass, out-of-scope files to revert, or final-review findings. If an out-of-scope file is genuinely needed, do not revert it — write `_workspace/tdd-agent-team/blocked.md` saying why and send `READ _workspace/tdd-agent-team/blocked.md` to `team-lead`.
 - **From `tdd-red`:** the `## tdd-red` section names `new_tests`. Red-check them first (Red Check, log to `_workspace/tdd-agent-team/fix-red-check.log`) and implement only if they fail; otherwise say so in your section.
 
-Run the affected methods — they must pass. Append a `## tdd-green` section with what changed, and send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead`.
+Run the affected methods — they must pass. Append a `## tdd-green` section with what changed and a `files_modified: {comma-separated relative paths}` line, and send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead`.
 
 ## Never
 

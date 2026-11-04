@@ -123,7 +123,7 @@ Apply only the items assigned to `tdd-red`. Delete a test only when `fixes.md` n
 - **Test changes:** apply them and run the affected methods — they must pass.
 - **Behavior fixes** (an item asks for a failing test): write it as in the Workflow — compile, run, confirm it fails by reaching the behavior — and add a `new_tests: {method ids}` line to your section.
 
-Append a `## tdd-red` section to `fixes.md` with what changed. Then send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead` — or, if any item was a behavior fix, to `tdd-green` instead; GREEN reports for both of you.
+Append a `## tdd-red` section to `fixes.md` with what changed and a `files_modified: {comma-separated relative paths}` line. Then send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead` — or, if any item was a behavior fix, to `tdd-green` instead; GREEN reports for both of you.
 
 ## Never
 

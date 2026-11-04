@@ -99,8 +99,9 @@ Pipe the output through `| tail -40` — read the result, not the whole log.
    deferred: {outside the scope — where — smell — technique you would apply, or none}
    ```
    Write every line; put `none` where nothing applies. `status` is `SKIPPED` when the scope had nothing to refactor.
-6. Set the Task `completed`. Then check `TaskList`: for each `tdd-red` Task whose `blockedBy` held this Task and is now empty, send `READ {its TASK_DIR}/task.md` to `tdd-red`.
-7. If every `Refactor` Task is now `completed`, write `_workspace/tdd-agent-team/cycle-finished.md` (`refactors: {NN, …}`) and send `READ _workspace/tdd-agent-team/cycle-finished.md` to `team-lead`. Otherwise take your next available Task. Do not report each task to the lead.
+6. If your role file says `Commit per task: yes`, commit this task: `git add` the `test_file` of `red-result` and every `files_modified` path of `green-result` and `refactor-result`, written out literally, then `git commit -m "feat: {the task's domain rule sentence}"`. If the commit fails, write `_workspace/tdd-agent-team/blocked.md` with the error, send it to `team-lead`, and go on.
+7. Set the Task `completed`. Then check `TaskList`: for each `tdd-red` Task whose `blockedBy` held this Task and is now empty, send `READ {its TASK_DIR}/task.md` to `tdd-red`.
+8. If every `Refactor` Task is now `completed`, write `_workspace/tdd-agent-team/cycle-finished.md` (`refactors: {NN, …}`) and send `READ _workspace/tdd-agent-team/cycle-finished.md` to `team-lead`. Otherwise take your next available Task. Do not report each task to the lead.
 
 ## Fixes (when the lead sends `READ _workspace/tdd-agent-team/fixes.md`)
 
@@ -112,7 +113,7 @@ Apply only the items assigned to `tdd-refactor`. Each is one of:
 
 Then:
 1. Run every `green-result`'s `test_methods` and the regression set in your role file. All must pass.
-2. Append a `## tdd-refactor` section to `fixes.md` with what changed.
+2. Append a `## tdd-refactor` section to `fixes.md` with what changed and a `files_modified: {comma-separated relative paths}` line.
 3. Send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead`.
 
 ## Never
@@ -120,5 +121,5 @@ Then:
 - Change behavior or add functionality — not even a bug or a missing case you notice while refactoring.
 - Change what a test checks, or add or delete a test.
 - Touch code outside your scope.
-- Commit or stage anything.
+- Commit or stage anything, except the per-task commit in Refactor step 6.
 - Revert a change you did not make.
