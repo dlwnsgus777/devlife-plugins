@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-11-04
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-agent-team` | `2.2.0` | 팀원·리뷰어 정의와 참조 가이드 정리(목적 명시, 다른 에이전트 동작 서술 제거, 메시지는 `SendMessage`). 태스크별 커밋 옵션(Setup 5에서 선택, `tdd-refactor`가 사이클마다 `feat:` 커밋, 수정은 `fix:`·`refactor:`로 분리). GREEN↔RED `compile-error` 메시지 추가. 계층·안티패턴·재사용 규칙을 리팩터링 가이드로 옮기고 Refactor에서 새 클래스 생성 허용. 세션 파일 4개(`tidy-finished`·`cycle-finished`·`deferred`·`final-review`) 제거. `fixes.md` 결과 섹션은 `## *-result`, 반박 파일은 관점 이름. 코드에 세션용 표기 금지. 리뷰어 미보고 시 리드 재전송 절차 |
+
+---
+
 ## 2026-11-03
 
 ### devlife-tdd
