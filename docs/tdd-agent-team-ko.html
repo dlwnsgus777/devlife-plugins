@@ -846,6 +846,7 @@ TaskUpdate({ taskId, owner: &quot;tdd-red&quot;, addBlockedBy: [ ... ] })
 <p>처리한 메시지마다 <code>session.md</code>를 갱신합니다. Task 상태는 늦게 반영될 수 있으니, 증거는 언제나 <code>task.md</code>의 결과 섹션입니다.</p>
 <p><strong>턴이 곧 비용입니다</strong> — 턴마다 이 대화 전체를 다시 읽습니다. 메시지마다 표에 적힌 행동 하나만 하고 턴을 끝내세요. 진행 요약, 파일 다시 읽기, 설명은 하지 않습니다(사이클 중에 사용자는 Final Review를 기다립니다).</p>
 <h3 id="p1-18">마무리 단계</h3>
+<p>이 단계는 <code>references/final-stages.md</code>에 있습니다. 리드는 마지막 <code>Refactor</code>가 끝나면 이 파일을 읽고 따릅니다.</p>
 <h4 id="p1-19">1. Final Verification</h4>
 <p>팀원이 역할 규칙을 지켰는지, 모든 태스크의 리팩터가 끝난 뒤 한 번 기계적으로 확인합니다. <code>BLOCKED</code>가 아닌 태스크마다 그 <code>task.md</code>만 읽습니다 — 확인 1–4에 필요한 것은 <code>green-result</code>와 <code>refactor-result</code> 섹션에 있습니다. <code>ls</code>나 <code>cat</code>으로 다른 파일을 컨텍스트에 넣지 않습니다.</p>
 <div class="table-scroll"><table>

@@ -134,6 +134,7 @@ tdd-red ── 실패 테스트 → task.md#red-result, owner를 tdd-green으로
 | [`test-writing`](./test-writing.md) 스킬 | RED, `tdd-refactor`(테스트 정리) | `review-test` |
 | `references/implementation.md` — 최소 구현, 계층, 안티패턴 | GREEN (`tdd-refactor`에게는 하한선) | `review-design` |
 | `references/refactoring.md` — Tidy First, 클래스당 책임 하나, 냄새 → 기법, 테스트 리팩터링 규칙, 범위 밖은 `deferred` | `tdd-refactor` | `review-design` |
+| `references/final-stages.md` — 최종 검수, 병렬 최종 리뷰, 요약 | 리드 (마지막 `Refactor` 뒤에 읽음) | — |
 
 ### 무엇이 강제되고 무엇이 아닌가
 
