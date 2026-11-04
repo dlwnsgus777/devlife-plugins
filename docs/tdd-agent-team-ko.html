@@ -417,12 +417,6 @@
 <td>Tidy First 항목 하나</td>
 </tr>
 <tr>
-<td><code>tidy/tidy-finished.md</code></td>
-<td><code>tdd-refactor</code></td>
-<td>리드</td>
-<td>모든 Tidy 항목 완료</td>
-</tr>
-<tr>
 <td><code>tasks/{NN}/task.md</code></td>
 <td>리드 (헤더), 팀원마다 자기 섹션</td>
 <td>리드, 팀원</td>
@@ -441,22 +435,10 @@
 <td>태스크 밖에서 막힌 상황</td>
 </tr>
 <tr>
-<td><code>cycle-finished.md</code></td>
-<td><code>tdd-refactor</code> (건너뛰기로 끝나면 리드)</td>
-<td>리드</td>
-<td>모든 Refactor 완료</td>
-</tr>
-<tr>
 <td><code>final-test.log</code></td>
 <td>리드</td>
 <td>리뷰어</td>
 <td>세션 전체 메서드 최종 실행 결과</td>
-</tr>
-<tr>
-<td><code>deferred.md</code></td>
-<td>리드</td>
-<td><code>review-design</code></td>
-<td><code>refactor-result</code>의 범위 밖 기록</td>
 </tr>
 <tr>
 <td><code>branch-diff.md</code></td>
@@ -471,20 +453,14 @@
 <td>관점 하나의 리뷰 결과</td>
 </tr>
 <tr>
-<td><code>rebuttal-{you}-to-{them}.md</code></td>
+<td><code>rebuttal-{you}-to-{them}.md</code>(관점 이름, 예: <code>rebuttal-design-to-domain.md</code>)</td>
 <td>리뷰어마다</td>
 <td>리드</td>
 <td>다른 관점에 대한 반박</td>
 </tr>
 <tr>
-<td><code>final-review.md</code></td>
-<td>리드</td>
-<td>사용자</td>
-<td>합친 리뷰</td>
-</tr>
-<tr>
 <td><code>fixes.md</code></td>
-<td>리드 (항목), 담당자마다 자기 섹션</td>
+<td>리드(<code>## tdd-red</code>/<code>tdd-green</code>/<code>tdd-refactor</code> 항목), 담당자마다 <code>## red-result</code>/<code>green-result</code>/<code>refactor-result</code></td>
 <td>배정된 담당자</td>
 <td>승인된 수정</td>
 </tr>
@@ -745,7 +721,7 @@ Agent({ name: &quot;tdd-refactor&quot;, subagent_type: &quot;devlife:tdd-refacto
 <p><strong>팀원은 자기 작업을 스스로 가져갑니다.</strong> <code>READY</code> 후 각 팀원은 자기 파일을 읽고, <code>TaskList</code>에서 막히지 않은 자기 Task를 번호 순서대로 가져갑니다. 막혀 있던 Task는, 그것을 풀어준 팀원이 담당자에게 <code>READ</code>를 보내 깨웁니다.</p>
 <h4 id="p1-14">Tidy First (정비 항목이 있을 때만)</h4>
 <p>요청된 변경 전에 구조만 먼저 바꾸고, 기능 작업과 섞이지 않게 따로 커밋합니다. <code>tdd-refactor</code>가 <code>Tidy {NN}</code> Task를 순서대로 가져갑니다. 모든 사이클 Task는 당신이 가진 <code>Tidy gate</code> Task에 막혀 있어서, 그동안 다른 작업은 돌지 않습니다 — 구조가 옮겨지는 중에 RED가 새 테스트를 쓰면 충돌하기 때문입니다.</p>
-<p><strong>Tidy Check.</strong> 마지막 항목이 끝나면 <code>tdd-refactor</code>가 <code>READ {TDD_DIR}/tidy/tidy-finished.md</code>를 보냅니다. 항목마다 <code>tidy-result</code> 섹션을 보고 확인합니다:</p>
+<p><strong>Tidy Check.</strong> 마지막 항목이 끝나면 <code>tdd-refactor</code>가 그 항목의 <code>READ {TDD_DIR}/tidy/{NN}/tidy.md#tidy-result</code>를 보냅니다. 모든 항목의 <code>tidy-result</code> 섹션을 보고 확인합니다:</p>
 <ul>
 <li>안전망 테스트가 다시 통과한다.</li>
 <li>바뀐 파일이 그 항목의 범위 안 파일 안에 있다.</li>
@@ -834,16 +810,16 @@ TaskUpdate({ taskId, owner: &quot;tdd-red&quot;, addBlockedBy: [ ... ] })
 <td>그 팀원이 올라왔다고 기록합니다. 아무것도 보내지 않습니다 — 자기 작업은 스스로 가져갑니다</td>
 </tr>
 <tr>
-<td><code>READ {TDD_DIR}/tidy/tidy-finished.md</code></td>
-<td>Tidy Check와 Tidy First 확인 지점(위 Tidy First)</td>
+<td><code>READ {TDD_DIR}/tidy/{NN}/tidy.md#tidy-result</code></td>
+<td>마지막 Tidy 항목이 끝남 — Tidy Check와 Tidy First 확인 지점(위 Tidy First)</td>
 </tr>
 <tr>
 <td><code>READ …#blocked</code> / <code>READ {TDD_DIR}/blocked.md</code></td>
 <td>아래 <strong>blocked 처리</strong></td>
 </tr>
 <tr>
-<td><code>READ {TDD_DIR}/cycle-finished.md</code></td>
-<td>모든 <code>Refactor</code>가 끝났습니다 — <strong>Final Verification</strong>을 실행합니다</td>
+<td><code>READ {TASK_DIR}/task.md#refactor-result</code></td>
+<td>마지막 <code>Refactor</code>가 끝났습니다 — <strong>Final Verification</strong>을 실행합니다</td>
 </tr>
 <tr>
 <td>대기 알림</td>
@@ -858,13 +834,13 @@ TaskUpdate({ taskId, owner: &quot;tdd-red&quot;, addBlockedBy: [ ... ] })
 <li>범위 밖 파일이 필요함 → <code>task.md</code>의 <code>scope_production</code>과, 뒤에 겹치는 Task의 <code>blockedBy</code>를 넓히거나 사용자에게 묻습니다.</li>
 <li>RED의 테스트가 두 번 거부됨, 또는 설계 문제 → 아래 <strong>Blocked Task</strong>를 처리한 뒤 사용자에게 묻습니다.</li>
 </ul>
-<p><strong>모두 대기 중일 때</strong> — 모든 팀원이 대기 중인데 <code>cycle-finished.md</code>가 오지 않았다면, 넘겨주기가 빠진 것입니다: 결과 섹션은 써져 있는데 받는 쪽이 메시지를 받지 못했습니다. <code>TaskList</code>의 열린 Task를 각 <code>task.md</code>의 결과 섹션과 맞춰 보고 찾은 뒤, 그 <code>READ {TASK_DIR}/task.md#{section}</code>을 받는 쪽에게 직접 다시 보냅니다 — 예: <code>tdd-green</code>에게 <code>READ {TASK_DIR}/task.md#red-result</code>.</p>
+<p><strong>모두 대기 중일 때</strong> — 모든 팀원이 대기 중인데 아직 열린 <code>Refactor</code> Task가 있다면, 넘겨주기가 빠진 것입니다: 결과 섹션은 써져 있는데 받는 쪽이 메시지를 받지 못했습니다. <code>TaskList</code>의 열린 Task를 각 <code>task.md</code>의 결과 섹션과 맞춰 보고 찾은 뒤, 그 <code>READ {TASK_DIR}/task.md#{section}</code>을 받는 쪽에게 직접 다시 보냅니다 — 예: <code>tdd-green</code>에게 <code>READ {TASK_DIR}/task.md#red-result</code>.</p>
 <p><strong>Blocked Task.</strong> 막힌 태스크가 나머지를 멈춰서는 안 됩니다:</p>
 <ol>
 <li>그 <code>Task {NN}</code>을 <code>metadata: { blocked: true }</code>로, <code>Refactor {NN}</code>을 <code>metadata: { skipped: true }</code>로 <code>completed</code>로 바꿉니다.</li>
 <li><code>session.md</code>에 <code>BLOCKED</code>로 표시합니다.</li>
 <li>이것으로 풀린 Task마다 <code>tdd-red</code>에게 <code>READ {TASK_DIR}/task.md</code>를 보냅니다.</li>
-<li>이 건너뛰기로 마지막 열린 <code>Refactor</code>가 끝났다면, <code>cycle-finished.md</code>를 보낼 팀원이 없습니다. 직접 쓰고 Final Verification으로 갑니다.</li>
+<li>이 건너뛰기로 마지막 열린 <code>Refactor</code>가 끝났다면, 끝을 알릴 팀원이 없습니다. 직접 Final Verification으로 갑니다.</li>
 <li>사용자가 다시 하기로 하면, 새 <code>Task {NN}</code> / <code>Refactor {NN}</code> 쌍을 만들고(같은 <code>TASK_DIR</code>), <code>task.md</code>의 머리 부분을 고치고 결과 섹션을 지운 뒤, <code>tdd-red</code>에게 <code>READ {TASK_DIR}/task.md</code>를 보냅니다.</li>
 </ol>
 <p>처리한 메시지마다 <code>session.md</code>를 갱신합니다. Task 상태는 늦게 반영될 수 있으니, 증거는 언제나 <code>task.md</code>의 결과 섹션입니다.</p>
@@ -916,11 +892,10 @@ TaskUpdate({ taskId, owner: &quot;tdd-red&quot;, addBlockedBy: [ ... ] })
 <li>출력은 <code>{TDD_DIR}/final-test.log</code>로 보내고, 개수와 실패한 이름만 읽습니다. 실행된 개수는 id 개수와 같아야 합니다.</li>
 </ul>
 <p><strong>이미 통과하는 테스트.</strong> <code>red-result</code>의 <code>already_passing</code> 메서드는 GREEN이 손대기 전에 이미 통과한 테스트입니다. 테스트를 지울지는 당신이 정하므로, RED가 남겨 둔 것입니다. 각각 커버리지로 남길지, 중복이라 지울지(id를 적어 <code>tdd-red</code>의 수정 항목으로) 정하고, 결정을 <code>session.md</code>에 적습니다.</p>
-<p><strong><code>deferred</code> 모으기.</strong> <code>refactor-result</code> 섹션들에서 <code>none</code>이 아닌 <code>deferred</code> 줄을 태스크 번호를 붙여 <code>{TDD_DIR}/deferred.md</code>에 한 줄씩 옮깁니다. <code>review-design</code> 관점이 이것을 판단합니다. 모두 <code>none</code>이면 <code>deferred.md</code>를 만들지 않습니다.</p>
 <p><strong>확인에 실패하면</strong></p>
 <ul>
 <li>실패를 담당자별로 나눠 <code>{TDD_DIR}/fixes.md</code>를 쓰고, 담당자마다 <code>READ</code>를 보냅니다: 빠지거나 틀린 동작은 <code>tdd-green</code>, 구조와 리팩터 기록은 <code>tdd-refactor</code>, 테스트는 <code>tdd-red</code>.</li>
-<li>모두 보고하면, 바뀐 태스크에 확인 2–4를 다시 하고 확인 5를 한 번 다시 실행합니다.</li>
+<li>모두 보고하면, 바뀐 태스크에 확인 2–4를 다시 하고 확인 5를 한 번 다시 실행합니다. 태스크별 커밋을 켰으면 이 수정을 Final Stage 2처럼 종류별로 커밋합니다 — 리뷰용으로 <code>fixes.md</code>를 다시 쓰기 전에.</li>
 <li>최대 2라운드까지 하고, 그래도 남으면 사용자에게 묻습니다.</li>
 <li>통과한 태스크는 <code>session.md</code>에서 <code>DONE</code>입니다.</li>
 </ul>
@@ -945,7 +920,7 @@ Agent({ name: &quot;review-design&quot;, subagent_type: &quot;devlife:tdd-review
 <ul>
 <li>셋 모두에게서 <code>READ {TDD_DIR}/final-review-{lens}.md</code>가 올 때까지 기다립니다.</li>
 <li><strong>리뷰어가 모두 대기 중인데 하나가 보고하지 않았으면</strong> — 반박 전달이 빠진 것입니다. 보고하지 않은 리뷰어에게 아직 오지 않은 <code>rebuttal-{you}-to-{them}.md</code>를 찾고, 그 반박을 써야 할 리뷰어에게 <code>READ {TDD_DIR}/final-review-{them}.md</code>를 한 번 다시 보냅니다. 다시 모두 대기 상태가 될 때까지 보고가 없으면, 그 리뷰어의 <code>final-review-{lens}.md</code>를 있는 그대로 합치고 반박 라운드가 끝나지 않았다고 사용자에게 알립니다.</li>
-<li><code>{TDD_DIR}/final-review.md</code>로 합칩니다: 반박으로 뒤집힌 지적은 빼고, 나머지는 심각도와 함께 남깁니다.</li>
+<li>합칩니다: 반박으로 뒤집힌 지적은 빼고, 나머지는 심각도와 함께 남깁니다. 합친 목록을 사용자에게 보여 줍니다.</li>
 <li>합친 뒤 바로 각 리뷰어에게 shutdown request를 보냅니다.</li>
 </ul>
 <p>지적이 하나라도 있으면 사용자에게 보여주고 묻습니다. <strong>지적은 질문과 같은 메시지에 넣습니다</strong> — 리뷰어의 종료 알림이 메시지 사이에 출력되어, 앞선 메시지에 있던 목록을 화면 밖으로 밀어내기 때문입니다.</p>
@@ -969,13 +944,14 @@ Agent({ name: &quot;review-design&quot;, subagent_type: &quot;devlife:tdd-review
 <p>답이 올 때까지 <code>tdd-red</code>, <code>tdd-green</code>, <code>tdd-refactor</code>를 살려 둡니다 — 누구든 수정을 맡을 수 있습니다.</p>
 <ul>
 <li>승인된 항목만 담당자별로 나눠 <code>{TDD_DIR}/fixes.md</code>를 쓰고, 담당자마다 <code>READ</code>를 보냅니다: 테스트 변경은 <code>tdd-red</code>, 설계와 가독성 지적(<code>review-design</code>)은 <code>tdd-refactor</code>, 동작 수정은 아래처럼.</li>
+<li>태스크별 커밋을 켰으면 종류별로 커밋하고, 각 결과 섹션의 <code>files_modified</code> 경로만 stage합니다: RED와 GREEN이 보고하면 <code>git commit -m &quot;fix: {요약}&quot;</code>, 그다음에야 <code>tdd-refactor</code>에게 <code>READ</code>를 보내고, 보고가 오면 <code>git commit -m &quot;refactor: {요약}&quot;</code>. 동작과 구조는 한 커밋에 섞지 않습니다.</li>
 <li>모두 보고하면 Final Verification 확인 5를 한 번 다시 실행합니다.</li>
 </ul>
 <p><strong>동작 수정은 모든 태스크처럼 Red에서 시작합니다.</strong></p>
 <ul>
 <li><code>fixes.md</code>에 두 번 적습니다: <code>tdd-red</code> 아래에는 써야 할 실패 테스트(도메인 문장과 입력)로, <code>tdd-green</code> 아래에는 &quot;RED의 새 테스트를 통과시키기&quot;로.</li>
-<li><code>READ</code>는 <code>tdd-red</code>에게만 보냅니다(<code>tdd-refactor</code>에게 항목이 있으면 그에게도). RED는 테스트가 빨개지면 파일을 GREEN에게 넘기고, GREEN이 당신에게 보고합니다.</li>
-<li>모든 내용은 <code>fixes.md</code>에 남습니다: 각 팀원은 자기 섹션을 덧붙이고, GREEN의 레드 체크는 <code>{TDD_DIR}/fix-red-check.log</code>로 갑니다. 이것을 위해 다른 파일은 만들지 않습니다.</li>
+<li><code>READ</code>는 <code>tdd-red</code>에게만 보냅니다(<code>tdd-refactor</code>는 위 커밋 순서를 따름). RED는 테스트가 빨개지면 파일을 GREEN에게 넘기고, GREEN이 당신에게 보고합니다.</li>
+<li>모든 내용은 <code>fixes.md</code>에 남습니다: 각 팀원은 결과 섹션(<code>## red-result</code>, <code>## green-result</code>, <code>## refactor-result</code>)을 덧붙이고, GREEN의 레드 체크는 <code>{TDD_DIR}/fix-red-check.log</code>로 갑니다. 이것을 위해 다른 파일은 만들지 않습니다.</li>
 </ul>
 <p><strong>테스트 삭제는 당신이 정합니다.</strong> 동작 수정 때문에 쓸모없어진 테스트(수정이 없애거나 바꾸는 동작을 확인하는 테스트)는 id와 이유를 <code>fixes.md</code>의 <code>tdd-red</code> 항목에 적습니다. RED는 거기 적힌 테스트만 지웁니다.</p>
 <p><strong>일이 끝난 팀원은 바로 종료합니다.</strong></p>
@@ -985,7 +961,6 @@ Agent({ name: &quot;review-design&quot;, subagent_type: &quot;devlife:tdd-review
 <li>사용자가 아무것도 승인하지 않았다면 → <code>tdd-red</code>, <code>tdd-green</code>, <code>tdd-refactor</code>를 즉시 종료합니다.</li>
 </ul>
 <h4 id="p1-21">3. Summarize</h4>
-<p>태스크별 커밋을 켰고 <code>fixes.md</code>에 <code>files_modified</code> 줄이 있으면, 그 수정을 커밋 하나로 묶습니다: 적힌 경로를 글자 그대로 <code>git add</code>하고 <code>git commit -m &quot;fix: apply final verification and review fixes&quot;</code>.</p>
 <p>아직 종료하지 않은 팀원에게 shutdown request를 보낸 뒤, <strong>종료 확인을 기다리지 않고</strong> 요약을 출력합니다 — 팀원은 지금 하던 턴을 마치고 나갑니다:</p>
 <pre><code>── TDD Agent Team Session Complete ──
 Tasks:   {DONE}/{total} ({BLOCKED} blocked)
@@ -1090,8 +1065,13 @@ Artifacts: _workspace/tdd-agent-team/
 </tr>
 <tr>
 <td><code>tdd-green</code>에게</td>
-<td><code>READ _workspace/tdd-agent-team/fixes.md</code></td>
+<td><code>READ _workspace/tdd-agent-team/fixes.md#red-result</code></td>
 <td>동작 수정을 위한 실패 테스트가 준비됨</td>
+</tr>
+<tr>
+<td><code>team-lead</code>에게</td>
+<td><code>READ _workspace/tdd-agent-team/fixes.md#red-result</code></td>
+<td>수정을 마침, 동작 수정 없음</td>
 </tr>
 </tbody>
 </table></div>
@@ -1168,7 +1148,7 @@ already_passing: {method ids that passed on the first run, or none}
 <li><strong>테스트 수정:</strong> 반영하고 영향받는 메서드를 실행합니다. 모두 통과해야 합니다.</li>
 <li><strong>동작 수정</strong>(항목이 실패하는 테스트를 요구할 때): 작업 흐름처럼 씁니다 — 컴파일하고, 실행하고, 동작에 닿아서 실패하는지 확인합니다. 당신 섹션에 <code>new_tests: {method ids}</code> 줄을 더합니다.</li>
 </ul>
-<p><code>fixes.md</code>에 바뀐 내용과 <code>files_modified: {쉼표로 구분한 경로}</code> 줄을 담은 <code>## tdd-red</code> 섹션을 덧붙입니다. 그다음 <code>team-lead</code>에게 <code>READ _workspace/tdd-agent-team/fixes.md</code>를 보냅니다. 동작 수정이 하나라도 있었으면 리드 대신 <code>tdd-green</code>에게 보냅니다. GREEN이 둘 모두를 대신해 보고합니다.</p>
+<p><code>fixes.md</code>에 바뀐 내용과 <code>files_modified: {쉼표로 구분한 경로}</code> 줄을 담은 <code>## red-result</code> 섹션을 덧붙입니다. 그다음 <code>team-lead</code>에게 <code>READ _workspace/tdd-agent-team/fixes.md#red-result</code>를 보냅니다. 동작 수정이 하나라도 있었으면 리드 대신 <code>tdd-green</code>에게 보냅니다. GREEN이 둘 모두를 대신해 보고합니다.</p>
 <h3 id="p2-11">하지 않을 것</h3>
 <ul>
 <li>무엇이든 커밋하거나 스테이징하기.</li>
@@ -1254,12 +1234,12 @@ already_passing: {method ids that passed on the first run, or none}
 </tr>
 <tr>
 <td><code>tdd-red</code>에게서</td>
-<td><code>READ _workspace/tdd-agent-team/fixes.md</code></td>
+<td><code>READ _workspace/tdd-agent-team/fixes.md#red-result</code></td>
 <td>동작 수정용 실패 테스트가 준비됨</td>
 </tr>
 <tr>
 <td><code>team-lead</code>에게</td>
-<td><code>READ _workspace/tdd-agent-team/fixes.md</code></td>
+<td><code>READ _workspace/tdd-agent-team/fixes.md#green-result</code></td>
 <td>수정을 마침</td>
 </tr>
 <tr>
@@ -1330,9 +1310,9 @@ tests_passed: {N}
 <p><code>tdd-green</code>에게 배정된 항목만 반영합니다.</p>
 <ul>
 <li><strong>리드에게서:</strong> 통과시켜야 할 실패 메서드, 되돌려야 할 범위 밖 파일, 최종 리뷰 지적. 범위 밖 파일이 정말 필요하면 되돌리지 말고, 이유를 <code>_workspace/tdd-agent-team/blocked.md</code>에 써서 <code>team-lead</code>에게 <code>READ _workspace/tdd-agent-team/blocked.md</code>를 보냅니다.</li>
-<li><strong><code>tdd-red</code>에게서:</strong> <code>## tdd-red</code> 섹션에 <code>new_tests</code>가 적혀 있습니다. 먼저 레드 체크를 하고(레드 체크 참고, 로그는 <code>_workspace/tdd-agent-team/fix-red-check.log</code>) 실패할 때만 구현합니다. 실패하지 않으면 당신 섹션에 그렇게 적습니다.</li>
+<li><strong><code>tdd-red</code>에게서:</strong> <code>## red-result</code> 섹션에 <code>new_tests</code>가 적혀 있습니다. 먼저 레드 체크를 하고(레드 체크 참고, 로그는 <code>_workspace/tdd-agent-team/fix-red-check.log</code>) 실패할 때만 구현합니다. 실패하지 않으면 당신 섹션에 그렇게 적습니다.</li>
 </ul>
-<p>영향받는 메서드를 실행합니다. 모두 통과해야 합니다. 바뀐 내용과 <code>files_modified: {쉼표로 구분한 경로}</code> 줄을 담은 <code>## tdd-green</code> 섹션을 덧붙이고 <code>team-lead</code>에게 <code>READ _workspace/tdd-agent-team/fixes.md</code>를 보냅니다.</p>
+<p>영향받는 메서드를 실행합니다. 모두 통과해야 합니다. 바뀐 내용과 <code>files_modified: {쉼표로 구분한 경로}</code> 줄을 담은 <code>## green-result</code> 섹션을 덧붙이고 <code>team-lead</code>에게 <code>READ _workspace/tdd-agent-team/fixes.md#green-result</code>를 보냅니다.</p>
 <h3 id="p3-11">하지 않을 것</h3>
 <ul>
 <li>무엇이든 커밋하거나 스테이징하기.</li>
@@ -1397,18 +1377,18 @@ tests_passed: {N}
 </tr>
 <tr>
 <td><code>team-lead</code>에게</td>
-<td><code>READ _workspace/tdd-agent-team/cycle-finished.md</code></td>
-<td>모든 <code>Refactor</code> Task가 끝남</td>
+<td><code>READ {TASK_DIR}/task.md#refactor-result</code></td>
+<td>마지막 <code>Refactor</code>가 끝남 — 모든 <code>Refactor</code> Task가 <code>completed</code></td>
 </tr>
 <tr>
 <td><code>team-lead</code>에게</td>
-<td><code>READ _workspace/tdd-agent-team/tidy/tidy-finished.md</code></td>
-<td>모든 Tidy 항목이 끝남</td>
+<td><code>READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md#tidy-result</code></td>
+<td>마지막 Tidy 항목이 끝남</td>
 </tr>
 <tr>
 <td><code>team-lead</code>에게서</td>
 <td><code>READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md#lead-check</code></td>
-<td>리드의 Tidy Check가 그 항목을 되돌림 — 고치고 <code>tidy-finished.md</code>를 다시 보낼 것</td>
+<td>리드의 Tidy Check가 그 항목을 되돌림 — 고치고 그 <code>tidy-result</code>를 다시 보낼 것</td>
 </tr>
 <tr>
 <td><code>team-lead</code>에게</td>
@@ -1422,7 +1402,7 @@ tests_passed: {N}
 </tr>
 <tr>
 <td><code>team-lead</code>에게</td>
-<td><code>READ _workspace/tdd-agent-team/fixes.md</code></td>
+<td><code>READ _workspace/tdd-agent-team/fixes.md#refactor-result</code></td>
 <td>수정을 마침</td>
 </tr>
 <tr>
@@ -1461,7 +1441,7 @@ technique: {refactoring name}
 test_changes: none | {what → where}
 safety_net: {N} passed
 </code></pre></li>
-<li>마지막 <code>Tidy</code> Task 뒤에 <code>_workspace/tdd-agent-team/tidy/tidy-finished.md</code>(<code>items: {NN, …}</code>)를 쓰고 <code>team-lead</code>에게 <code>READ _workspace/tdd-agent-team/tidy/tidy-finished.md</code>를 보냅니다.</li>
+<li>마지막 <code>Tidy</code> Task 뒤에 <code>team-lead</code>에게 그 항목의 <code>READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md#tidy-result</code>를 보냅니다.</li>
 </ol>
 <h3 id="p4-8">Refactor (당신의 <code>Refactor {NN}</code> Task — 태스크마다 하나, GREEN 직후)</h3>
 <ol>
@@ -1481,7 +1461,7 @@ deferred: {left alone — where — smell — technique you would apply — why,
 모든 줄을 쓰고, 해당 없으면 <code>none</code>을 씁니다. 범위 안에 리팩터링할 것이 없었으면 <code>status</code>는 <code>SKIPPED</code>입니다.</li>
 <li>역할 파일에 <code>Commit per task: yes</code>가 있으면 이 태스크를 커밋합니다: <code>red-result</code>의 <code>test_file</code>과 <code>green-result</code>·<code>refactor-result</code>의 모든 <code>files_modified</code> 경로를 글자 그대로 <code>git add</code>하고, <code>git commit -m &quot;feat: {태스크의 도메인 규칙 문장}&quot;</code>. 커밋이 실패하면 오류를 <code>_workspace/tdd-agent-team/blocked.md</code>에 써서 <code>team-lead</code>에게 보내고 계속 진행합니다.</li>
 <li>Task를 <code>completed</code>로 바꿉니다. 그다음 <code>TaskList</code>를 확인합니다: <code>blockedBy</code>에 이 Task가 있었고 이제 비어 있는 <code>tdd-red</code> Task마다 <code>tdd-red</code>에게 <code>READ {그 TASK_DIR}/task.md</code>를 보냅니다.</li>
-<li>이제 모든 <code>Refactor</code> Task가 <code>completed</code>면 <code>_workspace/tdd-agent-team/cycle-finished.md</code>(<code>refactors: {NN, …}</code>)를 쓰고 <code>team-lead</code>에게 <code>READ _workspace/tdd-agent-team/cycle-finished.md</code>를 보냅니다. 아니면 다음으로 가져갈 수 있는 Task를 가져갑니다. 태스크마다 리드에게 보고하지 않습니다.</li>
+<li>이제 모든 <code>Refactor</code> Task가 <code>completed</code>면 <code>team-lead</code>에게 <code>READ {TASK_DIR}/task.md#refactor-result</code>를 보냅니다. 아니면 다음으로 가져갈 수 있는 Task를 가져갑니다. 태스크마다 리드에게 보고하지 않습니다.</li>
 </ol>
 <h3 id="p4-9">수정 반영 (리드가 <code>READ _workspace/tdd-agent-team/fixes.md</code>를 보낼 때)</h3>
 <p><code>tdd-refactor</code>에게 배정된 항목만 반영합니다. 항목은 다음 중 하나입니다.</p>
@@ -1494,8 +1474,8 @@ deferred: {left alone — where — smell — technique you would apply — why,
 <p>그다음:</p>
 <ol>
 <li>모든 <code>green-result</code>의 <code>test_methods</code>와 역할 파일의 회귀 세트를 실행합니다. 모두 통과해야 합니다.</li>
-<li>바뀐 내용과 <code>files_modified: {쉼표로 구분한 경로}</code> 줄을 <code>fixes.md</code>의 <code>## tdd-refactor</code> 섹션에 덧붙입니다.</li>
-<li><code>team-lead</code>에게 <code>READ _workspace/tdd-agent-team/fixes.md</code>를 보냅니다.</li>
+<li>바뀐 내용과 <code>files_modified: {쉼표로 구분한 경로}</code> 줄을 <code>fixes.md</code>의 <code>## refactor-result</code> 섹션에 덧붙입니다.</li>
+<li><code>team-lead</code>에게 <code>READ _workspace/tdd-agent-team/fixes.md#refactor-result</code>를 보냅니다.</li>
 </ol>
 <h3 id="p4-10">하지 않을 것</h3>
 <ul>
@@ -1526,7 +1506,6 @@ deferred: {left alone — where — smell — technique you would apply — why,
 <ul>
 <li><code>branch-diff.md</code> — 세션 전체의 diff(git 저장소가 아니면 대신 읽을 바뀐 파일 목록)</li>
 <li><code>tasks/*/task.md</code> — 태스크마다의 명세와 <code>red-result</code>, <code>green-result</code>, <code>refactor-result</code> 섹션</li>
-<li><code>deferred.md</code>(<code>review-design</code>만, 있을 때) — 태스크 범위 밖에서 발견하고 그대로 둔 것</li>
 </ul>
 <p>관점에 필요한 만큼 참고합니다.</p>
 <ul>
@@ -1558,7 +1537,7 @@ deferred: {left alone — where — smell — technique you would apply — why,
 <p>프로덕션 코드를 <code>IMPL_GUIDE</code>의 구현 가이드와 <code>REFACTOR_GUIDE</code>의 리팩터링 가이드(경로는 스폰 프롬프트에 있음)에 비춰 판단하고, 지적이 그것에 근거하면 가이드와 절을 인용합니다.</p>
 <p>다음을 확인합니다.</p>
 <ul>
-<li><strong>태스크 사이의</strong> 문제(중복, 잘못 놓인 책임) — 각 태스크는 자기 범위 안에서만 리팩터링되었습니다. <code>deferred.md</code>의 모든 항목을 판단하고, 거기 없는 것을 찾습니다.</li>
+<li><strong>태스크 사이의</strong> 문제(중복, 잘못 놓인 책임) — 각 태스크는 자기 범위 안에서만 리팩터링되었습니다. <code>refactor-result</code> 섹션들의 <code>deferred</code> 줄을 모두 판단하고, 거기 없는 것을 찾습니다.</li>
 <li>이름이 불변식의 도메인 언어를 따르는지</li>
 <li>디버그 코드, TODO, 주석 처리된 블록이 남아 있지 않은지</li>
 </ul>
@@ -1579,7 +1558,7 @@ deferred: {left alone — where — smell — technique you would apply — why,
 <code>review-domain</code>은 불변식 매트릭스(<code>Invariant | Covered by | Status</code>, 그리고 <code>ORPHAN</code> 행)를 더합니다.</li>
 <li><strong>Critical이나 Important 지적이 없으면</strong> → 지금 <code>team-lead</code>에게 <code>READ _workspace/tdd-agent-team/final-review-{lens}.md</code>를 보냅니다. 4단계를 위해 계속 응답할 수 있게 있습니다.</li>
 <li><strong>Critical이나 Important 지적이 하나라도 있으면</strong> → 나머지 두 리뷰어 각각에게 <code>READ _workspace/tdd-agent-team/final-review-{lens}.md</code>를 보냅니다. 두 반박이 모두 오면 보고서를 한 번 고치고 — 뒤집힌 것은 철회, 과장된 것은 낮춤, 반박마다 <code>Rebuttals considered</code> 줄(<code>accepted #n</code> / <code>kept #n — reason</code>) — 같은 <code>READ</code>를 <code>team-lead</code>에게 보냅니다.</li>
-<li><strong>다른 리뷰어가 보고서를 보내오면</strong> <code>_workspace/tdd-agent-team/rebuttal-{you}-to-{them}.md</code>를 씁니다: 틀렸거나 과장되었거나 잘못 귀속되었다고 보는 Critical·Important 지적마다 한 줄(번호와 이유), 없으면 <code>no rebuttal</code>. 당신의 지적은 더하지 않습니다. 그 <code>READ</code>를 작성자에게 보냅니다 — 리드에게 보고한 뒤에도.</li>
+<li><strong>다른 리뷰어가 보고서를 보내오면</strong> <code>_workspace/tdd-agent-team/rebuttal-{you}-to-{them}.md</code>를 씁니다(<code>{you}</code>·<code>{them}</code>은 관점 이름 <code>domain</code>, <code>test</code>, <code>design</code>): 틀렸거나 과장되었거나 잘못 귀속되었다고 보는 Critical·Important 지적마다 한 줄(번호와 이유), 없으면 <code>no rebuttal</code>. 당신의 지적은 더하지 않습니다. 그 <code>READ</code>를 작성자에게 보냅니다 — 리드에게 보고한 뒤에도.</li>
 <li>리드가 shutdown request를 보내면 멈춥니다.</li>
 </ol>
 <p>라운드는 한 번뿐입니다. 반박을 다시 반박하지 마세요.</p>
@@ -1819,10 +1798,10 @@ deferred: {left alone — where — smell — technique you would apply — why,
     <p class="part-src">skills/tdd-agent-team/references/tidy-first-scan.md</p>
     <p class="part-title">Tidy First 스캔</p>
   </header>
-<p>요구사항 문서가 정비 항목을 하나도 말하지 않을 때 리드가 정비 후보를 찾는 방법. Setup 탐색 중에, 요청된 변경이 수정할 코드에 대해서만 실행합니다. 바꿀 기존 코드가 없는 완전히 새로운 기능에는 후보가 없습니다.</p>
-<p>질문은 결코 &quot;이 코드가 깨끗한가?&quot;가 아닙니다 — **&quot;이 요구사항이 한 곳에 들어갈 수 있는가?&quot;**입니다. 정비 항목은 <em>이</em> 변경을 쉽게 하려고 존재하지, 코드베이스를 개선하려고 존재하지 않습니다.</p>
+<p>요구사항 문서가 Tidy 항목을 하나도 말하지 않을 때 리드가 Tidy 후보를 찾는 방법입니다. Setup 탐색 중에, 요청된 변경이 수정할 코드에 대해서만 실행합니다. 바꿀 기존 코드가 없는 완전히 새로운 기능에는 후보가 없습니다.</p>
+<p>그 코드에 질문은 하나만 합니다: <strong>지금 구조의 무엇이 이 요구사항을 넣기 어렵게 만드는가?</strong> Tidy 항목은 이 변경을 쉽게 하려고만 있습니다. 변경이 부딪히지 않는 냄새는 그대로 둡니다.</p>
 <h3 id="p8-1">1. 들어갈 자리</h3>
-<p>변경이 건드려야 하는 곳마다, 새 요구사항이 어디로 가야 하는지, 그리고 현재 구조의 무엇이 그것이 한 덩어리로 그곳에 가는 것을 막는지 묻습니다:</p>
+<p>변경이 건드려야 하는 곳마다, 새 요구사항이 어디로 가야 하는지, 그리고 현재 구조의 무엇이 그것을 그곳에 넣기 어렵게 만드는지 묻습니다:</p>
 <div class="table-scroll"><table>
 <thead>
 <tr>
@@ -1859,7 +1838,7 @@ deferred: {left alone — where — smell — technique you would apply — why,
 </tr>
 </tbody>
 </table></div>
-<p>막는 것 하나가 후보 하나입니다. <strong>요구사항이 전혀 건드리지 않는 냄새는 후보가 아닙니다</strong>, 아무리 나빠도.</p>
+<p>막는 것 하나가 후보 하나입니다.</p>
 <h3 id="p8-2">2. 추상화 (엄격하게)</h3>
 <p>추상화 추출은 세 가지가 모두 성립할 때만 제안합니다:</p>
 <ol>
@@ -1884,7 +1863,7 @@ class BankPayment implements PaymentMethod { public int fee(int amount) { return
 <h3 id="p8-3">3. 후보 기록</h3>
 <p>후보마다 기록합니다:</p>
 <ul>
-<li><strong>막는 것</strong> — 현재 코드의 무엇이 변경이 한 곳에 들어가는 것을 막는지(파일과 메서드).</li>
+<li><strong>막는 것</strong> — 현재 코드에서 변경을 넣기 어렵게 만드는 것(파일과 메서드).</li>
 <li><strong>구조 변경</strong> — 이름 붙은 기법.</li>
 <li><strong>들어갈 자리</strong> — 막는 것을 없앤 뒤 변경이 갈 곳.</li>
 </ul>
