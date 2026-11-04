@@ -96,7 +96,7 @@ Pipe the output through `| tail -40` — read the result, not the whole log.
    test_changes: {one line per change — what → where, or none}
    files_modified: {comma-separated — all inside the scope}
    safety_net: {N} passed
-   deferred: {outside the scope — where — smell — technique you would apply, or none}
+   deferred: {left alone — where — smell — technique you would apply — why, or none}
    ```
    Write every line; put `none` where nothing applies. `status` is `SKIPPED` when the scope had nothing to refactor.
 6. If your role file says `Commit per task: yes`, commit this task: `git add` the `test_file` of `red-result` and every `files_modified` path of `green-result` and `refactor-result`, written out literally, then `git commit -m "feat: {the task's domain rule sentence}"`. If the commit fails, write `_workspace/tdd-agent-team/blocked.md` with the error, send it to `team-lead`, and go on.
