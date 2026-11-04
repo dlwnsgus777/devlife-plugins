@@ -646,7 +646,7 @@ Your role file is roles/{your name}.md. Never open another teammate's role file.
 </code></pre>
 <p>채울 때:</p>
 <ul>
-<li><strong>Test conventions</strong> — 기존 테스트나 프로젝트 지시가 실제로 보여주는 것만 적습니다. 프로젝트 컨벤션은 테스트 작성 규칙보다 우선하므로(이름 짓기 포함), 없는 컨벤션을 만들어 내지 마세요. 기존 테스트가 없으면 <code>none</code>으로 두고, RED와 <code>review-test</code> 관점이 가이드를 따릅니다.</li>
+<li><strong>Test conventions</strong> — 프로젝트 컨벤션은 테스트 작성 규칙(이름 짓기 포함)보다 우선하므로, 프로젝트 지시에 있거나 기존 테스트 3개 이상이 같은 방식을 쓸 때만 적습니다. 그보다 적으면 습관이지 컨벤션이 아닙니다. 해당하는 것이 없으면 <code>none</code>으로 두고, RED와 <code>review-test</code> 관점이 가이드를 따릅니다.</li>
 <li><strong>Signatures RED may call</strong> — RED가 프로덕션 코드를 보는 유일한 창입니다. 테스트가 건드릴 모든 타입, 생성자, 메서드를 정확한 시그니처로 적습니다. 하나가 빠지면 그 태스크마다 <code>missing-stub</code> 왕복이 생깁니다.</li>
 </ul>
 <p><strong><code>{TDD_DIR}/roles/{name}.md</code></strong> — 팀원마다 하나씩, 그 역할만 필요한 것을 담습니다. 역할별로 파일을 나눠야 RED가 GREEN이 무엇을 기준으로 만드는지 알게 되지 않습니다. 범위와 함정은 사용자가 Setup 5에서 확정한 것을 씁니다.</p>
@@ -1116,7 +1116,7 @@ Artifacts: _workspace/tdd-agent-team/
 <p><strong>첫 테스트 전에 테스트 작성 규칙을 읽고, 따르세요.</strong> 경로는 <code>roles/tdd-red.md</code>의 &quot;Test-writing rules&quot; 항목에 적혀 있고, 테스트가 어떤 모습이어야 하는지에 대한 모든 규칙이 거기 있습니다. 그 경로가 없거나 파일을 읽을 수 없으면 <code>{TASK_DIR}/task.md</code>의 <code>## blocked</code> 섹션에 그렇게 쓰고 <code>team-lead</code>에게 <code>READ {TASK_DIR}/task.md#blocked</code>를 보냅니다. 기억에 의존해 테스트를 쓰지 마세요.</p>
 <p>테스트 작성 규칙에 더해:</p>
 <ul>
-<li>태스크를 넘기기 전에 <code>task.md</code>의 모든 시나리오를 다룹니다.</li>
+<li>태스크를 넘기기 전에 <code>task.md</code>의 모든 시나리오를 다룹니다. <code>task.md</code>의 입력은 출발점일 뿐입니다. 그 입력에도 테스트 작성 규칙의 "구현을 구분하는 입력"을 적용하고, 부족하면 입력을 추가합니다.</li>
 <li><code>context.md</code>에 프로젝트 테스트 컨벤션(단언 라이브러리, 이름 규칙, 픽스처 이름, 주석 스타일)이 기록되어 있으면, 그 컨벤션이 테스트 작성 규칙보다 우선합니다.</li>
 </ul>
 <h3 id="p2-8">넘긴 뒤의 테스트</h3>
@@ -1531,6 +1531,7 @@ deferred: {left alone — where — smell — technique you would apply — why,
 <p>다음을 확인합니다.</p>
 <ul>
 <li>단언이 구현 세부나 목 호출 횟수가 아니라 요구사항을 표현하는지</li>
+<li>테스트마다 그 규칙의 그럴듯한 잘못된 구현이 실패하는지 — 통과하는 잘못된 구현이 있으면 Important로 지적하고, 그 구현과 둘을 구분하는 입력을 함께 적습니다.</li>
 <li>태스크 디렉터리마다 <code>red-check.log</code>가 있는지 — 구현 전에 테스트가 실패했다는 증거입니다. 없는 태스크는 지적합니다.</li>
 </ul>
 <h4 id="p5-5">review-design — 프로덕션 코드를 그대로 둘 만한가?</h4>
