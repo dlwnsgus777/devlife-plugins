@@ -2,11 +2,11 @@
 
 How the lead finds tidy candidates when the requirements document names none. Run it during the Setup exploration, only on code the requested change will modify. A brand-new feature with no existing code to change has no candidates.
 
-The question is never "is this code clean?" — it is **"can this requirement land in one place?"** A tidy item exists to make *this* change easy, not to improve the codebase.
+Ask one question of that code: **what in its current structure makes this requirement hard to add?** A tidy item exists only to make this change easy; a smell the change does not run into is left alone.
 
 ## 1. Landing Spot
 
-For each place the change must touch, ask where the new requirement has to go and what in the current structure stops it from going there in one piece:
+For each place the change must touch, ask where the new requirement goes and what in the current structure makes adding it there hard:
 
 | Blocker | Looks like | Example | Typical restructuring |
 |---|---|---|---|
@@ -15,7 +15,7 @@ For each place the change must touch, ask where the new requirement has to go an
 | Repeated branch | the same conditional appears in several spots, and the change adds a branch to each | `if (grade == VIP)` appears in price, shipping and points, and a new `GOLD` grade needs a branch in each | Consolidate the conditional into one place |
 | Overloaded signature | the change needs one more value threaded through many parameters | adding a delivery time slot means one more parameter on four methods | Introduce Parameter Object |
 
-Each blocker is one candidate. **A smell the requirement never touches is not a candidate**, however bad it is.
+Each blocker is one candidate.
 
 ## 2. Abstraction (strict)
 
@@ -47,7 +47,7 @@ class BankPayment implements PaymentMethod { public int fee(int amount) { return
 
 For each candidate, record:
 
-- **Blocker** — what in the current code stops the change from landing in one place (file and method).
+- **Blocker** — what in the current code makes the change hard to add (file and method).
 - **Restructuring** — the named technique.
 - **Landing spot** — where the change goes once the blocker is removed.
 
