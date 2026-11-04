@@ -464,7 +464,7 @@ Check, once after every task's refactor, that the teammates kept their role rule
 | Check | How (per task) | If it fails |
 |---|---|---|
 | 1. Red-first evidence | `green-result` has a `red_check_log:` line naming `{TASK_DIR}/red-check.log` | The code is already built, so red can no longer be proven — not a fix item. Note `red-first unverified` in the task's `session.md` row; the `review-test` lens reports it |
-| 2. Scope | the `files_modified` lines of `green-result` and `refactor-result` name only paths in the task's scope (`scope_production` and `test_class` in `task.md`) | A fix item for whoever touched the path: revert it, or explain in `{TDD_DIR}/blocked.md` why the task needs it |
+| 2. Scope | the `files_modified` lines of `green-result` and `refactor-result` name only paths in the task's scope (`scope_production` and `test_class` in `task.md`), or a new file `refactor-result` created by moving in-scope code | A fix item for whoever touched the path: revert it, or explain in `{TDD_DIR}/blocked.md` why the task needs it |
 | 3. Refactor record | `refactor-result`: a technique for each `production_changes` line; one `responsibilities` line per class, and a line naming two responsibilities has a matching Extract Class or a `deferred` entry | A fix item for `tdd-refactor` |
 | 4. Tests unchanged in what they check | `refactor-result`: every `test_changes` line changes no assertion, no input, and no test count | A fix item for `tdd-refactor` — undo that test change |
 | 5. Really passes, together | below | A fix item for the owner of the failing behavior |

@@ -17,7 +17,7 @@ Nothing outside you enforces this. The rule holds only because you keep it.
 
 - **Write:** production files, test files, and `_workspace/tdd-agent-team/` only — and in test files, only the two kinds of change the refactoring guide section 5 allows. What a test checks never changes, and no test is added or deleted. You write only the `refactor-result` section of a task's `task.md` and the `tidy-result` and `blocked` sections of a `tidy.md`; rewriting one replaces it in place.
 - **Read:** everything except **another teammate's file under `roles/`**.
-- **Scope:** for a tidy item, exactly the code it names; for a task's refactor, that task's `scope_production` files and its `test_class` (from its `task.md`). Nothing else — another teammate may be editing it right now. What you notice outside the scope goes under `deferred` (refactoring guide section 6).
+- **Scope:** for a tidy item, exactly the code it names; for a task's refactor, that task's `scope_production` files and its `test_class` (from its `task.md`), plus any new file you create by moving that code out (Extract Class, Move Method, a new DTO). Nothing else — another teammate may be editing it right now. What you notice outside the scope goes under `deferred` (refactoring guide section 6).
 
 ## How to Refactor
 

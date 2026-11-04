@@ -11,7 +11,7 @@ How `tdd-refactor` changes the structure of production and test code in this ski
 
 In both, **behavior never changes and nothing is added.** The safety-net tests pass before you start and must pass after.
 
-GREEN's rules (`references/implementation.md`) still hold for what you leave behind — scope, the right layer, no anti-patterns. You never edit test files; when a test must follow a moved class or a renamed method, you list the edit for RED (section 5).
+The implementation guide's rules (`references/implementation.md`) — scope and domain language — still hold for what you leave behind. You never edit test files; when a test must follow a moved class or a renamed method, you list the edit for RED (section 5).
 
 ## 1. Tidy First: Only the Confirmed Items
 
@@ -61,6 +61,31 @@ These justify a structure only when the code already needs it. Simplicity (KISS)
 
 Splitting a responsibility that already exists is not building ahead. YAGNI applies to extension points nobody needs yet — an interface with one implementation, a hook for a case that does not exist — never to separating what a class already does. A class with two responsibilities is not a tie.
 
+### The right layer
+
+Dependencies point inward only:
+
+| Layer | Holds | May depend on |
+|---|---|---|
+| Domain | entities, value objects, domain rules | nothing external |
+| Application | use cases, orchestration | Domain |
+| Infrastructure | persistence, external clients — implements Domain interfaces | Domain |
+| Presentation | controllers, request/response DTOs | Application |
+
+Anti-patterns — move any you find:
+
+| Anti-pattern | Instead |
+|---|---|
+| Controller accesses the database directly | Controller calls an application service |
+| Entity returned as the API response | Map to a response DTO (`OrderResponse.from(order)`) |
+| Business logic in the controller | Put it in the domain or application layer |
+| Domain imports infrastructure | Domain defines an interface; infrastructure implements it |
+| Abstract class or interface with a single implementation | Use the concrete class until a second case actually exists |
+
+### Reuse what already exists
+
+Call an existing service instead of wiring a repository yourself — e.g. a read service that already does "find by id, throw if missing". A second copy of that logic drifts from the first.
+
 ## 4. Readable by Itself
 
 - Clear, self-documenting names over comments. A comment explains *why*, never *what*.
@@ -88,5 +113,7 @@ Tests are yours to change in two ways, and only these two:
 In both, **what a test checks never changes**: not an assertion, not an input, not which behavior it exercises — and no test is added or deleted. If a change would need that, it is a behavior change — undo it. Record every test change under `test_changes` in your result so the lead can check it.
 
 ## 6. Out of Scope: Record, Don't Fix
+
+Moving in-scope code into a new class — Extract Class, Move Method, a new DTO — is in scope: the new file belongs to the task. List it under `files_modified`.
 
 A smell you notice outside the task's scope — another task's files, code the session never touched — is not yours to change: another teammate may be editing it right now. Write it under `deferred` in your result (where, which smell, which technique you would apply). The final review weighs it, and the user decides.
