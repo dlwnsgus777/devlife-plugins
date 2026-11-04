@@ -271,7 +271,7 @@ Your role file is roles/{your name}.md. Never open another teammate's role file.
 ```
 
 When filling it in:
-- **Test conventions** — record only what the existing tests or project instructions actually show. A project convention overrides the test-writing rules (naming included), so never invent one. With no existing tests, write `none`; RED and the `review-test` lens then hold to the guide.
+- **Test conventions** — a project convention overrides the test-writing rules (naming included), so record one only when project instructions state it or at least three existing tests share it. Fewer tests show a habit, not a convention. None → `none`; RED and the `review-test` lens then hold to the guide.
 - **Signatures RED may call** — RED's only window into production code. List every type, constructor, and method a test will touch with its exact signature; each one missing costs a `missing-stub` round trip.
 
 **`{TDD_DIR}/roles/{name}.md`** — one per teammate, holding what only that role needs. Separate files keep RED from learning what GREEN builds against. The scope and pitfalls are the ones the user confirmed at Setup 5.
