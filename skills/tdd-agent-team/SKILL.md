@@ -269,7 +269,7 @@ Write the files the teammates read when they start; they learn the session's fac
 ## Workspace Rules
 Others may have edited this workspace since this file was written. Never revert a change you didn't make.
 Do not commit unless your role file says so. The lead and the user own the commit history.
-Invariant IDs are session bookkeeping — never write them into production or test code.
+Session bookkeeping — invariant IDs, task numbers, workspace paths, teammate names — never goes into production or test code.
 SendMessage bodies are one line: READ <path> or READ <path>#<section>. Content goes in files.
 Your role file is roles/{your name}.md. Never open another teammate's role file.
 ```

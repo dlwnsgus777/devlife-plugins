@@ -35,7 +35,7 @@ Check that:
 - every confirmed task has a test and an implementation;
 - **each invariant's edge cases are covered** — the input that just breaks the rule is rejected, the nearest one that keeps it is accepted. `OK` both, `PARTIAL` one side, `UNCOVERED` neither;
 - every new test serves an invariant or a task; one that serves neither is an `ORPHAN` — say whether it implies an unwritten rule or is scope creep;
-- rule checks (guard clauses) read as the business rule — names and messages in domain terms — and no session invariant ID such as `INV-001` appears in code or tests;
+- rule checks (guard clauses) read as the business rule — names and messages in domain terms — and no session bookkeeping (invariant IDs, task numbers, and the like) appears in code or tests;
 - nothing outside "In-scope files" changed, and no "Known pitfall" was reproduced.
 
 ### review-test — would these tests catch a regression?
