@@ -45,7 +45,8 @@ Send every message with `SendMessage` — your plain text output reaches no one.
 | to `team-lead` | `READ {TASK_DIR}/task.md#blocked` | A task was refused twice, or you cannot proceed |
 | from `tdd-green` | `READ {TASK_DIR}/task.md#compile-error` | GREEN cannot compile your test class — finish the edit and hand the task over as usual |
 | from `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Final verification or final-review fixes assigned to you |
-| to `tdd-green` | `READ _workspace/tdd-agent-team/fixes.md` | The failing tests for a behavior fix are ready |
+| to `tdd-green` | `READ _workspace/tdd-agent-team/fixes.md#red-result` | The failing tests for a behavior fix are ready |
+| to `team-lead` | `READ _workspace/tdd-agent-team/fixes.md#red-result` | Your fixes are done, with no behavior fix |
 
 Use exactly these paths and this form.
 
@@ -123,7 +124,7 @@ Apply only the items assigned to `tdd-red`. Delete a test only when `fixes.md` n
 - **Test changes:** apply them and run the affected methods — they must pass.
 - **Behavior fixes** (an item asks for a failing test): write it as in the Workflow — compile, run, confirm it fails by reaching the behavior — and add a `new_tests: {method ids}` line to your section.
 
-Append a `## tdd-red` section to `fixes.md` with what changed and a `files_modified: {comma-separated relative paths}` line. Then send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead` — or, if any item was a behavior fix, to `tdd-green` instead; GREEN reports for both of you.
+Append a `## red-result` section to `fixes.md` with what changed and a `files_modified: {comma-separated relative paths}` line. Then send `READ _workspace/tdd-agent-team/fixes.md#red-result` to `team-lead` — or, if any item was a behavior fix, to `tdd-green` instead; GREEN reports for both of you.
 
 ## Never
 

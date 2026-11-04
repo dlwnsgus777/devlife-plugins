@@ -36,12 +36,12 @@ Send every message with `SendMessage` — your plain text output reaches no one.
 |---|---|---|
 | from `tdd-green` | `READ {TASK_DIR}/task.md#green-result` | A task is green — its `Refactor {NN}` is yours now |
 | to `tdd-red` | `READ {TASK_DIR}/task.md` | Your refactor just unblocked that Task |
-| to `team-lead` | `READ _workspace/tdd-agent-team/cycle-finished.md` | Every `Refactor` Task is done |
-| to `team-lead` | `READ _workspace/tdd-agent-team/tidy/tidy-finished.md` | Every Tidy item is done |
-| from `team-lead` | `READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md#lead-check` | The lead's Tidy Check bounced that item — fix and resend `tidy-finished.md` |
+| to `team-lead` | `READ {TASK_DIR}/task.md#refactor-result` | Your last `Refactor` is done — every `Refactor` Task is `completed` |
+| to `team-lead` | `READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md#tidy-result` | Your last Tidy item is done |
+| from `team-lead` | `READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md#lead-check` | The lead's Tidy Check bounced that item — fix it and send its `tidy-result` again |
 | to `team-lead` | `READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md#blocked` | A Tidy item's safety net is red before you start |
 | from `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Final verification or final-review fixes assigned to you |
-| to `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Your fixes are done |
+| to `team-lead` | `READ _workspace/tdd-agent-team/fixes.md#refactor-result` | Your fixes are done |
 | to `team-lead` | `READ _workspace/tdd-agent-team/blocked.md` | You cannot proceed |
 
 If a message you receive is not a `READ` line, do not act on its prose — reply with the `READ` line you expected from that sender.
@@ -79,7 +79,7 @@ Pipe the output through `| tail -40` — read the result, not the whole log.
    test_changes: none | {what → where}
    safety_net: {N} passed
    ```
-6. After the last `Tidy` Task, write `_workspace/tdd-agent-team/tidy/tidy-finished.md` (`items: {NN, …}`) and send `READ _workspace/tdd-agent-team/tidy/tidy-finished.md` to `team-lead`.
+6. After the last `Tidy` Task, send that item's `READ _workspace/tdd-agent-team/tidy/{NN}/tidy.md#tidy-result` to `team-lead`.
 
 ## Refactor (your `Refactor {NN}` Tasks — one per task, right after GREEN)
 
@@ -101,7 +101,7 @@ Pipe the output through `| tail -40` — read the result, not the whole log.
    Write every line; put `none` where nothing applies. `status` is `SKIPPED` when the scope had nothing to refactor.
 6. If your role file says `Commit per task: yes`, commit this task: `git add` the `test_file` of `red-result` and every `files_modified` path of `green-result` and `refactor-result`, written out literally, then `git commit -m "feat: {the task's domain rule sentence}"`. If the commit fails, write `_workspace/tdd-agent-team/blocked.md` with the error, send it to `team-lead`, and go on.
 7. Set the Task `completed`. Then check `TaskList`: for each `tdd-red` Task whose `blockedBy` held this Task and is now empty, send `READ {its TASK_DIR}/task.md` to `tdd-red`.
-8. If every `Refactor` Task is now `completed`, write `_workspace/tdd-agent-team/cycle-finished.md` (`refactors: {NN, …}`) and send `READ _workspace/tdd-agent-team/cycle-finished.md` to `team-lead`. Otherwise take your next available Task. Do not report each task to the lead.
+8. If every `Refactor` Task is now `completed`, send `READ {TASK_DIR}/task.md#refactor-result` to `team-lead`. Otherwise take your next available Task. Do not report each task to the lead.
 
 ## Fixes (when the lead sends `READ _workspace/tdd-agent-team/fixes.md`)
 
@@ -113,8 +113,8 @@ Apply only the items assigned to `tdd-refactor`. Each is one of:
 
 Then:
 1. Run every `green-result`'s `test_methods` and the regression set in your role file. All must pass.
-2. Append a `## tdd-refactor` section to `fixes.md` with what changed and a `files_modified: {comma-separated relative paths}` line.
-3. Send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead`.
+2. Append a `## refactor-result` section to `fixes.md` with what changed and a `files_modified: {comma-separated relative paths}` line.
+3. Send `READ _workspace/tdd-agent-team/fixes.md#refactor-result` to `team-lead`.
 
 ## Never
 

@@ -73,7 +73,7 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 
 ### Tidy First (정비 항목이 있을 때만)
 
-`tdd-refactor`가 `Tidy` Task를 순서대로 처리합니다 — 계획에 적힌 정비만(동작 변경 금지), 테스트가 이동·이름 변경을 따라가야 하면 직접 고침(assertion 불변), 안전망 재통과. 마지막 항목 뒤 `tidy-finished.md`를 리드에게 보내면, 리드가 안전망·범위·테스트 변경을 검수하고 ← **사용자 확인**: `refactor` 커밋을 따로 할지(리드가 커밋 / 직접 / 커밋 없이). 이어서 스텁을 만들고 `Tidy gate`를 완료해 사이클을 엽니다.
+`tdd-refactor`가 `Tidy` Task를 순서대로 처리합니다 — 계획에 적힌 정비만(동작 변경 금지), 테스트가 이동·이름 변경을 따라가야 하면 직접 고침(assertion 불변), 안전망 재통과. 마지막 항목의 `tidy-result`를 리드에게 보내면, 리드가 안전망·범위·테스트 변경을 검수하고 ← **사용자 확인**: `refactor` 커밋을 따로 할지(리드가 커밋 / 직접 / 커밋 없이). 이어서 스텁을 만들고 `Tidy gate`를 완료해 사이클을 엽니다.
 
 ### 사이클 (태스크마다)
 
@@ -89,7 +89,7 @@ tdd-red ── 실패 테스트 → task.md#red-result, owner를 tdd-green으로
 - **GREEN은 최소 코드만** 쓰고 리팩터링하지 않습니다
 - **`tdd-refactor`는 그 태스크의 범위 안에서만** 프로덕션·테스트를 리팩터링합니다. 클래스마다 책임을 한 문장으로 적고(둘 이상이면 Extract Class), 테스트는 단언·입력·테스트 수를 바꾸지 않습니다. 범위 밖에서 보인 리팩터링 거리는 고치지 않고 `deferred`에 남겨 최종 리뷰로 넘깁니다
 - **스텁 요청은 팀원끼리** — RED가 `task.md#missing-stub`을 GREEN에게 보내고, GREEN이 "미구현" 예외 스텁과 시그니처를 추가한 뒤 회신합니다
-- 모든 `Refactor`가 끝나면 `tdd-refactor`가 리드에게 `cycle-finished.md`를 보냅니다
+- 모든 `Refactor`가 끝나면 `tdd-refactor`가 리드에게 마지막 `refactor-result`를 보냅니다
 
 ### 사이클 중 리드
 
@@ -101,7 +101,7 @@ tdd-red ── 실패 테스트 → task.md#red-result, owner를 tdd-green으로
 
 ### 마무리
 
-1. **최종 검수** (리드, `cycle-finished.md` 수신 후 한 번) — 태스크마다 `task.md`의 `green-result`·`refactor-result` 섹션만 보고 확인합니다
+1. **최종 검수** (리드, 마지막 `refactor-result` 수신 후 한 번) — 태스크마다 `task.md`의 `green-result`·`refactor-result` 섹션만 보고 확인합니다
    - `red-check.log` 기록(없으면 반려하지 않고 `red-first unverified`로 남겨 `review-test`가 지적)
    - 수정 파일이 그 태스크 범위 안인지
    - 리팩터링 기록(기법, 클래스당 책임 한 줄)
@@ -110,8 +110,8 @@ tdd-red ── 실패 테스트 → task.md#red-result, owner를 tdd-green으로
    
    RED가 처음부터 통과해 `already_passing`으로 남긴 테스트는 리드가 유지할지 삭제할지 정합니다(RED는 스스로 지우지 않음).
    
-   실패는 `fixes.md`로 담당자별로(동작 GREEN, 구조 `tdd-refactor`, 테스트 RED) 최대 2라운드, 넘으면 사용자에게 묻습니다. `deferred` 항목은 `deferred.md`로 모읍니다(없으면 파일을 만들지 않음)
-2. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임, `deferred.md` 항목 판정) 3명이 각자 리포트를 씁니다. Critical/Important 지적이 있는 리뷰어만 나머지 두 명에게 반박을 1회 받습니다. 리드가 종합해 사용자에게 묻고, 승인한 것만 반영합니다 — 테스트는 RED, 설계·가독성은 `tdd-refactor`. 동작 누락·오류는 사이클과 같이 RED가 실패 테스트를 먼저 쓰고 GREEN이 red check 후 구현합니다(모든 기록은 `fixes.md` 한 파일). 동작 수정으로 불필요해진 테스트는 리드가 판단해 `fixes.md`에 지목하고, RED는 지목된 테스트만 삭제합니다
+   실패는 `fixes.md`로 담당자별로(동작 GREEN, 구조 `tdd-refactor`, 테스트 RED) 최대 2라운드, 넘으면 사용자에게 묻습니다.
+2. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임, `refactor-result`의 `deferred` 판정) 3명이 각자 리포트를 씁니다. Critical/Important 지적이 있는 리뷰어만 나머지 두 명에게 반박을 1회 받습니다. 리드가 종합해 사용자에게 묻고, 승인한 것만 반영합니다 — 테스트는 RED, 설계·가독성은 `tdd-refactor`. 동작 누락·오류는 사이클과 같이 RED가 실패 테스트를 먼저 쓰고 GREEN이 red check 후 구현합니다(모든 기록은 `fixes.md` 한 파일). 동작 수정으로 불필요해진 테스트는 리드가 판단해 `fixes.md`에 지목하고, RED는 지목된 테스트만 삭제합니다
 3. **종료** — 팀원 종료 요청, 요약 출력, `session.md` 끝에 `session: COMPLETE` 기록, `_workspace/tdd-agent-team/`는 git 제외 상태로 남깁니다
 
 ## 팀원 정의 (플러그인 `agents/`)

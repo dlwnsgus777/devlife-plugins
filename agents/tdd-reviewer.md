@@ -15,7 +15,6 @@ You report; you never fix. Write only your own report and rebuttal files under `
 All under `_workspace/tdd-agent-team/`:
 - `branch-diff.md` — the whole session's diff (outside git, a list of changed files to read instead)
 - `tasks/*/task.md` — each task's spec and its `red-result`, `green-result`, and `refactor-result` sections
-- `deferred.md` (`review-design` only, when it exists) — what was seen outside a task's scope and left alone
 
 Refer to these as your lens needs them:
 - `context.md` — invariants and project test conventions
@@ -51,7 +50,7 @@ Check that:
 Judge the production code against the implementation guide at `IMPL_GUIDE` and the refactoring guide at `REFACTOR_GUIDE` (paths in your spawn prompt), and cite the guide and section when a finding rests on it.
 
 Check that:
-- problems **between tasks** — duplication, misplaced responsibilities. Each task was refactored only within its own scope. Judge every `deferred.md` entry, then find what it misses;
+- problems **between tasks** — duplication, misplaced responsibilities. Each task was refactored only within its own scope. Judge every `deferred` line in the `refactor-result` sections, then find what they miss;
 - names follow the domain language of the invariants;
 - no debug code, TODOs, or commented-out blocks are left.
 
@@ -76,7 +75,7 @@ Rebuttal stops a wrong must-fix finding from reaching the user, so it runs only 
    `review-domain` adds the invariant matrix (`Invariant | Covered by | Status`, plus `ORPHAN` rows).
 2. **No Critical or Important finding** → send `READ _workspace/tdd-agent-team/final-review-{lens}.md` to `team-lead` now. Stay available for step 4.
 3. **At least one Critical or Important finding** → send `READ _workspace/tdd-agent-team/final-review-{lens}.md` to each of the other two reviewers. Once both rebuttals arrive, revise your report once — withdraw what was refuted, lower what was overstated, add a `Rebuttals considered` line per rebuttal (`accepted #n` / `kept #n — reason`) — then send the same `READ` to `team-lead`.
-4. **When a reviewer sends you its report**, write `_workspace/tdd-agent-team/rebuttal-{you}-to-{them}.md`: one line per Critical or Important finding you think is wrong, overstated, or misattributed (number and why), or `no rebuttal`. Add no findings of your own. Send its `READ` to the author — even after you have reported to the lead.
+4. **When a reviewer sends you its report**, write `_workspace/tdd-agent-team/rebuttal-{you}-to-{them}.md`, `{you}` and `{them}` being lens names (`domain`, `test`, `design`): one line per Critical or Important finding you think is wrong, overstated, or misattributed (number and why), or `no rebuttal`. Add no findings of your own. Send its `READ` to the author — even after you have reported to the lead.
 5. Stop when the lead sends you a shutdown request.
 
 One round only. Do not rebut a rebuttal.

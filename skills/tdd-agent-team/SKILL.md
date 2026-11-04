@@ -110,18 +110,14 @@ Use `info/exclude`, never `.gitignore`.
 | `roles/{name}.md` | lead (Setup 6) | that teammate only | What only that role needs |
 | `session.md` | lead only | lead, reviewers, next run's Setup 1 | Task list, base commit, progress |
 | `tidy/{NN}/tidy.md` | lead (header, `lead-check`); `tdd-refactor` (`tidy-result`, `blocked`) | lead, `tdd-refactor` | One Tidy First item |
-| `tidy/tidy-finished.md` | `tdd-refactor` | lead | Every Tidy item is done |
 | `tasks/{NN}/task.md` | lead (header); each teammate its own sections | lead, teammates | One task and all its results |
 | `tasks/{NN}/red-check.log` | `tdd-green` | reviewers | Proof the task's tests failed first |
 | `blocked.md` | `tdd-refactor` | lead | A block outside any task |
-| `cycle-finished.md` | `tdd-refactor` (lead, if a skip ends the cycle) | lead | Every Refactor is done |
 | `final-test.log` | lead | reviewers | Final run of every session method |
-| `deferred.md` | lead | `review-design` | Out-of-scope notes from `refactor-result` |
 | `branch-diff.md` | lead | reviewers | The session's whole diff |
 | `final-review-{lens}.md` | each reviewer | lead, other reviewers | One lens's findings |
-| `rebuttal-{you}-to-{them}.md` | each reviewer | lead | Rebuttal of another lens |
-| `final-review.md` | lead | user | Merged review |
-| `fixes.md` | lead (items); each owner its section | assigned owners | Approved fixes |
+| `rebuttal-{you}-to-{them}.md` (lens names, e.g. `rebuttal-design-to-domain.md`) | each reviewer | lead | Rebuttal of another lens |
+| `fixes.md` | lead (`## tdd-red`/`tdd-green`/`tdd-refactor` items); each owner its `## red-result`/`green-result`/`refactor-result` | assigned owners | Approved fixes |
 | `fix-red-check.log` | `tdd-green` | lead | Red check of fix tests |
 | `archive-{YYYYMMDD-HHMMSS}/` | lead (Setup 1) | — | A previous session, never deleted |
 
@@ -374,7 +370,7 @@ All three start now, `tdd-refactor` included — it owns the tidy items before t
 
 Restructure before the requested change, and commit it separately so it never mixes with the feature work. `tdd-refactor` takes the `Tidy {NN}` Tasks in order; every cycle Task is blocked by the `Tidy gate` Task, which you own, so nothing else runs meanwhile — RED writing new tests against a structure being moved would collide.
 
-**Tidy Check.** When the last item is done, `tdd-refactor` sends you `READ {TDD_DIR}/tidy/tidy-finished.md`. Check each item's `tidy-result` section:
+**Tidy Check.** When the last item is done, `tdd-refactor` sends you that item's `READ {TDD_DIR}/tidy/{NN}/tidy.md#tidy-result`. Check every item's `tidy-result` section:
 - the safety-net tests pass again;
 - changed files are within the item's in-scope files;
 - `test_changes` are mechanical only — no assertion, input, or test count changed.
@@ -431,9 +427,9 @@ You are off the cycle's path. `tdd-red` → `tdd-green` → `tdd-refactor` → t
 | Message | Your action |
 |---|---|
 | `READY` | Note that the teammate is up. Send nothing — it takes its own work |
-| `READ {TDD_DIR}/tidy/tidy-finished.md` | Tidy Check and the Tidy First checkpoint (Tidy First above) |
+| `READ {TDD_DIR}/tidy/{NN}/tidy.md#tidy-result` | The last Tidy item is done — Tidy Check and the Tidy First checkpoint (Tidy First above) |
 | `READ …#blocked` / `READ {TDD_DIR}/blocked.md` | See **Handling `blocked`** below |
-| `READ {TDD_DIR}/cycle-finished.md` | Every `Refactor` is done — run the **Final Verification** |
+| `READ {TASK_DIR}/task.md#refactor-result` | The last `Refactor` is done — run the **Final Verification** |
 | Idle notification | **Usually nothing — do not reply, do not inspect files.** Teammates go idle between every message. The exception is under **When everyone is idle** |
 
 **Handling `blocked`** — by cause:
@@ -442,13 +438,13 @@ You are off the cycle's path. `tdd-red` → `tdd-green` → `tdd-refactor` → t
 - A file outside the task's scope is needed → widen `scope_production` in `task.md` and the `blockedBy` of later overlapping Tasks, or ask the user.
 - RED's tests refused twice, or a design problem → handle the **Blocked Task** below, then ask the user.
 
-**When everyone is idle** — all teammates idle and no `cycle-finished.md` means a handoff was never sent: a result section is written, but its receiver never got the message. Find it by matching the open Tasks in `TaskList` against the result sections in each `task.md`, and send that `READ {TASK_DIR}/task.md#{section}` to the receiver yourself — for example `READ {TASK_DIR}/task.md#red-result` to `tdd-green`.
+**When everyone is idle** — all teammates idle while a `Refactor` Task is still open means a handoff was never sent: a result section is written, but its receiver never got the message. Find it by matching the open Tasks in `TaskList` against the result sections in each `task.md`, and send that `READ {TASK_DIR}/task.md#{section}` to the receiver yourself — for example `READ {TASK_DIR}/task.md#red-result` to `tdd-green`.
 
 **Blocked Task.** A blocked task must not stop the rest:
 1. Set its `Task {NN}` `completed` with `metadata: { blocked: true }` and its `Refactor {NN}` `completed` with `metadata: { skipped: true }`.
 2. Mark it `BLOCKED` in `session.md`.
 3. For every Task this just unblocked, send `tdd-red` `READ {TASK_DIR}/task.md`.
-4. If that skip completed the last open `Refactor`, no teammate will send `cycle-finished.md`: write it yourself and go to the Final Verification.
+4. If that skip completed the last open `Refactor`, no teammate will report the end: go to the Final Verification yourself.
 5. If the user decides to redo the task, create a new `Task {NN}` / `Refactor {NN}` pair (same `TASK_DIR`), update the header of `task.md` and clear its result sections, then send `tdd-red` `READ {TASK_DIR}/task.md`.
 
 Update `session.md` after every message you act on. A Task's status can lag; the evidence is always the result sections in `task.md`.
@@ -478,11 +474,9 @@ Check 3 looks only for the record; whether the design is right is `review-design
 
 **Already-passing tests.** A `red-result` may list `already_passing` methods — tests that passed before GREEN touched anything. Deleting a test is your decision, so RED kept them. For each, keep it as coverage or delete it as redundant (a fix item for `tdd-red` naming the id), and note the decision in `session.md`.
 
-**Collect `deferred`.** Copy every `deferred` line other than `none` from the `refactor-result` sections into `{TDD_DIR}/deferred.md`, one line each, prefixed with the task number; the `review-design` lens judges them. If every line is `none`, write no `deferred.md`.
-
 **When a check fails**
 - Write `{TDD_DIR}/fixes.md` with the failures split by owner, and send each owner its `READ`: missing or wrong behavior to `tdd-green`, structure and refactor records to `tdd-refactor`, tests to `tdd-red`.
-- When all have reported, rerun checks 2–4 for the changed tasks and check 5 once.
+- When all have reported, rerun checks 2–4 for the changed tasks and check 5 once. If per-task commits are on, then commit these fixes by kind, as in Final Stage 2 — before `fixes.md` is rewritten for the review.
 - At most 2 rounds, then ask the user.
 - Every task that passes is `DONE` in `session.md`.
 
@@ -511,7 +505,7 @@ Agent({ name: "review-design", subagent_type: "devlife:tdd-reviewer", descriptio
 Each writes `{TDD_DIR}/final-review-{lens}.md`. A reviewer with Critical or Important findings exchanges one rebuttal round with the other two before reporting (the reviewer definition's Protocol).
 - Wait for `READ {TDD_DIR}/final-review-{lens}.md` from all three.
 - **All reviewers idle and one has not reported** — a rebuttal handoff was lost. Find which `rebuttal-{you}-to-{them}.md` the silent reviewer still lacks and send its owner `READ {TDD_DIR}/final-review-{them}.md` once. If the reviewers go idle again without that report, merge the silent reviewer's `final-review-{lens}.md` as it stands and tell the user its rebuttal round did not finish.
-- Merge them into `{TDD_DIR}/final-review.md`: drop findings a rebuttal refuted, keep the rest with their severity.
+- Merge them: drop findings a rebuttal refuted, keep the rest with their severity. That merged list is what you show the user.
 - Then send each reviewer a shutdown request right away.
 
 Whenever there is at least one finding, show the findings to the user and ask. **The findings go in the same message as the question** — the reviewers' shutdown notices print between your messages and push an earlier list off the screen.
@@ -528,12 +522,13 @@ Whenever there is at least one finding, show the findings to the user and ask. *
 
 Keep `tdd-red`, `tdd-green`, and `tdd-refactor` running until the answer is in — any of them may own a fix.
 - Write `{TDD_DIR}/fixes.md` with only the approved items, split by owner, and send each owner its `READ`: test changes to `tdd-red`, design and readability findings (`review-design`) to `tdd-refactor`, behavior fixes as below.
+- If per-task commits are on, commit by kind, staging only each result section's `files_modified` paths: once RED and GREEN have reported, `git commit -m "fix: {summary}"`; only then send `tdd-refactor` its `READ`, and when it reports, `git commit -m "refactor: {summary}"`. Behavior and structure never share a commit.
 - When all have reported, re-run Final Verification check 5 once.
 
 **A behavior fix starts Red, like every task.**
 - List it twice in `fixes.md`: under `tdd-red` as the failing test to write (the domain sentence and the input), and under `tdd-green` as "make RED's new tests pass".
-- Send `READ` only to `tdd-red` (and `tdd-refactor`, if it has items). RED hands the file on to GREEN when its tests are red, and GREEN reports to you.
-- Everything stays in `fixes.md`: each teammate appends its own section, and GREEN's red check goes to `{TDD_DIR}/fix-red-check.log`. Make no other files for this.
+- Send `READ` only to `tdd-red` (`tdd-refactor` follows the commit order above). RED hands the file on to GREEN when its tests are red, and GREEN reports to you.
+- Everything stays in `fixes.md`: each teammate appends its result section (`## red-result`, `## green-result`, `## refactor-result`), and GREEN's red check goes to `{TDD_DIR}/fix-red-check.log`. Make no other files for this.
 
 **Deleting a test is your decision.** When a behavior fix leaves a test obsolete — it checks behavior the fix removes or replaces — name that test id in `tdd-red`'s items in `fixes.md`, with the reason. RED deletes only the tests listed there.
 
@@ -543,8 +538,6 @@ Keep `tdd-red`, `tdd-green`, and `tdd-refactor` running until the answer is in �
 - If the user approved nothing → shut down `tdd-red`, `tdd-green`, and `tdd-refactor` immediately.
 
 ### 3. Summarize
-
-If per-task commits are on and `fixes.md` has any `files_modified` line, commit those fixes once: `git add` each listed path, written out literally, then `git commit -m "fix: apply final verification and review fixes"`.
 
 Send a shutdown request to any teammate not yet shut down, then print the summary **without waiting for shutdown acknowledgements** — a teammate finishes its current turn before it exits:
 

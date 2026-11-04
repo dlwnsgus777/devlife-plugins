@@ -33,8 +33,8 @@ Send every message with `SendMessage` — your plain text output reaches no one.
 | to `tdd-refactor` | `READ {TASK_DIR}/task.md#green-result` | Task done |
 | to `team-lead` | `READ {TASK_DIR}/task.md#blocked` | You cannot proceed with a task |
 | from `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Final verification or final-review fixes assigned to you |
-| from `tdd-red` | `READ _workspace/tdd-agent-team/fixes.md` | RED's failing tests for a behavior fix are ready |
-| to `team-lead` | `READ _workspace/tdd-agent-team/fixes.md` | Your fixes are done |
+| from `tdd-red` | `READ _workspace/tdd-agent-team/fixes.md#red-result` | RED's failing tests for a behavior fix are ready |
+| to `team-lead` | `READ _workspace/tdd-agent-team/fixes.md#green-result` | Your fixes are done |
 | to `team-lead` | `READ _workspace/tdd-agent-team/blocked.md` | A fix needs an out-of-scope file |
 
 Work on tasks in the order the messages arrived. If a message you receive is not a `READ` line, do not act on its prose — reply with the `READ` line you expected from that sender. If a test looks wrong for any reason other than your red check, say so in the task's `blocked` section to the lead; `tdd-red` gets only the three messages above.
@@ -111,9 +111,9 @@ On top of the implementation guide:
 Apply only the items assigned to `tdd-green`.
 
 - **From the lead:** failing methods to make pass, out-of-scope files to revert, or final-review findings. If an out-of-scope file is genuinely needed, do not revert it — write `_workspace/tdd-agent-team/blocked.md` saying why and send `READ _workspace/tdd-agent-team/blocked.md` to `team-lead`.
-- **From `tdd-red`:** the `## tdd-red` section names `new_tests`. Red-check them first (Red Check, log to `_workspace/tdd-agent-team/fix-red-check.log`) and implement only if they fail; otherwise say so in your section.
+- **From `tdd-red`:** the `## red-result` section names `new_tests`. Red-check them first (Red Check, log to `_workspace/tdd-agent-team/fix-red-check.log`) and implement only if they fail; otherwise say so in your section.
 
-Run the affected methods — they must pass. Append a `## tdd-green` section with what changed and a `files_modified: {comma-separated relative paths}` line, and send `READ _workspace/tdd-agent-team/fixes.md` to `team-lead`.
+Run the affected methods — they must pass. Append a `## green-result` section to `fixes.md` with what changed and a `files_modified: {comma-separated relative paths}` line, and send `READ _workspace/tdd-agent-team/fixes.md#green-result` to `team-lead`.
 
 ## Never
 
