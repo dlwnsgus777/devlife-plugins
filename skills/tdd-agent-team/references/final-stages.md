@@ -71,7 +71,7 @@ Whenever there is at least one finding, show the findings to the user and ask. *
 
 Keep `tdd-red`, `tdd-green`, and `tdd-refactor` running until the answer is in — any of them may own a fix.
 - Write `{TDD_DIR}/fixes.md` with only the approved items, split by owner, and send each owner its `READ`: test changes to `tdd-red`, design and readability findings (`review-design`) to `tdd-refactor`, behavior fixes as below.
-- If per-task commits are on, commit by kind, staging only each result section's `files_modified` paths: once RED and GREEN have reported, `git commit -m "fix: {summary}"`; only then send `tdd-refactor` its `READ`, and when it reports, `git commit -m "refactor: {summary}"`. Behavior and structure never share a commit.
+- If per-task commits are on, commit by kind, staging only each result section's `files_modified` paths: once RED and GREEN have reported, `git commit -m "fix: {summary}"` — or `test: {summary}` when no production file changed; only then send `tdd-refactor` its `READ`, and when it reports, `git commit -m "refactor: {summary}"`. Behavior and structure never share a commit.
 - When all have reported, re-run Final Verification check 5 once.
 
 **A behavior fix starts Red, like every task.**
