@@ -4,6 +4,27 @@
 
 ---
 
+## 2026-11-05
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-agent-team` | `2.3.0` | 테스트 컨벤션은 프로젝트 지침에 있거나 기존 테스트 3개 이상이 공유할 때만 기록. RED는 `task.md`의 입력에도 "구현을 구분하는 입력" 규칙을 적용하고, `review-test`는 그럴듯한 잘못된 구현이 통과하는 테스트를 Important로 지적. 최종 검수·리뷰·요약을 `references/final-stages.md`로 옮겨 마지막 Refactor 뒤에 읽음. 운영 코드가 바뀌지 않은 리뷰 수정은 `test:`로 커밋 |
+| `test-writing` | `1.1.0` | "구현을 구분하는 입력" 규칙 추가 — 테스트마다 가장 그럴듯한 잘못된 구현을 떠올려, 그것도 통과하면 실패할 때까지 입력을 바꾸거나 추가 |
+
+---
+
+## 2026-11-04
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-agent-team` | `2.2.0` | 팀원·리뷰어 정의와 참조 가이드 정리(목적 명시, 다른 에이전트 동작 서술 제거, 메시지는 `SendMessage`). 태스크별 커밋 옵션(Setup 5에서 선택, `tdd-refactor`가 사이클마다 `feat:` 커밋, 수정은 `fix:`·`refactor:`로 분리). GREEN↔RED `compile-error` 메시지 추가. 계층·안티패턴·재사용 규칙을 리팩터링 가이드로 옮기고 Refactor에서 새 클래스 생성 허용. 세션 파일 4개(`tidy-finished`·`cycle-finished`·`deferred`·`final-review`) 제거. `fixes.md` 결과 섹션은 `## *-result`, 반박 파일은 관점 이름. 코드에 세션용 표기 금지. 리뷰어 미보고 시 리드 재전송 절차 |
+
+---
+
 ## 2026-11-03
 
 ### devlife-tdd

@@ -2,20 +2,20 @@
 
 How the lead finds tidy candidates when the requirements document names none. Run it during the Setup exploration, only on code the requested change will modify. A brand-new feature with no existing code to change has no candidates.
 
-The question is never "is this code clean?" — it is **"can this requirement land in one place?"** A tidy item exists to make *this* change easy, not to improve the codebase.
+Ask one question of that code: **what in its current structure makes this requirement hard to add?** A tidy item exists only to make this change easy; a smell the change does not run into is left alone.
 
 ## 1. Landing Spot
 
-For each place the change must touch, ask where the new requirement has to go and what in the current structure stops it from going there in one piece:
+For each place the change must touch, ask where the new requirement goes and what in the current structure makes adding it there hard:
 
-| Blocker | Looks like | Typical restructuring |
-|---|---|---|
-| Scattered edits | the same new rule would have to be added in several classes or methods | Extract Method / Move Method so the rule has one home |
-| No seam | responsibilities are tangled, so there is no method or class where the new behavior could be added on its own | Extract Method / Extract Class to create the seam |
-| Repeated branch | the same conditional appears in several spots, and the change adds a branch to each | Consolidate the conditional into one place |
-| Overloaded signature | the change needs one more value threaded through many parameters | Introduce Parameter Object |
+| Blocker | Looks like | Example | Typical restructuring |
+|---|---|---|---|
+| Scattered edits | the same new rule would have to be added in several classes or methods | an order-amount cap must go into both `create()` and `update()` | Extract Method / Move Method so the rule has one home |
+| No seam | responsibilities are tangled, so there is no method or class where the new behavior could be added on its own | discount math sits inside `checkout()` next to payment and stock updates, with no place for a new discount rule | Extract Method / Extract Class to create the seam |
+| Repeated branch | the same conditional appears in several spots, and the change adds a branch to each | `if (grade == VIP)` appears in price, shipping and points, and a new `GOLD` grade needs a branch in each | Consolidate the conditional into one place |
+| Overloaded signature | the change needs one more value threaded through many parameters | adding a delivery time slot means one more parameter on four methods | Introduce Parameter Object |
 
-Each blocker is one candidate. **A smell the requirement never touches is not a candidate**, however bad it is.
+Each blocker is one candidate.
 
 ## 2. Abstraction (strict)
 
@@ -27,11 +27,27 @@ Propose extracting an abstraction only when all three hold:
 
 A single case, or a structural smell with no domain reason, is no proposal — an interface with one implementation is an anti-pattern. The abstraction is extracted from the existing cases; the new case is a task.
 
+E.g. the requirement adds KakaoPay, and payment methods keep growing. Before:
+```java
+int fee(PaymentType type, int amount) {
+    if (type == CARD) return amount * 3 / 100;
+    if (type == BANK) return 500;
+    throw new IllegalArgumentException();
+}
+```
+The tidy item extracts the interface from the existing cases only:
+```java
+interface PaymentMethod { int fee(int amount); }
+class CardPayment implements PaymentMethod { public int fee(int amount) { return amount * 3 / 100; } }
+class BankPayment implements PaymentMethod { public int fee(int amount) { return 500; } }
+// No KakaoPayment here — that is the task's work.
+```
+
 ## 3. Writing a Candidate
 
 For each candidate, record:
 
-- **Blocker** — what in the current code stops the change from landing in one place (file and method).
+- **Blocker** — what in the current code makes the change hard to add (file and method).
 - **Restructuring** — the named technique.
 - **Landing spot** — where the change goes once the blocker is removed.
 

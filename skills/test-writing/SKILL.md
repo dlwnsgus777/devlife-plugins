@@ -21,6 +21,7 @@ This guide covers **what a test looks like**. When to run tests, and in what ord
 
 - **Every scenario the task names, in one pass.** List the scenarios of the expected behavior before writing, and give each one its own test case. A scenario with no test is not unverified — it is unbuilt, because GREEN builds exactly what the tests demand.
 - **Each business rule at its boundary**: the case that violates it, the nearest case that satisfies it, and every state or input the rule itself names.
+- **Inputs that tell implementations apart** — so a wrong implementation fails. For each test, name the most likely wrong implementation of its rule and check whether it would also pass; if it would, change or add an input until it fails.
 - **Not** constructors or factories with no behavior, trivial accessors, or plain data holders (DTOs, records). A test case with no business rule behind it is redundant — leave it out.
 
 ## 2. One Behavior per Test
