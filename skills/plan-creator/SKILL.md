@@ -31,7 +31,7 @@ A requirements document is any document that states what this task must do — a
 - **Categories** — request every category on every sweep. The only exception is skipping category 6 when a requirements document already fixed the invariants: re-deriving them from guard clauses only restates what the document settled, as weaker `[코드추론]` evidence. A category never requested leaves no trace in the results, so you cannot tell later that it is missing.
 
 1. Spawn a sub-agent via `Agent({ subagent_type: "Explore", ... })` with the prompt below.
-2. If the Explore agent is unavailable, tell the user `not available`, then run the same sweep yourself — same scope, same categories — with `rg`, `rg --files`, and reads of the files the results point to.
+2. If the Explore agent is unavailable, tell the user `not available`, then run the same sweep yourself — same scope, same categories — with the Glob, Grep, and Read tools.
 
 Widen the scope one step — file, then package, then domain — and run the sweep again when the results show any of these:
 
@@ -61,6 +61,7 @@ Explorer prompt:
 > Scan [the current sweep scope] in this project and report the categories below — **file paths and signatures only, no full implementations**. The one exception is category 8: for each defect, give `path:line`, what the code does, and why it's wrong, in one or two sentences.
 > Cap each category at the **8 entries most relevant to the requirement**. If there are more, list the top 8 and add a `+N more` count line rather than enumerating them.
 > Category 7 means tests whose behavior overlaps the requirement — not an inventory of the domain's test suite.
+> Use only Glob, Grep, Read tools. Do not use Bash.
 >
 > [the numbered categories above — the Category column only]"
 

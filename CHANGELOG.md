@@ -6,6 +6,12 @@
 
 ## 2026-11-12
 
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `plan-creator` | `1.14.1` | Explore 서브에이전트는 Glob·Grep·Read 도구만 쓰고 Bash는 쓰지 않음. Explore가 없을 때 직접 탐색도 같은 도구로 |
+
 ### devlife-tdd
 
 | Skill | Version | Change |
