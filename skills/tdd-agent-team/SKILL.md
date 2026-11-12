@@ -168,7 +168,7 @@ Everything below comes from the requirements (a document, or what the user descr
 
 **Regression set** — the existing tests related to this work. They must keep passing throughout.
 - Find every existing test class that exercises a file in scope; add any existing tests the requirements mention.
-- It runs in the final test and is the safety net of the Tidy First and refactor phases.
+- It runs in the final test and is the safety net of the Tidy First phase. A task's refactor runs only the part of it on that task's `regression:` line (Setup 6).
 
 **Tidy First items** — work that changes structure without changing behavior, *before* the requested change, to make that change easier. It changes no behavior, so it can never be Red: each becomes a **tidy item**, not a task.
 - Find such work in the requirements.
@@ -301,7 +301,7 @@ When filling it in:
 - In-scope files: {paths this session may modify}
 - Out of scope: {what this task deliberately does not change}
 - Known pitfalls — do NOT copy: {defect} → {what to do instead}
-- Regression set: {test ids}
+- Regression set (Tidy First safety net and final verification only — a task's refactor runs its `regression:` line): {test ids}
 - Commit per task: {yes | no}
 ```
 
@@ -327,11 +327,13 @@ base: {commit from Setup 2, or none}
 invariants: {INV-001, INV-004}
 test_class: {FQCN}
 scope_production: {relative paths this task changes}
+regression: {test ids, or none}
 scenarios:
 - {scenario sentence}
 ```
 
 - You write this header. Decide `test_class` and `scope_production` here, not in the teammates — the stubs, the per-method commands, and the task order all use them.
+- `regression:` is `tdd-refactor`'s safety net for this task, beside its own methods. List the regression-set entries that exercise this task's `scope_production`; none → `none`. A class that is also any task's `test_class` goes in as its existing method ids — run whole, it would pick up another task's new, still-red tests.
 - The teammates add their result sections below it: `## red-result`, `## gate`, `## missing-stub`, `## green-result`, `## compile-error`, `## refactor-result`, `## blocked`, each written by one teammate.
 - `tidy.md` works the same way: you write the item and `## lead-check`, `tdd-refactor` writes `## tidy-result` and `## blocked`.
 - RED sees `scope_production` as paths only and never opens those files.
@@ -434,6 +436,7 @@ You are off the cycle's path. `tdd-red` → `tdd-green` → `tdd-refactor` → t
 
 **Handling `blocked`** — by cause:
 - A tidy item's safety net is red → stop and tell the user.
+- A refactor's safety net was red before the refactor (`tdd-refactor` reverted its batch and is waiting) → tell the user.
 - A missing fact → add it to `context.md` or the teammate's role file, and reply `READ {TASK_DIR}/task.md` (or the path it was stuck on).
 - A file outside the task's scope is needed → widen `scope_production` in `task.md` and the `blockedBy` of later overlapping Tasks, or ask the user.
 - RED's tests refused twice, or a design problem → handle the **Blocked Task** below, then ask the user.

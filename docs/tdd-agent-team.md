@@ -46,7 +46,7 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 2. **`roles.env` 작성** — 컴파일 명령과 **메서드 단위** 테스트 명령. 병렬로 도는 태스크와 회귀 묶음이 섞이지 않도록 모든 테스트 실행은 메서드 단위입니다. 두 명령을 `.claude/settings.local.json` 허용 목록에 넣을지 한 번 묻습니다
 3. **탐색 1회 + 도출** — 요구사항 문서에 있으면 문서를, 없으면 탐색 결과로 정합니다
    - In-scope 파일·Out of scope·기존 코드의 함정
-   - 회귀 테스트 묶음 — 문서가 지목한 테스트 + 수정할 파일을 다루는 기존 테스트(항상 포함)
+   - 회귀 테스트 묶음 — 문서가 지목한 테스트 + 수정할 파일을 다루는 기존 테스트(항상 포함). 정비 안전망과 최종 검수에 씁니다
    - 불변성 ID — 문서에 없으면 `INV-001`부터 부여
    - **정비 항목** — 동작은 그대로 두고 구조만 먼저 바꾸라는 항목(Tidy First·코드 정비·추상화 추출 등). 문서가 정비 여부를 다루지 않았으면 `references/tidy-first-scan.md` 기준으로 **후보**를 찾아 보여 주고 승인분만 정비. 문서에 `해당 없음`과 이유가 있으면 결정된 것으로 보고 스캔하지 않음
    - **태스크와 영향 범위** — 태스크마다 바꿀 프로덕션 파일(`scope_production`)과 테스트 클래스. 파일이나 테스트 클래스가 하나라도 같으면 "겹친다". 커버리지 하한(불변성마다 어기는/지키는 경계 + 클래스당 해피패스), 하나의 구현 변경으로 통과하는 시나리오는 한 태스크로 병합
@@ -54,7 +54,7 @@ Claude Code **agent teams**로 Red-Green-Refactor TDD를 실행합니다.
 5. **공유 문맥과 역할 파일 작성**
    - `context.md` — 모두가 읽는 사실: 환경, 프로젝트 컨텍스트, 「RED가 호출할 수 있는 시그니처」(구현 코드를 못 읽는 RED의 유일한 창구), 불변성, 작업 규칙
    - `roles/tdd-red.md`·`roles/tdd-green.md`·`roles/tdd-refactor.md` — 그 역할에만 필요한 것(가이드 경로, In-scope 파일, 함정, 회귀 묶음). RED가 GREEN이 무엇을 기준으로 구현하는지 알지 못하도록 나눕니다
-   - `session.md`, `tasks/NN/task.md`
+   - `session.md`, `tasks/NN/task.md` — `task.md` 머리의 `regression:` 줄에는 회귀 묶음 중 이 태스크의 `scope_production`을 실행하는 테스트만 적습니다(없으면 `none`). 다른 태스크의 `test_class`이기도 한 클래스는 기존 메서드 id로 풀어 적습니다
 6. **작업 준비** — 정비 항목이 있으면 항목마다 안전망 테스트를 먼저 돌려 통과를 확인하고 `tidy/NN/tidy.md`를 씁니다. 안전망 테스트가 하나도 없으면 멈추고 묻습니다(테스트를 직접 추가한 뒤 계속 / 안전망 없이 정비 / 이 항목 빼기). 정비 항목이 없으면 이때 스텁을 만듭니다(있으면 정비가 끝난 뒤). 그리고 세션의 **모든 Task를 한 번에** 만들고 `blockedBy`로 순서를 겁니다
 7. **팀원 생성** — 세 팀원을 `devlife:tdd-*`로 띄우고 스폰 프롬프트는 `Start.` 한 줄입니다. 팀원은 `READY`를 보낸 뒤 `context.md`와 자기 역할 파일을 읽고, `TaskList`에서 자기 담당이면서 풀린 Task를 번호 순으로 가져갑니다. 리드는 첫 작업을 보내지 않습니다
 
@@ -88,6 +88,7 @@ tdd-red ── 실패 테스트 → task.md#red-result, owner를 tdd-green으로
 - **메시지 본문은 `READ <경로>` 또는 `READ <경로>#<섹션>` 한 줄뿐**입니다(예외: 첫 보고 `READY`). 한 태스크의 결과는 모두 그 `task.md`에 섹션(`## red-result`, `## gate`, `## missing-stub`, `## green-result`, `## refactor-result`, `## blocked`)으로 쌓이고, 섹션마다 쓰는 팀원은 한 명입니다
 - **GREEN은 최소 코드만** 쓰고 리팩터링하지 않습니다
 - **`tdd-refactor`는 그 태스크의 범위 안에서만** 프로덕션·테스트를 리팩터링합니다. 클래스마다 책임을 한 문장으로 적고(둘 이상이면 Extract Class), 테스트는 단언·입력·테스트 수를 바꾸지 않습니다. 범위 밖에서 보인 리팩터링 거리는 고치지 않고 `deferred`에 남겨 최종 리뷰로 넘깁니다
+- **리팩터 안전망은 리팩터 후 한 번** — 그 태스크의 `test_methods`와 `regression:` 줄만 돌립니다. 실패하면 전부 되돌려 다시 돌리고, 통과하면 한 변경씩 다시 적용해 원인을 찾습니다. 되돌려도 실패하면 원래 깨진 테스트이므로 `blocked.md`로 리드에게 알리고 기다립니다. 태스크를 합친 실행은 최종 검수에서 한 번입니다
 - **스텁 요청은 팀원끼리** — RED가 `task.md#missing-stub`을 GREEN에게 보내고, GREEN이 "미구현" 예외 스텁과 시그니처를 추가한 뒤 회신합니다
 - 모든 `Refactor`가 끝나면 `tdd-refactor`가 리드에게 마지막 `refactor-result`를 보냅니다
 
@@ -95,7 +96,7 @@ tdd-red ── 실패 테스트 → task.md#red-result, owner를 tdd-green으로
 
 리드가 팀원에게 보내는 메시지는 세 가지뿐입니다: `blocked` 회신, `Tidy gate` 해제, 전원 idle일 때 빠진 넘겨주기를 받는 쪽에 직접 재전송(써 놓은 결과 섹션의 `READ {경로}#{섹션}`).
 
-- **`blocked`** (`task.md#blocked`, `tidy.md#blocked`, 세션 전체는 `blocked.md`) — 빠진 사실이면 `context.md`나 역할 파일을 보충하고 회신. 범위 밖 파일이 필요하면 범위·`blockedBy`를 갱신하거나 사용자에게. red check가 두 번 거절됐거나 설계 문제면 **막힌 태스크** 처리 후 사용자에게 묻습니다
+- **`blocked`** (`task.md#blocked`, `tidy.md#blocked`, 세션 전체는 `blocked.md`) — 빠진 사실이면 `context.md`나 역할 파일을 보충하고 회신. 범위 밖 파일이 필요하면 범위·`blockedBy`를 갱신하거나 사용자에게. 리팩터 전부터 깨진 테스트면 사용자에게 알립니다. red check가 두 번 거절됐거나 설계 문제면 **막힌 태스크** 처리 후 사용자에게 묻습니다
 - **막힌 태스크는 세션을 멈추지 않습니다** — 그 `Task`를 `completed`(`blocked`), `Refactor`를 `completed`(`skipped`)로 바꿔 뒤 작업을 풀고, 사용자 판단 뒤 새 Task 쌍으로 다시 진행합니다
 - idle 알림에는 보통 반응하지 않습니다
 
