@@ -84,9 +84,11 @@ Pipe the output through `| tail -40` — read the result, not the whole log.
 ## Refactor (your `Refactor {NN}` Tasks — one per task, right after GREEN)
 
 1. Read `{TASK_DIR}/task.md`: the scope and domain rule, and its `green-result` section (what GREEN changed).
-2. **Safety net:** the `test_methods` of every `green-result` written so far, plus the regression set from your role file. Run it first; it must pass.
+2. **Safety net:** this task's `test_methods` (from its `green-result`) plus the ids on the `regression:` line of its `task.md` (skip that line when it says `none`). Run it once, after refactoring (step 4) — not before.
 3. List every opportunity in the scope (refactoring guide section 2). Start with one responsibility per class: write each class's responsibility as one sentence and run the guide's three checks. Then the task's tests (section 5). Anything outside the scope → `deferred`.
-4. Apply them as one batch, then run the safety net. If anything fails, revert the batch and apply one change at a time to find the culprit.
+4. Apply them as one batch, then run the safety net. If anything fails, revert the whole batch and run it again:
+   - It passes → the batch broke it. Reapply one change at a time to find the culprit.
+   - It still fails → the test was red before your refactor. Leave the batch reverted, write `_workspace/tdd-agent-team/blocked.md` naming the failing tests and this task, and send `READ _workspace/tdd-agent-team/blocked.md` to `team-lead`. Keep the Task `in_progress` and wait for the lead.
 5. Write the `## refactor-result` section of `{TASK_DIR}/task.md`:
    ```
    REFACTOR_RESULT
@@ -112,7 +114,7 @@ Apply only the items assigned to `tdd-refactor`. Each is one of:
 - **Final-review finding** — an approved design or readability finding. Apply it.
 
 Then:
-1. Run every `green-result`'s `test_methods` and the regression set in your role file. All must pass.
+1. Run the `test_methods` and the `regression:` line of each task you changed. All must pass.
 2. Append a `## refactor-result` section to `fixes.md` with what changed and a `files_modified: {comma-separated relative paths}` line.
 3. Send `READ _workspace/tdd-agent-team/fixes.md#refactor-result` to `team-lead`.
 

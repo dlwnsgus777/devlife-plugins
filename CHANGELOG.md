@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-11-12
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-agent-team` | `2.4.0` | `tdd-refactor` 리팩터 안전망을 리팩터 후 한 번만 실행하고, 범위를 그 태스크의 `test_methods` + `task.md`의 `regression:` 줄로 축소. 실패 시 전부 되돌려 재실행하고, 되돌려도 실패하면 `blocked.md`로 리드에게 보고. Fixes 실행도 수정한 태스크 범위로 축소. 회귀 세트는 정비 안전망과 최종 검수 전용 |
+
+---
+
 ## 2026-11-05
 
 ### devlife-planning
