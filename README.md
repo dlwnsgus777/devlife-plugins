@@ -28,8 +28,16 @@
 |-------|---------|-------------|
 | `devlife-brainstorming` | `1.10.1` | 대화로 아이디어의 what/why와 설계 결정을 정리해 승인된 설계 spec 문서로 만듦 |
 | `spec-creator` | `1.1.1` | 대규모 기능 기술 명세 작성 — 도메인 컨텍스트·불변성·하위 태스크 S/M/L 분해 포함 |
-| `plan-creator` | `1.14.1` | 코드를 탐색해 태스크 구현 계획 문서 작성 — API 설계·비즈니스 로직·불변성·TDD 순서 포함, `docs/plan/`에 저장 |
+| `plan-creator` | `2.0.0` | 코드를 탐색해 태스크 계획을 작업 폴더 `docs/spec/{날짜}-{티켓}-{slug}/`로 작성 — `plan.md`(무엇·어떻게 — Phase별 구현 대상 파일·코드 스니핏 포함)·`decisions.md`(왜) |
+| `plan-write` | `1.0.0` | `plan.md` 작성·갱신 — 의도·범위(In/Out)·Phase별 목표와 완료 기준·검증·전제·용어·Backlog |
+| `decision-write` | `1.0.0` | `decisions.md`에 결정을 `Dec-N`으로 덧붙여 기록 — 출처(누가 제안·선택)·영향도, 결정을 뒤집을 땐 사용자 승인 |
 | `pdf-to-spec` | `1.0.0` | PDF 텍스트 추출(PDFKit + Vision OCR) → spec-creator 워크플로우 자동 실행 |
+
+#### Hooks
+
+| Hook | Event | Description |
+|------|-------|-------------|
+| `guard-decisions` | `PreToolUse` | `docs/spec/*/decisions.md`의 기존 Dec를 고치거나 지우는 변경은 사용자 승인을 받음 — 덧붙이기와 `[SUPERSEDED by Dec-N]` 표시만 그냥 통과 |
 
 ---
 
@@ -41,8 +49,8 @@ TDD 실행 워크플로우. Red/Green/Refactor 사이클을 서브에이전트 �
 
 | Skill | Version | Description |
 |-------|---------|-------------|
-| `tdd-subagent` | `3.2.1` | Red/Green/Refactor 서브에이전트를 순차 실행하는 TDD — 사이클마다 리뷰어 검수, 중단된 세션 재개 지원 |
-| `tdd-agent-team` | `2.4.0` | RED·GREEN·REFACTOR 팀원이 공유 작업 목록으로 병렬 진행하는 TDD — 마지막에 도메인·테스트·설계 리뷰어 3명이 리뷰 |
+| `tdd-subagent` | `3.3.0` | Red/Green/Refactor 서브에이전트를 순차 실행하는 TDD — 사이클마다 리뷰어 검수, 중단된 세션 재개 지원 |
+| `tdd-agent-team` | `2.5.0` | RED·GREEN·REFACTOR 팀원이 공유 작업 목록으로 병렬 진행하는 TDD — 마지막에 도메인·테스트·설계 리뷰어 3명이 리뷰 |
 | `test-writing` | `1.1.0` | 테스트 작성 규칙 — 무엇을 테스트할지, 한 테스트에 한 동작, 도메인 문장 이름, 계층별 테스트 전략 |
 
 #### Agents

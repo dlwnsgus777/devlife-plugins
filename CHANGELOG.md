@@ -4,6 +4,25 @@
 
 ---
 
+## 2026-11-17
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `plan-creator` | `2.0.0` | 계획을 파일 1개에서 작업 폴더 `docs/spec/{날짜}-{티켓}-{slug}/`로 변경 — `plan.md`는 `plan-write`, `decisions.md`는 `decision-write`로 씀. 함정·정비·API·비즈니스 로직·구현 대상 파일·코드 스니핏은 `plan.md` 안(Context와 Phase별 상세)으로 옮김. 묻지 않고 정한 결정도 `ai-selected`로 기록, 기존 폴더의 유효한 결정은 다시 묻지 않음. 자체 검증 9항목 |
+| `plan-write` | `1.0.0` | 신규 — `plan.md` 7개 섹션 작성(코드 작업이면 Phase마다 구현 대상 파일·API·비즈니스 로직·코드 스니핏), 경계가 있는 규칙은 경계 값과 바로 앞 값을 테스트에 명시. 갱신 모드는 Phase 상태·Verification 체크·Backlog 추가·대체된 결정 반영만 |
+| `decision-write` | `1.0.0` | 신규 — `decisions.md`에 Dec를 덧붙이기만 함(형식은 `assets/decision-template.md`, 템플릿 밖 칸 금지). 기존 결정을 뒤집을 땐 멈추고 승인 후 새 Dec + `[SUPERSEDED by Dec-N]` |
+
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-subagent` | `3.3.0` | 계획에 Phase 표가 있으면 Phase가 끝날 때 `plan-write`로 상태 갱신. 유효한 결정을 `context.md`로 전달하고, 결정과 부딪히면 멈춰 사용자 승인 후 `decision-write`로 기록 |
+| `tdd-agent-team` | `2.5.0` | 최종 검수 통과 후 `plan-write`로 Phase 상태 갱신. 결정과 부딪힌 `blocked`는 리드가 사용자 승인 후 `decision-write`로 기록 |
+
+---
+
 ## 2026-11-12
 
 ### devlife-planning
