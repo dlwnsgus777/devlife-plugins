@@ -18,7 +18,7 @@
 
 | Skill | Version | Change |
 |-------|---------|--------|
-| `tdd-subagent` | `3.3.0` | 계획에 Phase 표가 있으면 Phase가 끝날 때 `plan-write`로 상태 갱신. 유효한 결정을 `context.md`로 전달하고, 결정과 부딪히면 멈춰 사용자 승인 후 `decision-write`로 기록 |
+| `tdd-subagent` | `3.3.0` | 계획에 Phase 표가 있으면 Phase가 끝날 때 `plan-write`로 상태 갱신. 유효한 결정을 `context.md`로 전달하고, 결정과 부딪히면 멈춰 사용자 승인 후 `decision-write`로 기록. 범위·함정은 계획 문서의 섹션 이름이 아닌 내용으로 찾음 |
 | `tdd-agent-team` | `2.5.0` | 최종 검수 통과 후 `plan-write`로 Phase 상태 갱신. 결정과 부딪힌 `blocked`는 리드가 사용자 승인 후 `decision-write`로 기록 |
 
 ---
