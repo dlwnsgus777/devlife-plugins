@@ -97,6 +97,7 @@ tdd-red ── 실패 테스트 → task.md#red-result, owner를 tdd-green으로
 리드가 팀원에게 보내는 메시지는 세 가지뿐입니다: `blocked` 회신, `Tidy gate` 해제, 전원 idle일 때 빠진 넘겨주기를 받는 쪽에 직접 재전송(써 놓은 결과 섹션의 `READ {경로}#{섹션}`).
 
 - **`blocked`** (`task.md#blocked`, `tidy.md#blocked`, 세션 전체는 `blocked.md`) — 빠진 사실이면 `context.md`나 역할 파일을 보충하고 회신. 범위 밖 파일이 필요하면 범위·`blockedBy`를 갱신하거나 사용자에게. 리팩터 전부터 깨진 테스트면 사용자에게 알립니다. red check가 두 번 거절됐거나 설계 문제면 **막힌 태스크** 처리 후 사용자에게 묻습니다
+- **결정과 부딪힌 `blocked`** — `context.md`의 Active decisions에 있는 Dec를 깨야 하면 리드는 스스로 풀지 않고 사용자에게 대체 결정 초안과 함께 묻습니다. 승인되면 `decision-write`로 기록하고 그 팀원에게 다시 `READ`를 보냅니다
 - **막힌 태스크는 세션을 멈추지 않습니다** — 그 `Task`를 `completed`(`blocked`), `Refactor`를 `completed`(`skipped`)로 바꿔 뒤 작업을 풀고, 사용자 판단 뒤 새 Task 쌍으로 다시 진행합니다
 - idle 알림에는 보통 반응하지 않습니다
 
@@ -112,6 +113,8 @@ tdd-red ── 실패 테스트 → task.md#red-result, owner를 tdd-green으로
    RED가 처음부터 통과해 `already_passing`으로 남긴 테스트는 리드가 유지할지 삭제할지 정합니다(RED는 스스로 지우지 않음).
    
    실패는 `fixes.md`로 담당자별로(동작 GREEN, 구조 `tdd-refactor`, 테스트 RED) 최대 2라운드, 넘으면 사용자에게 묻습니다.
+   
+   요구사항에 Phase 표가 있는 `plan.md`가 함께 오면, 검수를 통과한 뒤 `plan-write` 갱신 모드로 태스크가 모두 끝난 Phase를 `done`으로 바꾸고 Verification 항목을 체크합니다.
 2. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임, `refactor-result`의 `deferred` 판정) 3명이 각자 리포트를 씁니다. Critical/Important 지적이 있는 리뷰어만 나머지 두 명에게 반박을 1회 받습니다. 리드가 종합해 사용자에게 묻고, 승인한 것만 반영합니다 — 테스트는 RED, 설계·가독성은 `tdd-refactor`. 동작 누락·오류는 사이클과 같이 RED가 실패 테스트를 먼저 쓰고 GREEN이 red check 후 구현합니다(모든 기록은 `fixes.md` 한 파일). 동작 수정으로 불필요해진 테스트는 리드가 판단해 `fixes.md`에 지목하고, RED는 지목된 테스트만 삭제합니다
 3. **종료** — 팀원 종료 요청, 요약 출력, `session.md` 끝에 `session: COMPLETE` 기록, `_workspace/tdd-agent-team/`는 git 제외 상태로 남깁니다
 

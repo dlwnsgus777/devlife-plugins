@@ -126,11 +126,11 @@ These sentences become the source of test names.
 
 ### 4. Decompose into TDD Tasks
 
-**Tidy First items.** Read the requirements document for work that must change structure without changing behavior, *before* the requested change, to make that change easier — whatever the document calls it (Tidy First, refactor first, 코드 정비) and wherever it puts it. Extracting an abstraction counts: it is extracted from the cases that already exist, and the new case it will receive is a task. Each such item becomes a **tidy item**, never a task — it changes no behavior, so it can never be Red, and a RED dispatch on it only comes back `ALREADY_PASSES`. Recognize items by what they ask, not by their position in the document (a plan-creator document, for example, keeps them in its Section 0 and orders them first in its implementation steps).
+**Tidy First items.** Read the requirements document for work that must change structure without changing behavior, *before* the requested change, to make that change easier — whatever the document calls it (Tidy First, refactor first, 코드 정비) and wherever it puts it. Extracting an abstraction counts: it is extracted from the cases that already exist, and the new case it will receive is a task. Each such item becomes a **tidy item**, never a task — it changes no behavior, so it can never be Red, and a RED dispatch on it only comes back `ALREADY_PASSES`. Recognize items by what they ask, not by their position in the document (a plan-creator `plan.md`, for example, keeps them as the Tidy First phase that comes first in its `3. Plan`).
 
 For each tidy item, capture what blocks the change today, the restructuring to apply, and where the change lands afterwards. If the document leaves one of these unsaid, ask at the confirmation below rather than guessing.
 
-**Document doesn't address tidying?** Then look for tidy items yourself: read `{SKILL_DIR}/references/tidy-first-scan.md` and apply it to the code the change will modify. What it finds are **candidates** — shown at the confirmation below, and only the ones the user approves become tidy items. If the document names tidy items, or states that none are needed — a plan-creator Section 0 reading `해당 없음` with its reason, for example — skip the scan; do not second-guess a plan that made this decision.
+**Document doesn't address tidying?** Then look for tidy items yourself: read `{SKILL_DIR}/references/tidy-first-scan.md` and apply it to the code the change will modify. What it finds are **candidates** — shown at the confirmation below, and only the ones the user approves become tidy items. If the document names tidy items, or states that none are needed — a plan-creator `plan.md` reading `정비 해당 없음` with its reason, for example — skip the scan; do not second-guess a plan that made this decision.
 
 If the document already provides an ordered task list, adopt it instead of deriving a new one. Items tagged `[REGRESSION]` (an existing test already covers that behavior) are not cycles — list them once as "기존 커버리지로 확인" and run them as part of Final Review instead of giving each its own RED. Only `[NEW]` items become cycles. Apply the batching rule and coverage floor below before presenting the list — a document often lists scenarios one-per-line for readability, which is a documentation granularity, not a cycle granularity.
 
@@ -217,6 +217,7 @@ The file has four sections, in this order:
 - In-scope files: {actual paths this session may modify — anything else is out of bounds}
 - Out of scope: {what this task deliberately does not change}
 - Known pitfalls — do NOT copy: {defect in existing code} → {what to do instead}
+- Active decisions: {Dec-N — the choice, one line each} — a task that cannot be done without breaking one returns `BLOCKED` with `MISSING_FACT` naming the Dec
 
 ## Domain Invariants
 {numbered list from step 3, IDs verbatim}
@@ -229,7 +230,7 @@ Invariant IDs (`INV-001`, …) are session bookkeeping — they live in `_worksp
 
 Keep it compact (signatures and paths, not full file bodies). If the feature is brand-new with no nearby code, state "관련 기존 코드 없음" and list only the target package.
 
-**In-scope files, Out of scope, and Known pitfalls are boundaries, not background.** Every phase agent runs in its own context and infers conventions from whatever code it reads, which is exactly how a known defect gets reproduced and how an edit lands in a file nobody meant to touch. Source them from the plan document — 「구현 대상 파일」, 「목표가 아닌 것」, and 「기존 코드의 함정」 respectively. If the plan has no pitfall section, spend one pass on the reference implementation the feature imitates before the first cycle; a defect found in cycle 3 has already been copied twice.
+**In-scope files, Out of scope, and Known pitfalls are boundaries, not background.** Every phase agent runs in its own context and infers conventions from whatever code it reads, which is exactly how a known defect gets reproduced and how an edit lands in a file nobody meant to touch. Source them from the requirements — the files to change, what is left out, and the defects not to copy, whatever the document calls those parts. Active decisions come from the `decisions.md` that comes with the plan — the entries without a `[SUPERSEDED by Dec-M]` marker; none → `해당 없음`. If the requirements name no pitfalls, spend one pass on the reference implementation the feature imitates before the first cycle; a defect found in cycle 3 has already been copied twice.
 
 A pitfall entry without its `→ what to do instead` half is worse than omitting it — the agent knows to avoid something and invents its own replacement. If a section has nothing, write `해당 없음` rather than dropping the line, so a later reader can tell it was considered.
 
@@ -439,6 +440,14 @@ If no Codex sub-agent tool is available, say `not available`, then execute the s
 
 After every phase returns, update that task's row in `{TDD_DIR}/session.md` (`status`, `last_phase`) before dispatching the next phase. A crash between phases must leave the file telling the truth about where the session stopped.
 
+### Plan Upkeep
+
+When the requirements include a `plan.md` with a phase table (3. Plan), keep its progress current — the user and the next session read it, not `session.md`.
+
+- At Setup 4, note each task's phase in `session.md` — the phase whose 4. Verification items the task covers.
+- When the last task of a phase passes its cycle review, read `plan-write`'s `SKILL.md` and follow its update mode: set the phase to `done` and check the Verification items its tasks covered. Set the first phase to `doing` when its first cycle starts.
+- If `plan-write` is not in the skill list, make the same two changes in `plan.md` yourself and nothing else.
+
 ### Cycle Reviewer Dispatch
 
 First build the cycle diff. Redirect it straight to a file — the diff must never pass through your context.
@@ -589,6 +598,16 @@ Resolve it yourself and hand it back. You have the whole workspace and your tool
 1. Get the fact — query the database, read the file, check whether the bean actually exists.
 2. Append it to `{TDD_DIR}/context.md`, under the section it belongs to. Every later dispatch inherits it, so the same gap is never paid twice.
 3. Re-dispatch the same call with the **same, un-trimmed** context. Nothing was too big; something was missing.
+
+**A missing fact that is a conflict with an active decision** — the agent names a `Dec-N` the task cannot be done without breaking. This one you never resolve yourself: the decision is the user's.
+
+1. Stop dispatching that task.
+2. Report the Dec, what the task runs into, and a draft of the decision that would replace it:
+
+   > "태스크 {NN}은 Dec-{N}({선택})과 부딪힙니다: {사유}. 이 결정을 '{새 선택}'으로 바꿀까요? 바꾸면 Dec-{M}으로 기록하고 이어서 진행합니다."
+
+3. Approved → read `decision-write`'s `SKILL.md` and follow it to append the new entry and mark the old one superseded. Then follow `plan-write`'s update mode so the plan's pitfalls, phase detail, snippets, and tests follow the new decision — the next run reads them. Update the Active decisions line in `context.md`, then re-dispatch the same call.
+4. Declined → handle the task as `BLOCKED` below.
 
 Never answer `MISSING_FACT` by trimming context — that removes more of what the agent just said it lacks, which is why an agent that expects a trimmed retry learns to go digging instead of reporting. This round counts against no budget: it is the cheap path working as designed, not a retry. If you cannot resolve the fact yourself, ask the user — never re-dispatch and never let the agent go find it.
 

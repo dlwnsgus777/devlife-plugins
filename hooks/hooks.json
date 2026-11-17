@@ -1,5 +1,5 @@
 {
-  "description": "Skips the permission prompt for the md files the TDD skills (tdd-subagent, tdd-agent-team) use to communicate, under _workspace/tdd-subagent/ and _workspace/tdd-agent-team/.",
+  "description": "Skips the permission prompt for the md files the TDD skills (tdd-subagent, tdd-agent-team) use to communicate, under _workspace/tdd-subagent/ and _workspace/tdd-agent-team/. Asks for approval before an existing entry in docs/spec/*/decisions.md is edited or deleted.",
   "hooks": {
     "PreToolUse": [
       {
@@ -8,6 +8,16 @@
           {
             "type": "command",
             "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/allow-tdd-artifact.sh\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-decisions.py\"",
             "timeout": 5
           }
         ]
