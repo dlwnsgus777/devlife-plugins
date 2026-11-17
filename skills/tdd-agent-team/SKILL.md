@@ -163,6 +163,8 @@ Everything below comes from the requirements (a document, or what the user descr
 
 **Scope** — the boundary between what this work changes and what it leaves alone; it keeps teammates from touching anything outside it.
 - Set the in-scope files, out-of-scope items, and known pitfalls (defects in the code the change imitates, each with what to do instead) — from the requirements, or from the tasks and the exploration.
+- Take the active decisions from the `decisions.md` that comes with the requirements — the entries without a `[SUPERSEDED by Dec-M]` marker. None → `해당 없음`.
+- When the requirements include a `plan.md` with a phase table (3. Plan), note each task's phase in `session.md` — the phase whose 4. Verification items it covers.
 - In-scope files are concrete paths; GREEN and `review-domain` check the boundary against them.
 - They go only to GREEN's and `tdd-refactor`'s role files (Setup 6) — RED must not know them.
 
@@ -258,6 +260,7 @@ Write the files the teammates read when they start; they learn the session's fac
 - Fixture pattern: {builder location & usage}
 - Signatures RED may call: {ClassName → public method signatures, including the stubs from Stubs}
 - Domain anchors: {aggregate/entity files + invariants that apply here}
+- Active decisions: {Dec-N — the choice, one line each} — work that cannot be done without breaking one goes to the lead as `blocked`, naming the Dec
 
 ## Domain Invariants
 {list, numbered as in Setup 4}
@@ -440,6 +443,11 @@ You are off the cycle's path. `tdd-red` → `tdd-green` → `tdd-refactor` → t
 - A missing fact → add it to `context.md` or the teammate's role file, and reply `READ {TASK_DIR}/task.md` (or the path it was stuck on).
 - A file outside the task's scope is needed → widen `scope_production` in `task.md` and the `blockedBy` of later overlapping Tasks, or ask the user.
 - RED's tests refused twice, or a design problem → handle the **Blocked Task** below, then ask the user.
+- The work would break an active decision (`Dec-N`) → the decision is the user's, never yours. Report the Dec, what the task runs into, and a draft of the replacing decision:
+
+  > "태스크 {NN}은 Dec-{N}({선택})과 부딪힙니다: {사유}. 이 결정을 '{새 선택}'으로 바꿀까요? 바꾸면 Dec-{M}으로 기록하고 이어서 진행합니다."
+
+  Approved → invoke `decision-write` with the Skill tool, then `plan-write` in its update mode so the plan's pitfalls, phase detail, snippets, and tests follow the new decision, update the Active decisions line in `context.md`, and reply `READ {TASK_DIR}/task.md` to the blocked teammate. Declined → handle the **Blocked Task** below.
 
 **When everyone is idle** — all teammates idle while a `Refactor` Task is still open means a handoff was never sent: a result section is written, but its receiver never got the message. Find it by matching the open Tasks in `TaskList` against the result sections in each `task.md`, and send that `READ {TASK_DIR}/task.md#{section}` to the receiver yourself — for example `READ {TASK_DIR}/task.md#red-result` to `tdd-green`.
 

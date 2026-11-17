@@ -29,6 +29,8 @@ Check 3 looks only for the record; whether the design is right is `review-design
 - At most 2 rounds, then ask the user.
 - Every task that passes is `DONE` in `session.md`.
 
+**Plan upkeep.** When the requirements include a `plan.md` with a phase table, invoke `plan-write` with the Skill tool in its update mode once the checks pass: set to `done` each phase whose tasks are all `DONE`, and check the 4. Verification items those tasks covered. If `plan-write` is not in the skill list, make the same changes in `plan.md` yourself and nothing else.
+
 ## 2. Parallel Final Review ← user checkpoint 2
 
 Build the diff into a file first — it must never pass through your context. One simple command per step:
