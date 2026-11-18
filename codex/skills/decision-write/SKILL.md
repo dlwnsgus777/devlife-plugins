@@ -1,6 +1,6 @@
 ---
 name: decision-write
-description: Records a decision in a task folder's append-only decisions.md (docs/spec/{date}-{ticket}-{slug}/decisions.md) as a Dec-N entry — problem, options, choice, rationale, impact, and who proposed and who chose it. Also handles reversing an earlier decision, which needs the user's approval. Use when plan-creator or a TDD skill records a decision, or when the user says "결정 기록해줘", "결정 추가해줘", "이 결정 바꿔줘", "Dec 추가", or asks to change decisions.md.
+description: Records a decision in a task folder's append-only decisions.md (docs/spec/{ticket}-{slug}/decisions.md) as a Dec-N entry — problem, options, choice, rationale, impact, and who proposed and who chose it. Also handles reversing an earlier decision, which needs the user's approval. Use when plan-creator or a TDD skill records a decision, or when the user says "결정 기록해줘", "결정 추가해줘", "이 결정 바꿔줘", "Dec 추가", or asks to change decisions.md.
 ---
 
 # Decision Write
@@ -9,7 +9,7 @@ description: Records a decision in a task folder's append-only decisions.md (doc
 
 ## Input
 
-- The task folder path — `docs/spec/{YYYY-MM-DD}-{ticket}-{slug}/`. If the caller gives none and the request names no folder, ask which one.
+- The task folder path — `docs/spec/{ticket}-{slug}/`, or `docs/spec/{YYYY-MM-DD}-{slug}/` without a ticket. If the caller gives none and the request names no folder, ask which one.
 - One or more decisions, each with its problem, options, choice, rationale, source, and impact.
 
 If the folder has no `decisions.md`, create it with the single line `# Decisions` before the first entry.
