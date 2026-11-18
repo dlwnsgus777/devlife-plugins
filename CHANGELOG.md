@@ -14,6 +14,13 @@
 | `plan-write` | `1.0.1` | 설명의 작업 폴더 경로를 새 이름 규칙에 맞춤 |
 | `decision-write` | `1.0.1` | 작업 폴더 경로를 새 이름 규칙에 맞춤 |
 
+### devlife-tdd
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `tdd-subagent` | `3.4.0` | RED·GREEN 결과에 `decisions:` 줄 추가. 사이클 리뷰 통과 후 계획이 정하지 않은 선택을 `decision-write`로 `ai-selected` 기록, 계획·유효한 Dec와 어긋나면 결정 충돌로 처리 |
+| `tdd-agent-team` | `2.6.0` | `tdd-red`·`tdd-green` 결과에 `decisions:` 줄 추가. 최종 검수 통과 후 리드가 모아 `decision-write`로 한 번에 기록 |
+
 ---
 
 ## 2026-11-17
