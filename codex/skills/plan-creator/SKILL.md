@@ -176,7 +176,7 @@ Read `decision-write`'s `SKILL.md` and follow it, passing the folder path and ev
 | Decision | 출처 |
 |---|---|
 | Chosen by the user from options you presented in Step 2 — target structure, placement, separation from an existing implementation | `ai-suggested` |
-| A direction the user stated before you offered options | `user-suggested` |
+| A direction the user stated before you offered options, or an answer of the user's own in place of the options you presented (e.g., "A, B 말고 C로 하자") | `user-suggested` |
 | Settled by you without asking — a placement default from the placement scan, a reused class, a pitfall's `→ 신규는`, a choice that follows existing behavior | `ai-selected` |
 
 Record every `ai-selected` decision. The user never saw them, so they are what the user reviews first. Give each decision its 영향도 (`foundation` / `significant` / `local`).

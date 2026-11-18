@@ -28,7 +28,7 @@
 |-------|---------|-------------|
 | `devlife-brainstorming` | `1.10.1` | 대화로 아이디어의 what/why와 설계 결정을 정리해 승인된 설계 spec 문서로 만듦 |
 | `spec-creator` | `1.1.1` | 대규모 기능 기술 명세 작성 — 도메인 컨텍스트·불변성·하위 태스크 S/M/L 분해 포함 |
-| `plan-creator` | `2.0.1` | 코드를 탐색해 태스크 계획을 작업 폴더 `docs/spec/{티켓}-{slug}/`로 작성 — `plan.md`(무엇·어떻게 — Phase별 구현 대상 파일·코드 스니핏 포함)·`decisions.md`(왜) |
+| `plan-creator` | `2.0.2` | 코드를 탐색해 태스크 계획을 작업 폴더 `docs/spec/{티켓}-{slug}/`로 작성 — `plan.md`(무엇·어떻게 — Phase별 구현 대상 파일·코드 스니핏 포함)·`decisions.md`(왜) |
 | `plan-write` | `1.0.1` | `plan.md` 작성·갱신 — 의도·범위(In/Out)·Phase별 목표와 완료 기준·검증·전제·용어·Backlog |
 | `decision-write` | `1.0.1` | `decisions.md`에 결정을 `Dec-N`으로 덧붙여 기록 — 출처(누가 제안·선택)·영향도, 결정을 뒤집을 땐 사용자 승인 |
 | `pdf-to-spec` | `1.0.0` | PDF 텍스트 추출(PDFKit + Vision OCR) → spec-creator 워크플로우 자동 실행 |
