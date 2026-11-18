@@ -115,6 +115,7 @@ CYCLE REVIEWER
 
 - **Phase 진행상황** — 요구사항에 Phase 표가 있는 `plan.md`가 함께 오면, 한 Phase의 마지막 태스크가 사이클 리뷰를 통과할 때 `plan-write` 갱신 모드로 그 Phase를 `done`으로 바꾸고 Verification 항목을 체크합니다
 - **결정과 부딪힐 때** — `decisions.md`의 유효한 결정은 `context.md`의 Active decisions 줄로 에이전트에게 전달됩니다. 결정을 깨야만 할 수 있는 태스크는 에이전트가 `MISSING_FACT`로 그 Dec를 지목해 돌아오고, 오케스트레이터는 스스로 풀지 않고 멈춰 사용자에게 대체 결정 초안과 함께 묻습니다. 승인되면 `decision-write`로 기록하고 이어서 진행합니다
+- **새 결정 기록** — 요구사항에 `decisions.md`가 함께 오면, RED·GREEN 에이전트는 계획이 정하지 않은 선택(예외 타입, 반올림, 새 public 메서드와 위치)을 결과 파일의 `decisions:` 줄로 보고합니다. 오케스트레이터는 사이클 리뷰 통과 후 계획이나 유효한 Dec를 되풀이한 줄과 이름처럼 코드만 봐도 아는 줄을 빼고 `decision-write`로 `ai-selected` 기록합니다. 계획의 스니핏·테스트나 유효한 Dec와 어긋나는 선택은 결정 충돌로 처리합니다
 
 ### 재시도 예산
 

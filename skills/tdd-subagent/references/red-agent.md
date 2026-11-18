@@ -124,6 +124,7 @@ test_file: {relative path to test file}
 test_method: {class#methodA} | {class#methodB, class#methodC, ...} (one per line if batched)
 failure: {one-line failure message, or "ALREADY_PASSES"} (one per test_method, in the same order)
 stubs: {comma-separated relative paths, or "none"}
+decisions: {one line per behavior choice your tests fix that the requirements and context.md leave open — an exception type, a rounding rule, a boundary — or none}
 ```
 
 7. Return ONLY this envelope as your response — no prose, no result block, no file contents:

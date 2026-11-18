@@ -56,6 +56,7 @@ files_modified: {comma-separated relative paths}
 tests_passed: {N}
 tests_failed: {N}
 failure_detail: {one-line summary if any failed, or "none"}
+decisions: {one line per design choice your code makes that the requirements and context.md leave open — an exposed exception type, a rounding rule, a new public method or class and where it lives — or none. Names and refactor details are not decisions.}
 ```
 
 6. Return ONLY this envelope as your response — no prose, no result block, no file contents:
