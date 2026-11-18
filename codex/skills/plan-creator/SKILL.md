@@ -1,6 +1,6 @@
 ---
 name: plan-creator
-description: Writes the plan for any task, feature, or project as a task folder — docs/spec/{date}-{ticket}-{slug}/ with plan.md (what, and how for code work) and decisions.md (why).
+description: Writes the plan for any task, feature, or project as a task folder — docs/spec/{ticket}-{slug}/ (or {date}-{slug}/ without a ticket) with plan.md (what, and how for code work) and decisions.md (why).
   Use when the user requests a "계획 문서", "구현 계획", "실행 계획", "계획서 작성", or "plan document",
   or writes any Korean sentence combining "계획" with a writing intent verb
   ("작성", "써줘", "정리", "만들어줘") — even if no specific file is mentioned.
@@ -23,7 +23,7 @@ A requirements document is any document that states what this task must do — a
 
 ### Existing Task Folder
 
-Each task has one folder, `docs/spec/{YYYY-MM-DD}-{ticket}-{slug}/`. If the request names a folder, or one for the same ticket or feature already exists under `docs/spec/`, read its `plan.md` and `decisions.md` before Step 1 and continue in that folder.
+Each task has one folder, `docs/spec/{ticket}-{slug}/` — `{YYYY-MM-DD}-{slug}` when there is no ticket. If the request names a folder, or one for the same ticket or feature already exists under `docs/spec/`, read its `plan.md` and `decisions.md` before Step 1 and continue in that folder.
 
 - Decisions in `decisions.md` without a `[SUPERSEDED by Dec-M]` marker are active. Take them as settled and skip any Step 2 question they answer.
 - Reopen an active decision only when Step 1 finds a fact the entry didn't have. Raise it in Step 2 with that fact; the reversal goes through `decision-write`.
@@ -161,12 +161,12 @@ When you find one, quote both sides, say why they conflict, and ask which to fol
 
 ```
 docs/spec/
-└ {YYYY-MM-DD}-{ticket}-{slug}/
+└ {ticket}-{slug}/
   ├ plan.md        ← plan-write: what the work does and, for code work, how it is built
   └ decisions.md   ← decision-write: why it was done that way
 ```
 
-- **Folder**: `docs/spec/{YYYY-MM-DD}-{ticket}-{slug}/`, unless the user gives a path. The date is the day the folder is created. Leave the ticket out when there is none. The slug is a short kebab-case feature summary (e.g., `2026-11-17-RB-2396-refund-limit`). Create the folder if it doesn't exist; reuse it if the Existing Task Folder step found one.
+- **Folder**: `docs/spec/{ticket}-{slug}/`, unless the user gives a path. With no ticket, the date the folder is created takes its place: `docs/spec/{YYYY-MM-DD}-{slug}/`. The slug is a short kebab-case feature summary (e.g., `RB-2396-refund-limit`, `2026-11-18-refund-limit`). Create the folder if it doesn't exist; reuse it if the Existing Task Folder step found one.
 - Write `decisions.md` first, because `plan.md` points to its `Dec-N` numbers.
 
 #### 1. decisions.md

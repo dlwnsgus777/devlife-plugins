@@ -1,6 +1,6 @@
 # plan-creator
 
-단일 태스크의 계획을 작업 폴더 `docs/spec/{날짜}-{티켓}-{slug}/`로 작성합니다.  
+단일 태스크의 계획을 작업 폴더 `docs/spec/{티켓}-{slug}/`로 작성합니다.  
 `plan.md`(무엇을 하나, 코드 작업이면 어떻게 만드나까지)와 `decisions.md`(왜 그렇게 했나)를 만듭니다.
 
 ## 언제 사용하나요?
@@ -141,7 +141,7 @@ Step 1 코드의 enum 상태 전이, 검증 애노테이션, 가드 절에서 �
 ## 생성 문서 구조
 
 ```
-docs/spec/{YYYY-MM-DD}-{티켓}-{slug}/
+docs/spec/{티켓}-{slug}/
 ├── plan.md        ← plan-write: 무엇을 하나 + 어떻게 만드나 (작업 중 상태 갱신)
 │   ├── 1. Context — 배경 / 외부 제약 / 도메인 불변성(출처 태그) / 기존 패턴 / 기존 코드의 함정
 │   ├── 2. Scope — In / Out
@@ -162,7 +162,7 @@ docs/spec/{YYYY-MM-DD}-{티켓}-{slug}/
 |------|------|
 | 사용자가 경로 지정 | 지정한 경로 그대로 사용 |
 | 같은 작업 폴더가 이미 있음 | 그 폴더에 이어서 씀 |
-| 지정 없음 | `docs/spec/{폴더를 만든 날}-{티켓}-{slug}/` (예: `docs/spec/2026-11-17-RB-2396-refund-limit/`). 티켓이 없으면 생략 |
+| 지정 없음 | `docs/spec/{티켓}-{slug}/` (예: `docs/spec/RB-2396-refund-limit/`). 티켓이 없으면 폴더를 만든 날을 넣어 `docs/spec/{날짜}-{slug}/` (예: `docs/spec/2026-11-18-refund-limit/`) |
 
 ## 워크플로우 위치
 

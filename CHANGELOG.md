@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-11-18
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `plan-creator` | `2.0.1` | 작업 폴더 이름에서 날짜를 뺌 — `docs/spec/{티켓}-{slug}/`, 티켓이 없을 때만 `docs/spec/{날짜}-{slug}/` |
+| `plan-write` | `1.0.1` | 설명의 작업 폴더 경로를 새 이름 규칙에 맞춤 |
+| `decision-write` | `1.0.1` | 작업 폴더 경로를 새 이름 규칙에 맞춤 |
+
+---
+
 ## 2026-11-17
 
 ### devlife-planning

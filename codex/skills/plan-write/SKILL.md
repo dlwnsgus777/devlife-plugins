@@ -1,6 +1,6 @@
 ---
 name: plan-write
-description: Writes or updates a task folder's plan.md (docs/spec/{date}-{ticket}-{slug}/plan.md) — intent, scope (in / out), existing-code pitfalls, phase goals with completion criteria and status, and for code work each phase's files, logic, and code snippets, then verification, prerequisites, glossary, backlog. Use when plan-creator hands over its gathered context to write the plan, when a TDD skill finishes a phase and updates its status, or when the user says "plan.md 작성", "plan.md 갱신", "Phase 완료 표시", "Backlog에 추가".
+description: Writes or updates a task folder's plan.md (docs/spec/{ticket}-{slug}/plan.md) — intent, scope (in / out), existing-code pitfalls, phase goals with completion criteria and status, and for code work each phase's files, logic, and code snippets, then verification, prerequisites, glossary, backlog. Use when plan-creator hands over its gathered context to write the plan, when a TDD skill finishes a phase and updates its status, or when the user says "plan.md 작성", "plan.md 갱신", "Phase 완료 표시", "Backlog에 추가".
 ---
 
 # Plan Write
