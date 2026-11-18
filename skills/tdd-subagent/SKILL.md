@@ -421,8 +421,8 @@ miss=$(for k in {REQUIRED_KEYS}; do grep -q "^$k:" "$f" 2>/dev/null || echo "$k"
 
 | PHASE | REQUIRED_KEYS |
 |-------|---------------|
-| RED | `test_file test_method failure stubs` |
-| GREEN | `files_modified tests_passed tests_failed failure_detail` |
+| RED | `test_file test_method failure stubs decisions` |
+| GREEN | `files_modified tests_passed tests_failed failure_detail decisions` |
 | REFACTOR | `status reason tests_passed deferred` |
 | TIDY | `files_modified technique test_changes safety_net` |
 | FIX | `findings_addressed files_modified tests_passed tests_failed notes` |
@@ -454,6 +454,15 @@ When the requirements include a `plan.md` with a phase table (3. Plan), keep its
 - At Setup 4, note each task's phase in `session.md` — the phase whose 4. Verification items the task covers.
 - When the last task of a phase passes its cycle review, invoke `plan-write` with the Skill tool in its update mode: set the phase to `done` and check the Verification items its tasks covered. Set the first phase to `doing` when its first cycle starts.
 - If `plan-write` is not in the skill list, make the same two changes in `plan.md` yourself and nothing else.
+
+### Decision Records
+
+When the requirements come with a `decisions.md`, the design choices a cycle makes that the plan left open are recorded there — the next session and the reviewer read them, not the result files.
+
+- After a cycle passes its review, collect the `decisions:` lines of its RED and GREEN result files with `grep "^decisions:"`. Drop a line that restates the plan or an active Dec, and a line the code alone shows, such as a name.
+- For what is left, invoke `decision-write` with the Skill tool: pass the folder path and each decision with 출처 `ai-selected`, the task as its 연관 설계.
+- A choice that contradicts the plan's snippets or tests, or an active Dec, is not a new decision. Handle it as a decision conflict under **Handling `BLOCKED`**.
+- If `decision-write` is not in the skill list, append the entries yourself in its format.
 
 ### Cycle Reviewer Dispatch
 

@@ -102,6 +102,7 @@ On top of the implementation guide:
    test_methods: {the task's method ids from red-result, comma-separated}
    red_check_log: {TASK_DIR}/red-check.log
    tests_passed: {N}
+   decisions: {one line per design choice your code makes that the requirements and context.md leave open — an exposed exception type, a rounding rule, a new public method or class and where it lives — or none. Names and refactor details are not decisions.}
    ```
    Copy `test_methods` exactly from `red-result`. Write the `red_check_log` line only if your red check actually wrote that log.
 6. Hand the task to `tdd-refactor` (Task List), then go on to your next message.
