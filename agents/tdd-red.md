@@ -110,6 +110,7 @@ After GREEN finishes a task, `tdd-refactor` may restructure or tidy that task's 
    test_methods: {method id}, {method id}, ...
    failure: {one line per method, same order}
    already_passing: {method ids that passed on the first run, or none}
+   decisions: {one line per behavior choice your tests fix that the requirements and context.md leave open — an exception type, a rounding rule, a boundary — or none}
    ```
    `test_methods` is comma-separated, each id in the exact form `{M}` takes in `roles.env`. GREEN's red check runs exactly these ids.
 6. Hand the Task to `tdd-green` — owner first, then `READ {TASK_DIR}/task.md#red-result` (Task List) — and take your next available task. Do not wait for GREEN.

@@ -31,6 +31,8 @@ Check 3 looks only for the record; whether the design is right is `review-design
 
 **Plan upkeep.** When the requirements include a `plan.md` with a phase table, invoke `plan-write` with the Skill tool in its update mode once the checks pass: set to `done` each phase whose tasks are all `DONE`, and check the 4. Verification items those tasks covered. If `plan-write` is not in the skill list, make the same changes in `plan.md` yourself and nothing else.
 
+**Decision records.** When the requirements come with a `decisions.md`, collect the `decisions:` lines from every task's `red-result` and `green-result` once the checks pass. Drop a line that restates the plan or an active Dec, and a line the code alone shows, such as a name. For what is left, invoke `decision-write` with the Skill tool once: pass the folder path and each decision with 출처 `ai-selected`, its task as 연관 설계. A choice that contradicts the plan's snippets or tests, or an active Dec, is a decision conflict — ask the user as under **Handling `blocked`**. If `decision-write` is not in the skill list, append the entries yourself in its format.
+
 ## 2. Parallel Final Review ← user checkpoint 2
 
 Build the diff into a file first — it must never pass through your context. One simple command per step:

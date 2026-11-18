@@ -115,6 +115,8 @@ tdd-red ── 실패 테스트 → task.md#red-result, owner를 tdd-green으로
    실패는 `fixes.md`로 담당자별로(동작 GREEN, 구조 `tdd-refactor`, 테스트 RED) 최대 2라운드, 넘으면 사용자에게 묻습니다.
    
    요구사항에 Phase 표가 있는 `plan.md`가 함께 오면, 검수를 통과한 뒤 `plan-write` 갱신 모드로 태스크가 모두 끝난 Phase를 `done`으로 바꾸고 Verification 항목을 체크합니다.
+
+   요구사항에 `decisions.md`가 함께 오면, 검수를 통과한 뒤 각 태스크의 `red-result`·`green-result`에 있는 `decisions:` 줄을 모아 `decision-write`로 한 번에 `ai-selected` 기록합니다. 계획이나 유효한 Dec를 되풀이한 줄과 코드만 봐도 아는 줄은 뺍니다. 계획의 스니핏·테스트나 유효한 Dec와 어긋나는 선택은 결정 충돌로 사용자에게 묻습니다.
 2. **병렬 최종 리뷰** ← 사용자 확인 2 — `review-domain`(불변성 매트릭스·범위), `review-test`(테스트 품질·`red-check.log` 유무), `review-design`(태스크 간 중복·책임, `refactor-result`의 `deferred` 판정) 3명이 각자 리포트를 씁니다. Critical/Important 지적이 있는 리뷰어만 나머지 두 명에게 반박을 1회 받습니다. 리드가 종합해 사용자에게 묻고, 승인한 것만 반영합니다 — 테스트는 RED, 설계·가독성은 `tdd-refactor`. 동작 누락·오류는 사이클과 같이 RED가 실패 테스트를 먼저 쓰고 GREEN이 red check 후 구현합니다(모든 기록은 `fixes.md` 한 파일). 동작 수정으로 불필요해진 테스트는 리드가 판단해 `fixes.md`에 지목하고, RED는 지목된 테스트만 삭제합니다
 3. **종료** — 팀원 종료 요청, 요약 출력, `session.md` 끝에 `session: COMPLETE` 기록, `_workspace/tdd-agent-team/`는 git 제외 상태로 남깁니다
 
