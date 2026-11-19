@@ -12,7 +12,7 @@
 |-------|---------------|
 | [`devlife-planning`](#devlife-planning) | 기획 문서화 — 브레인스토밍부터 Spec, 계획 문서까지 |
 | [`devlife-tdd`](#devlife-tdd) | TDD 실행 — Red/Green/Refactor 자동화 (서브에이전트 순차 / agent teams 병렬), 테스트 작성 규칙 |
-| [`devlife-tools`](#devlife-tools) | 유틸리티 — 멀티 에이전트 환경, 마크다운 변환, 터미널 제어 |
+| [`devlife-tools`](#devlife-tools) | 유틸리티 — 멀티 에이전트 환경, 마크다운 변환, 터미널 제어, 기술 문서 표현 통일 |
 
 ---
 
@@ -74,7 +74,7 @@ TDD 실행 워크플로우. Red/Green/Refactor 사이클을 서브에이전트 �
 
 ### devlife-tools
 
-유틸리티 스킬 모음. 멀티 에이전트 환경 구성, 마크다운 변환, 터미널 앱 제어를 담당합니다.
+유틸리티 스킬 모음. 멀티 에이전트 환경 구성, 마크다운 변환, 터미널 앱 제어, 기술 문서 표현 통일을 담당합니다.
 
 #### Skills
 
@@ -84,6 +84,7 @@ TDD 실행 워크플로우. Red/Green/Refactor 사이클을 서브에이전트 �
 | `devlife-codex` | `1.0.0` | Codex cmux pane에 태스크 전송 + 결과 파일 수집 (`devlifeteam/` 폴더) |
 | `cmux` | `1.0.0` | Ghostty 기반 터미널 제어 — pane/workspace 관리, 브라우저 자동화, 알림, SSH, 마크다운 뷰어 |
 | `md-to-html` | `1.1.0` | Markdown → 독립형 HTML 변환 (외부 CSS/JS 없음) — 서브에이전트 위임 실행 |
+| `korean-ste` | `1.0.0` | 기술 문서용 통제 한국어(ASD-STE100 응용) — 문서 안의 용어·말투·단위·코드 표기 통일, 런북·장애 보고서는 짧은 문장에 지시 하나. 린터 포함 |
 
 ---
 

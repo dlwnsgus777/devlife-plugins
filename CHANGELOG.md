@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-11-19
+
+### devlife-tools
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `korean-ste` | `1.0.0` | 신규 — 문서 안의 용어·말투·단위·코드 표기 통일(`TERM`·`STYLE`·`UNIT`·`CODE`), `strict` 수준에서 문장 길이·한 문장 한 지시·조건 먼저·모호한 표현 검사(`LEN`·`MULTI`·`COND`·`VAGUE`). 정규식 린터 `scripts/lint.py` 포함 |
+
+---
+
 ## 2026-11-18
 
 ### devlife-planning
