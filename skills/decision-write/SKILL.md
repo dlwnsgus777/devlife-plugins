@@ -70,7 +70,7 @@ Reversing an active decision breaks an agreement the work was built on, so stop 
 
 ## Never
 
-- Edit the body of an existing entry — not even a typo. A correction is a new entry.
+- Update an existing entry, even when the decision changes — not even a typo. An entry is existing from the moment it is appended to the file; an entry written in this session, or one the user has not approved yet, is no exception. A changed decision, a wrong rationale, or wrong wording becomes a new entry, and the old entry gets only ` [SUPERSEDED by Dec-N]` on its heading line.
 - Delete an entry, or renumber entries.
 - Mark an entry superseded without a new entry that supersedes it.
 
