@@ -25,7 +25,6 @@ description: Writes or updates a task folder's plan.md (docs/spec/{ticket}-{slug
 
 ### Section Rules
 
-- **헤더 `base:`**: the branch the work merges into. Keep it within the first 20 lines — develop-flow reads it there.
 - **1. Context — 외부 제약**: conditions given from outside this work — a batch schedule, an external API limit, a response format to keep, a definition that can't change. Domain rules go under 도메인 불변성, not here.
 - **2. Scope**: every `Out` item points to a 7. Backlog entry (`→ 7-N`). An `Out` item states what is out and, in one sentence, why.
 - **1. Context — 기존 코드의 함정**: see **기존 코드의 함정** below. Never omitted for code work — with nothing to write, it says `해당 없음`.
