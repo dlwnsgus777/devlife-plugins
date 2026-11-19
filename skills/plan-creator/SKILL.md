@@ -193,7 +193,8 @@ Invoke `plan-write` with the Skill tool in its write mode, passing the folder pa
 - the phases: a Tidy First phase first when the user chose a target structure in Step 2 (with its `Dec-N`), otherwise `정비 해당 없음` with the reason; then the feature phases;
 - for code work, each phase's detail: 구현 대상 파일 from the placement and reuse scans, API, 비즈니스 로직, and 코드 스니핏 that inject the reused classes and guard each invariant;
 - the tests per phase — `[NEW]` or `[REGRESSION]` from Step 1 category 7, each described by a domain rule sentence, with boundary values for every rule that has a boundary;
-- prerequisites, steps before deploy, and what a person checks by hand;
+- prerequisites and steps before deploy;
+- the 수동 확인 scenarios grouped by feature — each an action and its visible result, only for behavior this change alters — and when and where to check them;
 - the terms whose meaning Step 2 settled;
 - the Backlog: Out items, design changes found by the target structure scan, and Step 2 questions left unanswered.
 
@@ -205,7 +206,7 @@ If `plan-write` is not in the skill list, say `not available`, then write `plan.
 
 **Purpose**: catch gaps before the user reviews the folder.
 
-After writing the documents, run these nine checks. Fix whatever needs no decision from the user; no need to re-check after fixing.
+After writing the documents, run these ten checks. Fix whatever needs no decision from the user; no need to re-check after fixing.
 
 **1. Requirements coverage** (when a requirements document was provided):
 - **Scope**: the requirements of the task chosen in the Requirements Document step — the whole document if it holds one task.
@@ -253,10 +254,12 @@ Then apply all changes in one edit per section. Confirm every path, constraint, 
 
 **9. Scope check**: does every `plan.md` 2. Scope Out item have a 7. Backlog entry?
 
+**10. Manual check coverage** (code work): does every entry point the `plan.md` 3 phase detail changes — an API, a batch, a screen — have a 수동 확인 group in `plan.md` 4? Add a missing group, so an entry point with no automated test is not left out.
+
 **Report the result in Step 4**, so the user sees what was checked:
 
 ```
-자체 검증: 9개 항목 중 7개 통과
+자체 검증: 10개 항목 중 8개 통과
 - 고침 2번 (플레이스홀더): plan.md Phase 2 비즈니스 로직의 "예외 처리 추가" → `RefundService.refund()`에서 환불액이 결제액보다 크면 `RefundAmountExceededException`
 - 고침 7번 (문장): plan.md 1·3에서 문장 5개를 나눔
 - 결정 필요 5번 (Tidy First 정당성): 고르신 `FeePolicy` 추출(Dec-2)이 `BatchSettler`까지 닿아 이번 변경 범위를 넘습니다
