@@ -84,7 +84,7 @@ TDD 실행 워크플로우. Red/Green/Refactor 사이클을 서브에이전트 �
 | `devlife-codex` | `1.0.0` | Codex cmux pane에 태스크 전송 + 결과 파일 수집 (`devlifeteam/` 폴더) |
 | `cmux` | `1.0.0` | Ghostty 기반 터미널 제어 — pane/workspace 관리, 브라우저 자동화, 알림, SSH, 마크다운 뷰어 |
 | `md-to-html` | `1.1.0` | Markdown → 독립형 HTML 변환 (외부 CSS/JS 없음) — 서브에이전트 위임 실행 |
-| `korean-ste` | `1.0.0` | 기술 문서용 통제 한국어(ASD-STE100 응용) — 문서 안의 용어·말투·단위·코드 표기 통일, 런북·장애 보고서는 짧은 문장에 지시 하나. 린터 포함 |
+| `korean-ste` | `1.1.0` | 기술 문서용 통제 한국어(ASD-STE100 응용) — 문서 안의 용어·말투·단위·코드 표기 통일, 런북·장애 보고서는 짧은 문장에 지시 하나. 린터 포함 |
 
 ---
 

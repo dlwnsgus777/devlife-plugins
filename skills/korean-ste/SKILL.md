@@ -23,6 +23,9 @@ Rules a regex can count are checked by `scripts/lint.py`. Rules that need judgme
 
 ## Rules You Must Keep
 
+- Check only the text being newly written or appended now.
+- When appending to an existing document, check and fix only the appended part.
+- Never change content already in the file.
 - Never change facts, numbers, dates, proper nouns, quotes, or code. Code blocks and inline code are out of scope.
 - Never invent a missing condition, value, or time. Mark it `[확인 필요]`.
 - In the `strict` profile, short and uniform sentences are intended. Ignore rhythm advice such as "mix short and long sentences".
@@ -71,7 +74,7 @@ Also check by reading, in `strict`:
 ## Process
 
 1. **Pick the profile** from the table above.
-2. **Build the term map.** Read the whole document. Group the expressions that refer to the same thing. The canonical term is the one the project glossary `docs/glossary.md` defines; if it has none, the one the document uses first. Write the groups to a temporary file, one line per group:
+2. **Build the term map.** Read the whole document, including the content already in the file, and build the map from its terms. Apply the map only to the new part. When appending, the new part also follows the existing content's speech level (`STYLE`). Group the expressions that refer to the same thing. The canonical term is the one the project glossary `docs/glossary.md` defines; if it has none, the one the document uses first. Write the groups to a temporary file, one line per group:
 
    ```
    - 배포: 릴리스, 반영
@@ -79,7 +82,7 @@ Also check by reading, in `strict`:
    ```
 
    Show the map to the user and apply it only after they confirm or edit it. Skip this step when no group has a variant.
-3. **Run the linter.** If the text is not a file yet (a Slack draft), write it to a temporary file first. Pass `docs/glossary.md` too when it exists.
+3. **Run the linter.** If the text is not a file yet (a Slack draft), write it to a temporary file first. When appending to an existing document, write only the appended part to a temporary file and run the linter on that file. Pass `docs/glossary.md` too when it exists.
 
    ```bash
    python3 <this skill's directory>/scripts/lint.py --profile <profile> --terms docs/glossary.md --terms <term map> <document>
