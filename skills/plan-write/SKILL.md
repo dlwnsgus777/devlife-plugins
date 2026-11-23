@@ -98,7 +98,7 @@ Change only these places. Leave every other line as it is.
 |---|---|
 | Phase status | Set 3. Plan `상태` to `doing` when the phase starts and `done` when all of its 4. Verification items pass |
 | Verification check | Change `[ ]` to `[x]` for an item that passed |
-| Backlog entry | Append `- [ ] 7-N. [할 일] — 출처: [where it came from]` with the next number |
+| Backlog entry | Append `- 7-N. [할 일] — 출처: [where it came from]` with the next number |
 | Superseded decision | After `decision-write` recorded a `Dec-M` that supersedes an earlier one, rewrite the parts that followed the old decision — pitfall `→ 신규는`, phase detail, snippets, tests — to follow `Dec-M`, and mark each rewritten part `(Dec-M)` |
 
 The superseded-decision row is what keeps the plan rerunnable: the next run reads the snippets, so a snippet left on the old decision rebuilds the old design.
