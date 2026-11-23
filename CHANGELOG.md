@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-11-23
+
+### devlife-planning
+
+| Skill | Version | Change |
+|-------|---------|--------|
+| `plan-write` | `1.4.0` | 4. Verification 테스트를 Phase 안에서 기능별로 묶음(`#### 기능 이름`), 경계 값은 테스트 항목 아래 하위 불릿으로 적음 |
+| `plan-creator` | `2.2.0` | plan-write에 Phase별 테스트를 기능별로 묶어 넘김 |
+
+---
+
 ## 2026-11-19
 
 ### devlife-tools
