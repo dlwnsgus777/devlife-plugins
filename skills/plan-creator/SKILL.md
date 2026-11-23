@@ -192,7 +192,7 @@ Invoke `plan-write` with the Skill tool in its write mode, passing the folder pa
 - In / Out scope — every Out item also becomes a Backlog entry;
 - the phases: a Tidy First phase first when the user chose a target structure in Step 2 (with its `Dec-N`), otherwise `정비 해당 없음` with the reason; then the feature phases;
 - for code work, each phase's detail: 구현 대상 파일 from the placement and reuse scans, API, 비즈니스 로직, and 코드 스니핏 that inject the reused classes and guard each invariant;
-- the tests per phase — `[NEW]` or `[REGRESSION]` from Step 1 category 7, each described by a domain rule sentence, with boundary values for every rule that has a boundary;
+- the tests per phase, grouped by feature — `[NEW]` or `[REGRESSION]` from Step 1 category 7, each described by a domain rule sentence, with boundary values for every rule that has a boundary;
 - prerequisites and steps before deploy;
 - the 수동 확인 scenarios grouped by feature — each an action and its visible result, only for behavior this change alters — and when and where to check them;
 - the terms whose meaning Step 2 settled;

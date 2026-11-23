@@ -148,7 +148,7 @@ docs/spec/{티켓}-{slug}/
 │   ├── 3. Plan — Phase 표(목표·완료 기준·상태)
 │   │   ├── Phase 1. 코드 구조 정비 (Tidy First)  ← 기존 코드 수정 시 (없으면 "정비 해당 없음 — 이유")
 │   │   └── Phase N. — 구현 대상 파일 / API / 비즈니스 로직 / 코드 스니핏
-│   ├── 4. Verification — Phase별 테스트([NEW]/[REGRESSION], 경계값) / 수동 확인(기능별 체크리스트)
+│   ├── 4. Verification — Phase별·기능별 테스트([NEW]/[REGRESSION], 경계값) / 수동 확인(기능별 체크리스트)
 │   ├── 5. Prerequisites — 배포 전 작업 포함
 │   ├── 6. Glossary
 │   └── 7. Backlog
