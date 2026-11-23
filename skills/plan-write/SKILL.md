@@ -35,13 +35,13 @@ description: Writes or updates a task folder's plan.md (docs/spec/{ticket}-{slug
   - **코드 스니핏**: class declaration, `private final` fields, and method bodies with the call order, a guard clause per invariant, exceptions, and the return shape. Inject the classes the reuse scan found. Leave out logging, transaction settings, and defensive null checks. Write enough that coding can start without rereading the requirements. A snippet body is never empty or `// TODO`.
   - Class and method names match across the file table, the snippets, and 4. Verification.
   - Table cells: the decision in one sentence, plus at most one sentence of reason. A procedure goes in 비즈니스 로직, and the cell points to it.
-- **4. Verification**: tests grouped by phase, numbered across the whole section. 수동 확인 lists what a person checks by hand.
+- **4. Verification**: tests grouped by phase, then by feature inside each phase under a `#### [feature name]` heading — kept even when a phase has one feature. Numbered across the whole section. 수동 확인 lists what a person checks by hand.
   - **수동 확인**: a checklist grouped by feature — the unit the person checking recognizes — not by phase.
     - Each item states an action and the visible result: the response value, the rows saved, whether a message is sent. Never write "기존대로 동작한다" or "정상 동작한다".
     - List only behavior this change alters. Of unchanged behavior, keep only what touches this change — e.g., using a coupon already issued.
     - Write when and where to check once, in the line at the top, never inside an item. DB checks run on a set date go in their own group.
     - A limit on how to check — e.g., the clock can't be changed on stage — goes in 5. Prerequisites, not in the checklist.
-  - **Boundary values**: a test of a rule with a boundary — a threshold, a cap, a range — lists the input on each side of every boundary with its expected result: the boundary value and the value one unit before it. Example: a 3만원 cap reached at 200,000원 lists `199,999원 → 29,999원` and `200,000원 → 30,000원`. A value only inside or far beyond the boundary doesn't count — a rule that starts at the wrong point still passes it.
+  - **Boundary values**: a test of a rule with a boundary — a threshold, a cap, a range — lists, as sub-bullets under the test item, the input on each side of every boundary with its expected result: the boundary value and the value one unit before it. Example: a 3만원 cap reached at 200,000원 lists `199,999원 → 29,999원` and `200,000원 → 30,000원`. A value only inside or far beyond the boundary doesn't count — a rule that starts at the wrong point still passes it.
 - **5. Prerequisites**: what must hold before the work runs. 배포 전 작업 lists steps that must happen before deploy.
 - **6. Glossary**: terms whose meaning was settled for this work, with the code name that carries each.
 - **7. Backlog**: later work and open questions, each with its source. A decision with its options and reasoning belongs in `decisions.md`, not here.
